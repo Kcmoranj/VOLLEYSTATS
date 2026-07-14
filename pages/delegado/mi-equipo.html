@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Equipo | VolleyStats Delegado</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>.card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }</style>
+</head>
+<body class="bg-[#F3F4F6] flex h-screen font-sans">
+
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+        <div class="flex-1">
+            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            <p class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider -mt-4 mb-4">Portal Delegado</p>
+            <nav class="flex flex-col gap-2 px-4">
+                <a href="dashboard-delegado.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Resumen</a>
+                <a href="mi-equipo.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">🛡️ Mi Equipo</a>
+                <a href="convocatoria.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📋 Convocatoria</a>
+                <a href="r5.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏐 R5 / Alineación</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logoutDelegado()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto max-w-4xl">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-black text-gray-900 uppercase">Mi Equipo <span id="nombreMiEquipo" class="text-blue-600"></span></h1>
+            <button onclick="document.getElementById('modalAgregarCategoria').showModal()" class="btn btn-sm btn-outline font-bold">+ Agregar categoría/rama</button>
+        </div>
+
+        <!-- Se muestra si el delegado todavía NO tiene equipo creado -->
+        <div id="bloqueCrearEquipo" class="card-admin hidden max-w-lg">
+            <h2 class="font-black text-lg text-gray-900 mb-1">Arma tu equipo</h2>
+            <p class="text-xs text-gray-400 mb-4">Ponle nombre a tu equipo y elige su primera categoría/rama. Quedará pendiente de aprobación por el administrador.</p>
+            <form id="formCrearEquipo" class="space-y-4">
+                <input id="inputNombreEquipoNuevo" type="text" placeholder="Nombre del equipo" class="input input-bordered w-full" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="crearCategoria" class="select select-bordered w-full text-sm"></select>
+                    <select id="crearRama" class="select select-bordered w-full text-sm"></select>
+                </div>
+                <button type="submit" class="btn btn-primary w-full font-bold">Crear mi equipo</button>
+            </form>
+        </div>
+
+        <!-- Se muestra una vez que el equipo ya existe -->
+        <div id="bloqueGestionEquipo" class="hidden">
+            <div class="mb-6">
+                <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Participación</label>
+                <select id="selectParticipacion" class="select select-bordered w-full max-w-sm font-bold"></select>
+            </div>
+
+            <div id="sinParticipaciones" class="card-admin text-center text-gray-400 font-semibold hidden">
+                No tienes categorías registradas. Usa "+ Agregar categoría/rama".
+            </div>
+
+            <div id="contenidoParticipacion" class="space-y-6 hidden">
+
+                <div class="card-admin flex justify-between items-center">
+                    <div>
+                        <h2 id="tituloParticipacion" class="font-black text-lg text-blue-600">-</h2>
+                        <p class="text-xs text-gray-400">Estado de tu solicitud ante el administrador</p>
+                    </div>
+                    <div id="badgeEstadoParticipacion"></div>
+                </div>
+
+                <form id="formDatosEquipo" class="card-admin grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-3 font-black text-sm uppercase text-gray-700 mb-1">Datos del cuerpo técnico</div>
+                    <input id="inputTecnico" type="text" placeholder="Técnico" class="input input-bordered w-full text-sm">
+                    <input id="inputAsistente" type="text" placeholder="Asistente" class="input input-bordered w-full text-sm">
+                    <select id="selectCapitan" class="select select-bordered w-full text-sm"></select>
+                    <button type="submit" class="btn btn-primary btn-sm md:col-span-3">Guardar datos</button>
+                </form>
+
+                <div class="card-admin">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-black text-sm uppercase text-gray-700">Plantel</h3>
+                        <div class="flex gap-2">
+                            <button onclick="document.getElementById('modalBuscarJugador').showModal()" class="btn btn-xs btn-primary font-bold">+ Agregar jugador</button>
+                            <button onclick="document.getElementById('modalProponerJugador').showModal()" class="btn btn-xs btn-outline font-bold">+ Proponer nuevo jugador</button>
+                        </div>
+                    </div>
+                    <table class="table w-full text-sm">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-gray-400 font-black">
+                                <th>#</th><th>Jugador</th><th>Categoría / Estado</th><th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaRoster"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Agregar categoría/rama -->
+    <dialog id="modalAgregarCategoria" class="modal">
+        <div class="modal-box bg-white">
+            <h3 class="font-black text-lg mb-4 uppercase">Nueva categoría/rama para tu equipo</h3>
+            <form id="formAgregarCategoria" class="space-y-4">
+                <select id="nuevaCategoria" class="select select-bordered w-full"></select>
+                <select id="nuevaRama" class="select select-bordered w-full"></select>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modalAgregarCategoria').close()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Solicitar</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Modal: Buscar jugador existente -->
+    <dialog id="modalBuscarJugador" class="modal">
+        <div class="modal-box bg-white max-w-lg">
+            <h3 class="font-black text-lg mb-4 uppercase">Agregar jugador existente</h3>
+            <input id="inputBuscarJugadorDB" type="text" placeholder="Buscar por nombre..." class="input input-bordered w-full mb-3">
+            <div id="resultadosBusquedaJugador" class="max-h-64 overflow-y-auto border border-gray-100 rounded-lg"></div>
+            <p class="text-[10px] text-gray-400 mt-2">Solo se muestran jugadores elegibles para esta categoría/rama según su nivel.</p>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn btn-ghost">Cerrar</button></form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Modal: Proponer jugador nuevo -->
+    <dialog id="modalProponerJugador" class="modal">
+        <div class="modal-box bg-white">
+            <h3 class="font-black text-lg mb-2 uppercase">Proponer nuevo jugador</h3>
+            <p class="text-xs text-gray-400 mb-4">Este jugador quedará <b>pendiente</b> hasta que el administrador le asigne su categoría y lo apruebe.</p>
+            <form id="formProponerJugador" class="space-y-4">
+                <input id="inputNombrePropuesto" type="text" placeholder="Nombre completo" class="input input-bordered w-full" required>
+                <input id="inputCamisetaPropuesto" type="number" min="0" placeholder="Número de camiseta" class="input input-bordered w-full" required>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modalProponerJugador').close()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar propuesta</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/shared/data-bridge.js"></script>
+    <script src="../../js/shared/elegibilidad.js"></script>
+    <script src="../../js/modules/admin/registrar-actividad.js"></script>
+    <script src="../../js/modules/auth.js"></script>
+    <script src="../../js/modules/delegado/mi-equipo.js"></script>
+</body>
+</html>

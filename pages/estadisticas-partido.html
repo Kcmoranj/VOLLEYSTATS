@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolleyStats - Detalle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex m-0">
+
+    <aside class="w-64 bg-white border-r h-screen sticky top-0 flex-shrink-0">
+        <div class="h-full flex flex-col">
+            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            <nav class="flex-1 flex flex-col gap-2 px-4">
+                <a href="partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📅 Partidos</a>
+                <a href="liga.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="jugadores.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+                <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Estadísticas</a>
+            </nav>
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div class="max-w-4xl mx-auto">
+            <a href="partidos.html" class="text-blue-600 font-bold mb-6 block hover:underline">← Volver al calendario</a>
+            
+            <div id="partidoInfo" class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8 text-center">
+                <!-- Se inyecta dinámicamente -->
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                <h2 class="text-xl font-black mb-6 text-gray-800 flex items-center gap-2">
+                    📊 Ranking de Jugadores
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="table w-full text-base">
+                        <thead>
+                            <tr class="text-gray-400 uppercase text-xs tracking-wider border-b border-gray-100">
+                                <th class="pb-4 text-left">Jugador</th>
+                                <th class="text-center pb-4 text-blue-500">PTS</th>
+                                <th class="text-center pb-4">ATQ</th>
+                                <th class="text-center pb-4">BLOQ</th>
+                                <th class="text-center pb-4">SAQ</th>
+                                <th class="text-center pb-4">DEF</th>
+                                <th class="text-center pb-4">COL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaJugadores"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/mock-data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. FUSIÓN Y CARGA DE DATOS DE FORMA SEGURA
+            let data = null;
+            const localData = localStorage.getItem('volleyData');
+            
+            // Prioridad a la base de datos local simulada
+            data = localData ? JSON.parse(localData) : window.VolleyAppData;
+
+            // FIX (doble fuente de verdad para jugadores): antes acá se inyectaban
+            // también los jugadores guardados en 'volley_jugadores', pisando lo que
+            // ya venía en 'volleyData'. Como Solicitudes (aprobar/rechazar jugador)
+            // solo actualiza 'volleyData', esa segunda copia podía quedar vieja y
+            // mostrar en el ranking datos de jugadores ya rechazados o desactualizados.
+            // 'volleyData' es ahora la única fuente de verdad.
+
+            const listaPartidos = document.getElementById('tablaJugadores');
+            if (!data || !listaPartidos) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const idPartido = parseInt(urlParams.get('id'));
+            
+            const partido = data.partidos?.find(p => p.id === idPartido);
+            if (!partido) return;
+
+            // Buscar participaciones y nombres de equipos
+            const localPart = data.participaciones?.find(part => part.id === partido.id_local_participacion);
+            const visitPart = data.participaciones?.find(part => part.id === partido.id_visitante_participacion);
+            const eqLocal = data.equipos?.find(e => e.id === localPart?.id_equipo);
+            const eqVisit = data.equipos?.find(e => e.id === visitPart?.id_equipo);
+
+            // Renderizar la tarjeta superior del partido
+            document.getElementById('partidoInfo').innerHTML = `
+                <div class="flex justify-center items-center gap-4 w-full">
+                    <div class="flex items-center gap-3 text-2xl font-black text-gray-900 justify-end flex-1">
+                        <span class="text-3xl">🛡️</span>
+                        <span class="truncate">${eqLocal?.nombre || '---'}</span>
+                    </div>
+                    <div class="text-blue-500 font-black text-xl px-6">VS</div>
+                    <div class="flex items-center gap-3 text-2xl font-black text-gray-900 justify-start flex-1">
+                        <span class="truncate">${eqVisit?.nombre || '---'}</span>
+                        <span class="text-3xl">🛡️</span>
+                    </div>
+                </div>
+                <p class="text-gray-500 font-medium mt-6 text-sm">📅 ${partido.fecha || '--/--'} &nbsp;•&nbsp; 📍 ${partido.ubicacion || 'Sin asignar'}</p>
+            `;
+
+            // Filtrar y ordenar las estadísticas incorporando la nueva estructura ampliada
+            const stats = data.estadisticasJugador
+                ?.filter(s => s.id_partido === idPartido)
+                .sort((a, b) => b.puntos - a.puntos) || [];
+            
+            document.getElementById('tablaJugadores').innerHTML = stats.map((s, index) => {
+                const ins = data.inscripciones?.find(i => i.id === s.id_inscripcion);
+                const jug = data.jugadores?.find(j => j.id === ins?.id_jugador);
+                
+                const medallas = ["🥇", "🥈", "🥉"];
+                const puestoDisplay = index < 3 
+                    ? `<span class="text-xl">${medallas[index]}</span>` 
+                    : `<span class="text-gray-400 font-black text-sm w-8 text-center block">${index + 1}</span>`;
+
+                return `
+                <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td class="py-4 flex items-center gap-4">
+                        <div class="w-8 flex justify-center">${puestoDisplay}</div>
+                        <div class="bg-blue-50 text-blue-500 w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0">👤</div>
+                        <span class="font-bold text-gray-800 truncate">${jug?.nombre || 'Jugador'}</span>
+                    </td>
+                    <td class="text-center font-semibold text-slate-700 bg-gray-50/30">${s.puntos || 0}</td>
+                    <td class="text-center text-gray-600">${s.ataque || 0}</td>
+                    <td class="text-center text-gray-600">${s.bloqueo || 0}</td>
+                    <td class="text-center text-gray-600">${s.saque || 0}</td>
+                    <td class="text-center text-gray-600">${s.defensa || 0}</td>
+                    <td class="text-center text-gray-600">${s.colocacion || 0}</td>
+                </tr>`;
+            }).join('');
+        });
+
+        // Cierre de sesión controlado para proteger la base de datos del LocalStorage
+        function logout() {
+            localStorage.removeItem('isLoggedIn'); 
+            localStorage.removeItem('userToken');
+            window.location.href = "../index.html";
+        }
+    </script>
+</body>
+</html>

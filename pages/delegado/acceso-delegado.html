@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar mi Equipo | VolleyStats</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-gray-200 shadow-xl space-y-6">
+
+        <div class="text-center space-y-1">
+            <h1 class="text-2xl font-black text-[#0D132B]">Volley<span class="text-blue-600">Stats</span></h1>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Crear cuenta de Delegado</p>
+        </div>
+
+        <p class="text-xs text-gray-400 font-medium text-center">
+            Esto solo crea tu cuenta. Una vez que inicies sesión, arma tu equipo desde
+            <b>"Mi Equipo"</b> en el menú.
+        </p>
+
+        <div id="msjError" class="alert alert-error text-xs font-bold hidden py-3 rounded-xl text-red-700 bg-red-50 border border-red-200"></div>
+
+        <form id="formRegistroDelegado" class="space-y-4">
+            <input id="regNombreDelegado" type="text" placeholder="Tu nombre (delegado)" class="input input-bordered w-full bg-white text-sm h-11" required>
+            <input id="regUsuario" type="text" placeholder="Usuario" class="input input-bordered w-full bg-white text-sm h-11" required>
+            <input id="regPassword" type="password" placeholder="Contraseña" class="input input-bordered w-full bg-white text-sm h-11" required>
+
+            <button type="submit" class="btn btn-outline w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 hover:border-blue-600 font-bold rounded-xl h-11 min-h-0">
+                Crear cuenta
+            </button>
+        </form>
+
+        <div class="text-center space-y-2">
+            <p class="text-xs text-gray-400 font-bold">¿Ya tienes cuenta de delegado?</p>
+            <a href="../../index.html" class="text-xs text-blue-600 font-bold hover:underline">Inicia sesión desde la página principal →</a>
+        </div>
+    </div>
+
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/shared/data-bridge.js"></script>
+    <script src="../../js/modules/admin/registrar-actividad.js"></script>
+    <script src="../../js/modules/auth.js"></script>
+    <script>
+        function mostrarError(txt) {
+            const el = document.getElementById('msjError');
+            el.textContent = '❌ ' + txt;
+            el.classList.remove('hidden');
+        }
+
+        document.getElementById('formRegistroDelegado').addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('msjError').classList.add('hidden');
+
+            const resultado = registrarDelegado({
+                usuario: document.getElementById('regUsuario').value,
+                password: document.getElementById('regPassword').value,
+                nombreDelegado: document.getElementById('regNombreDelegado').value
+            });
+
+            if (!resultado.ok) {
+                mostrarError(resultado.mensaje);
+                return;
+            }
+
+            loginDelegado(resultado.usuario.usuario, resultado.usuario.password);
+            // Todavía no tiene equipo: lo manda directo a crearlo.
+            window.location.href = 'mi-equipo.html';
+        });
+    </script>
+</body>
+</html>

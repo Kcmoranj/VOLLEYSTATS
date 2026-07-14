@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | VolleyStats Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+    </style>
+</head>
+<body class="bg-[#F3F4F6] flex h-screen font-sans">
+
+    <!-- Sidebar -->
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+        <div class="flex-1">
+            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            <nav class="flex flex-col gap-2 px-4">
+                <a href="dashboard.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📊 Dashboard</a>
+                <a href="partidos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
+                <a href="jugadores-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+                <a href="equipos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
+                <a href="liga-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="actividades-recientes.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
+                <a href="solicitudes-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <h1 class="text-2xl font-black text-gray-900 mb-8 uppercase">Panel de Control</h1>
+
+        <!-- Widgets -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+            <div class="card-admin">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Equipos Inscritos</span>
+                <p id="stat-equipos" class="text-2xl font-black mt-2 text-blue-600">0</p>
+            </div>
+            <div class="card-admin">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Partidos Jugados</span>
+                <p id="stat-jugados" class="text-2xl font-black mt-2 text-green-600">0</p>
+            </div>
+            <div class="card-admin">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Partidos Pendientes</span>
+                <p id="stat-pendientes" class="text-2xl font-black mt-2 text-orange-600">0</p>
+            </div>
+            <div class="card-admin">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Jugadores Reg.</span>
+                <p id="stat-jugadores" class="text-2xl font-black mt-2 text-purple-600">0</p>
+            </div>
+            <div class="card-admin">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Canchas Activas</span>
+                <p id="stat-canchas" class="text-2xl font-black mt-2 text-gray-900">2</p>
+            </div>
+        </div>
+
+        <!-- Próximo Partido -->
+        <div class="card-admin">
+            <span class="text-[10px] font-bold text-blue-600 uppercase">Próximo Partido</span>
+            <div id="proximo-partido" class="mt-2 text-lg font-bold text-gray-800">Cargando...</div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/modules/admin/dashboard.js"></script>
+</body>
+</html>

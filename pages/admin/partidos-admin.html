@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partidos | VolleyStats Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F3F4F6] min-h-screen flex text-gray-800">
+
+    <!-- Sidebar Navegación -->
+    <aside class="flex flex-col h-screen w-64 bg-white border-r border-gray-200 sticky top-0 shrink-0">
+        <div class="flex-1">
+            <span class="brand-title p-6 block text-2xl font-black">Volley<span class="brand-highlight text-blue-600">Stats</span></span>
+            <nav class="flex flex-col gap-2 px-4">
+                <a href="dashboard.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
+                <a href="partidos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-bold bg-blue-50 text-blue-600">📅 Partidos</a>
+                <a href="jugadores-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+                <a href="equipos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
+                <a href="liga-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="actividades-recientes.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
+                <a href="solicitudes-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <button onclick="window.logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left transition-colors duration-150">
+                ➡️ Cerrar sesión
+            </button>
+        </div>
+
+        <script>
+            window.logout = function() {
+                localStorage.removeItem('isLoggedIn'); 
+                localStorage.removeItem('userToken');
+                window.location.href = "../../index.html";
+            };
+        </script>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0">
+
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center shrink-0">
+            <div>
+                <h1 class="text-lg font-black text-gray-900">Partidos</h1>
+                <p class="text-xs text-gray-400 font-medium">Gestiona todos los partidos del torneo</p>
+            </div>
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 px-3 py-2 rounded-xl transition-colors">
+                <div class="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-xs">AD</div>
+                <span class="text-sm font-bold text-gray-700">Administrador</span>
+                <span class="text-gray-400 text-xs">▾</span>
+            </div>
+        </header>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 px-4 lg:px-8 py-8 overflow-y-auto flex gap-6">
+
+            <div class="flex-1 min-w-0">
+                <!-- Grid de Métricas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl shrink-0">📅</div>
+                        <div>
+                            <span id="cardTotalPartidos" class="block text-2xl font-black text-gray-900 leading-none">0</span>
+                            <span class="block text-xs font-bold text-gray-500 mt-1">Total Partidos</span>
+                            <span class="block text-[10px] text-gray-400">Todos los partidos</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shrink-0">🕐</div>
+                        <div>
+                            <span id="cardHoy" class="block text-2xl font-black text-gray-900 leading-none">0</span>
+                            <span class="block text-xs font-bold text-gray-500 mt-1">Hoy</span>
+                            <span class="block text-[10px] text-gray-400">Partidos para hoy</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-orange-100 text-orange-500 flex items-center justify-center text-xl shrink-0">⏳</div>
+                        <div>
+                            <span id="cardPendientes" class="block text-2xl font-black text-gray-900 leading-none">0</span>
+                            <span class="block text-xs font-bold text-gray-500 mt-1">Pendientes</span>
+                            <span class="block text-[10px] text-gray-400">Por jugar</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-xl shrink-0">✅</div>
+                        <div>
+                            <span id="cardFinalizados" class="block text-2xl font-black text-gray-900 leading-none">0</span>
+                            <span class="block text-xs font-bold text-gray-500 mt-1">Finalizados</span>
+                            <span class="block text-[10px] text-gray-400">Completados</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-900 uppercase">Partidos Agendados</h2>
+                        <p class="text-xs text-gray-500 mt-1 font-medium">Listado general de encuentros del torneo</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline text-blue-600 hover:bg-blue-50 hover:border-blue-600">Ver todos</button>
+                </div>
+
+                <!-- Tabla de Contenido -->
+                <!-- NOTA: sin overflow-hidden a propósito: con overflow-hidden el menú
+                     Editar/Eliminar de las últimas filas quedaba recortado por el borde
+                     del contenedor. Las esquinas siguen redondeadas (rounded-2xl) aunque
+                     ya no se recorte el contenido que se sale (el dropdown). -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
+                    <table class="w-full table-fixed text-sm text-left whitespace-nowrap">
+                        <thead class="text-xs text-gray-400 uppercase bg-gray-50 border-b border-gray-100 font-bold tracking-wider">
+                            <tr>
+                                <th class="py-4 pl-6 pr-3 w-28">Fecha</th>
+                                <th class="py-4 px-3 w-20">Hora</th>
+                                <th class="py-4 px-3">Local</th>
+                                <th class="py-4 px-1 text-center w-10">VS</th>
+                                <th class="py-4 px-3 text-center">Visitante</th>
+                                <th class="py-4 px-3 text-center">Cat / Rama</th> 
+                                <th class="py-4 px-3 text-center w-28">Cancha</th>
+                                <th class="py-4 pl-3 pr-6 text-center w-36">Estado</th> 
+                                <th class="py-4 pl-3 pr-6 text-center">Acción</th> 
+                            </tr>
+                        </thead>
+                        <tbody id="listaPartidos" class="divide-y divide-gray-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Panel de Programación Lateral -->
+            <aside class="w-96 bg-white border-l border-gray-200 p-8 shadow-sm overflow-y-auto shrink-0 flex flex-col justify-between rounded-2xl">
+                <div>
+                    <h2 class="text-lg font-black uppercase text-gray-900 mb-6">Programar Partido</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría / Torneo</label>
+                            <select id="selectCategoria" class="select select-bordered w-full font-bold text-xs">
+                                <option disabled selected>Seleccione una categoría</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Rama</label>
+                            <select id="selectRama" class="select select-bordered w-full font-bold text-xs" disabled>
+                                <option disabled selected>Seleccione una rama</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Local</label>
+                                <select id="selectLocal" class="select select-bordered w-full font-bold text-xs" disabled>
+                                    <option disabled selected>Seleccione Local</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Visitante</label>
+                                <select id="selectVisitante" class="select select-bordered w-full font-bold text-xs" disabled>
+                                    <option disabled selected>Seleccione Visitante</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Fecha</label>
+                                <input type="date" id="inputFecha" class="input input-bordered w-full font-bold text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hora</label>
+                                <input type="time" id="inputHora" class="input input-bordered w-full font-bold text-xs">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cancha</label>
+                            <select id="inputCancha" class="select select-bordered w-full font-bold text-xs">
+                                <option value="Cancha 1">Cancha 1</option>
+                                <option value="Cancha 2">Cancha 2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-gray-100 mt-6">
+                    <button id="btnGuardar" class="btn btn-primary w-full bg-blue-600 hover:bg-blue-700 border-none text-white uppercase tracking-wider font-bold text-xs">
+                        Registrar Partido
+                    </button>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+    <!-- Módulos de Scripts -->
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/modules/admin/registrar-actividad.js"></script>
+    <script src="../../js/modules/admin/partidos-admin.js"></script>
+</body>
+</html>

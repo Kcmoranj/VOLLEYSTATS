@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Equipos | VolleyStats Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>.card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; padding: 1.5rem; }</style>
+</head>
+<body class="bg-[#F3F4F6] flex h-screen font-sans">
+
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+
+        <div class="flex-1">
+            <span class="brand-title p-6 block text-2xl font-black">Volley<span class="brand-highlight text-blue-600">Stats</span></span>
+            <nav class="flex flex-col gap-2 px-4">
+                <a href="dashboard.html"  class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
+                <a href="partidos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
+                <a href="jugadores-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+                <a href="equipos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 active bg-blue-50 text-blue-600">🛡️ Equipos</a>
+                <a href="liga-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="actividades-recientes.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
+                <a href="solicitudes-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">
+                ➡️ Cerrar sesión
+            </button>
+        </div>
+    </aside>
+
+   <main class="flex-1 p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-black uppercase">Gestión de Equipos</h1>
+            <a href="solicitudes-admin.html" class="btn btn-primary font-bold shadow-md shadow-blue-200">
+                📥 Ver solicitudes pendientes
+            </a>
+        </div>
+        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">
+            Los equipos ahora los crea cada delegado desde su portal. Aquí puedes revisarlos, ver su plantel
+            y aprobarlos (o eliminarlos si corresponde).
+        </p>
+
+        <div id="listaEquipos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </main>
+
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/shared/data-bridge.js"></script>
+    <script>
+        // Fallback defensivo: si por alguna razón js/shared/data-bridge.js no llegó a
+        // cargar (ruta distinta en tu proyecto, 404, etc.), esto evita que la página
+        // se rompa entera y te deje sin ver los equipos. Revisa la consola del
+        // navegador (F12) si ves el aviso de abajo: significa que falta ese archivo.
+        if (typeof window.migrarModeloDelegados !== 'function') {
+            console.warn('⚠️ js/shared/data-bridge.js no se cargó: revisa la ruta del <script>. Usando fallback interno.');
+            window.migrarModeloDelegados = function (data) {
+                if (!data.usuariosDelegados) data.usuariosDelegados = [];
+                if (!data.convocatorias) data.convocatorias = [];
+                if (!data.r5) data.r5 = [];
+                (data.jugadores || []).forEach(j => { if (!j.estado) j.estado = 'APROBADO'; });
+                return data;
+            };
+        }
+
+        const initData = () => {
+            const savedData = localStorage.getItem('volleyData');
+            const base = savedData ? JSON.parse(savedData) : window.VolleyAppData;
+            window.VolleyAppData = window.migrarModeloDelegados(base);
+        };
+
+        const saveToStorage = () => {
+            localStorage.setItem('volleyData', JSON.stringify(window.VolleyAppData));
+        };
+
+        const renderEquipos = () => {
+            const data = window.VolleyAppData;
+            const container = document.getElementById('listaEquipos');
+            if (!container) return;
+
+            container.innerHTML = data.equipos.map(eq => {
+                const participaciones = data.participaciones.filter(p => p.id_equipo === eq.id);
+                const estaAprobado = participaciones.length > 0 && participaciones.every(p => p.aprobado === true);
+                const hayPendientes = participaciones.some(p => !p.aprobado);
+                const delegado = (data.usuariosDelegados || []).find(u => u.id_equipo === eq.id);
+
+                return `
+                    <div class="card-admin block no-underline transition-all hover:shadow-lg hover:border-blue-400 relative group">
+                        <a href="detalle-equipo.html?id=${eq.id}" class="block">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="font-black text-lg text-gray-900 uppercase">${eq.nombre}</span>
+                                <span class="badge ${estaAprobado ? 'badge-success' : (hayPendientes ? 'badge-warning' : 'badge-error')} text-white font-bold text-[10px] uppercase">
+                                    ${estaAprobado ? 'Aprobado' : (hayPendientes ? 'Pendiente' : 'Sin categorías')}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-400 font-bold">${participaciones.length} Categorías registradas</p>
+                            <p class="text-[10px] font-bold uppercase tracking-wide mt-2 ${delegado ? 'text-blue-600' : 'text-red-400'}">
+                                ${delegado ? `👤 Delegado: ${delegado.nombreDelegado} (usuario: ${delegado.usuario})` : '⚠️ Sin delegado asignado'}
+                            </p>
+                        </a>
+                        <button onclick="window.eliminarEquipo(${eq.id})"
+                                class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-black p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            ✕
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.eliminarEquipo = (idEquipo) => {
+            if (event) { event.preventDefault(); event.stopPropagation(); }
+            if (!confirm("¿Seguro que deseas eliminar este equipo y toda su información asociada?")) return;
+
+            const data = window.VolleyAppData;
+            const idsParticipaciones = data.participaciones.filter(p => p.id_equipo === idEquipo).map(p => p.id);
+
+            data.inscripciones = data.inscripciones.filter(i => !idsParticipaciones.includes(i.id_participacion));
+            data.convocatorias = (data.convocatorias || []).filter(c => !idsParticipaciones.includes(c.id_participacion));
+            data.r5 = (data.r5 || []).filter(r => !idsParticipaciones.includes(r.id_participacion));
+            data.participaciones = data.participaciones.filter(p => p.id_equipo !== idEquipo);
+            data.equipos = data.equipos.filter(e => e.id !== idEquipo);
+            data.usuariosDelegados = (data.usuariosDelegados || []).filter(u => u.id_equipo !== idEquipo);
+
+            saveToStorage();
+            renderEquipos();
+        };
+
+        initData();
+        renderEquipos();
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "../../index.html";
+        }
+    </script>
+</body>
+</html>

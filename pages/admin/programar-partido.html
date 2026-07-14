@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Programar Partido | VolleyStats</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/data-manager.js"></script>
+</head>
+<body class="bg-[#F3F4F6] min-h-screen p-8">
+    <main class="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <a href="dashboard.html" class="text-blue-600 font-bold mb-6 block">← Volver al Dashboard</a>
+        <h1 class="text-2xl font-black mb-8">Programar Nuevo Partido</h1>
+        
+        <div class="space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <select id="selectLocal" class="select select-bordered w-full">
+                    <option disabled selected>Equipo Local</option>
+                </select>
+                <select id="selectVisitante" class="select select-bordered w-full">
+                    <option disabled selected>Equipo Visitante</option>
+                </select>
+            </div>
+            <input type="date" id="inputFecha" class="input input-bordered w-full">
+            <input type="time" id="inputHora" class="input input-bordered w-full">
+            <select id="inputCancha" class="select select-bordered w-full">
+                <option value="Cancha 1">Cancha 1</option>
+                <option value="Cancha 2">Cancha 2</option>
+            </select>
+            
+            <button id="btnGuardar" class="btn btn-primary w-full">Guardar Partido</button>
+        </div>
+    </main>
+
+   <script>
+    // 1. Inicialización: Aseguramos que los datos estén cargados al abrir
+    const appData = window.DataManager.getAppData();
+    
+    // 2. Registro del evento
+    document.addEventListener('DOMContentLoaded', () => {
+        // FIX: el botón llamaba a `guardarPartido()`, una función que nunca
+        // se definió en este archivo (solo existía `manejarGuardado()`).
+        // Eso hacía que el botón "Guardar Partido" no guardara nada y tirara
+        // un ReferenceError en consola. Ahora sí llama a la función correcta.
+        const btn = document.getElementById('btnGuardar');
+        if (btn) {
+            btn.onclick = () => {
+                manejarGuardado();
+            };
+        }
+
+        // Llenado de selects
+        const selLocal = document.getElementById('selectLocal');
+        const selVisit = document.getElementById('selectVisitante');
+        appData.equipos.forEach(e => {
+            selLocal.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+            selVisit.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+        });
+    });
+
+    // 3. Función lógica de guardado
+    function manejarGuardado() {
+        // Obtener datos frescos del manager (vital para persistencia)
+        let data = window.DataManager.getAppData();
+
+        const idLocal = parseInt(document.getElementById('selectLocal').value);
+        const idVisitante = parseInt(document.getElementById('selectVisitante').value);
+        const fecha = document.getElementById('inputFecha').value;
+
+        if (isNaN(idLocal) || isNaN(idVisitante)) {
+            alert('Por favor selecciona ambos equipos.');
+            return;
+        }
+        if (idLocal === idVisitante) {
+            alert('Los equipos no pueden ser iguales.');
+            return;
+        }
+        if (!fecha) {
+            alert('Por favor selecciona una fecha para el partido.');
+            return;
+        }
+
+        const nuevoPartido = {
+            id: Date.now(),
+            id_local_participacion: idLocal,
+            id_visitante_participacion: idVisitante,
+            fecha: fecha,
+            hora: document.getElementById('inputHora').value,
+            ubicacion: document.getElementById('inputCancha').value,
+            estado: 'PROGRAMADO',
+            sets: []
+        };
+
+        // Persistir cambios
+        data.partidos.push(nuevoPartido);
+        window.DataManager.save(data);
+
+        alert("Partido registrado con éxito");
+        window.location.href = "partidos-admin.html";
+    }
+</script>
+</body>
+</html>

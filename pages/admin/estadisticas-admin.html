@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Estadísticas | VolleyStats Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .input-stat {
+            width: 2.5rem; height: 1.75rem; text-align: center; font-weight: 800; font-size: 0.75rem;
+            background-color: #F3F4F6; border: 1px solid transparent; border-radius: 0.375rem; outline: none;
+        }
+        .input-stat:focus { background-color: #FFFFFF; border-color: #2563EB; }
+        .input-set {
+            width: 3rem; text-align: center; font-weight: 800; font-size: 1.5rem;
+            background-color: transparent; border: none; border-bottom: 2px solid transparent;
+            outline: none; -moz-appearance: textfield;
+        }
+        .input-set::-webkit-outer-spin-button, .input-set::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .input-set:focus { border-bottom-color: #2563EB; }
+    </style>
+</head>
+<body class="bg-[#F3F4F6] min-h-screen flex text-gray-800 font-sans">
+
+    <!-- Sidebar Navegación -->
+    <aside class="flex flex-col h-screen w-64 bg-white border-r border-gray-200 sticky top-0 shrink-0">
+        <div class="flex-1">
+            <span class="brand-title p-6 block text-2xl font-black tracking-wider">
+                Volley<span class="brand-highlight text-blue-600">Stats</span>
+            </span>
+            <nav class="flex flex-col gap-1.5 px-4 mt-2">
+                <a href="dashboard.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-50 text-gray-600">📊 Dashboard</a>
+                <a href="partidos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-bold bg-blue-50 text-blue-600">📅 Partidos</a>
+                <a href="jugadores-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-50 text-gray-600">👤 Jugadores</a>
+                <a href="equipos-admin.html"  class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-50 text-gray-600">🛡️ Equipos</a>
+                <a href="liga-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-50 text-gray-600">🏆 Liga</a>
+                <a href="actividades-recientes.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-50 text-gray-600">📝 Actividades</a>
+                <a href="solicitudes-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-50 text-gray-600">📥 Solicitudes</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <button onclick="window.logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left transition-colors duration-150" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+        </div>
+        <script>
+            window.logout = function() {
+                localStorage.removeItem('isLoggedIn'); 
+                localStorage.removeItem('userToken');
+                window.location.href = "../index.html";
+            };
+        </script>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <main class="w-full p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+
+            <!-- Encabezado de la página -->
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <div>
+                    <a href="partidos-admin.html" class="text-sm font-black text-blue-600 hover:underline flex items-center gap-1.5 mb-1">
+                        <span>←</span> Volver a Partidos
+                    </a>
+                    <h1 id="txtTituloEnfrentamiento" class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">CARGANDO PARTIDO...</h1>
+                    <p id="txtSubtituloTorneo" class="text-sm text-gray-400 font-medium mt-0.5">-</p>
+                </div>
+                <div id="contenedorPillHeader" class="flex items-center gap-3 bg-white px-5 py-3 rounded-xl border border-gray-100 shadow-xs text-sm font-bold text-gray-500">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- Grid de Secciones -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Columna de las Tablas y Marcador (Ocupa 2 de 3 columnas) -->
+                <div class="lg:col-span-2 space-y-8">
+                    
+                    <!-- Marcador y Sets -->
+                    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-xs">
+                        <div class="flex justify-around items-center px-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black text-xl shadow-md">🛡️</div>
+                                <div>
+                                    <h3 id="marcadorNombreLocal" class="font-black text-2xl leading-none text-gray-900">-</h3>
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Local</span>
+                                </div>
+                            </div>
+                            <div class="text-3xl font-black text-gray-800 flex items-center gap-3">
+                                <span id="marcadorSetsLocal" class="text-purple-600">0</span>
+                                <span class="text-gray-200 text-xl font-normal">VS</span>
+                                <span id="marcadorSetsVisit" class="text-blue-600">0</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div>
+                                    <h3 id="marcadorNombreVisit" class="font-black text-2xl leading-none text-gray-900 text-right">-</h3>
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block text-right">Visitante</span>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-md">🛡️</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto mt-8">
+                            <div class="border border-gray-100 rounded-xl p-3 text-center shadow-2xs bg-gray-50/50">
+                                <span class="text-[9px] font-black text-gray-400 block mb-1 uppercase tracking-widest">Set 1</span>
+                                <div class="flex justify-center items-center gap-2 font-black text-2xl text-gray-800">
+                                    <input id="s1Local" type="number" min="0" class="input-set text-purple-600" value="0"> <span class="text-gray-300">:</span> <input id="s1Visit" type="number" min="0" class="input-set" value="0">
+                                </div>
+                            </div>
+                            <div class="border border-gray-100 rounded-xl p-3 text-center shadow-2xs bg-gray-50/50">
+                                <span class="text-[9px] font-black text-gray-400 block mb-1 uppercase tracking-widest">Set 2</span>
+                                <div class="flex justify-center items-center gap-2 font-black text-2xl text-gray-800">
+                                    <input id="s2Local" type="number" min="0" class="input-set text-purple-600" value="0"> <span class="text-gray-300">:</span> <input id="s2Visit" type="number" min="0" class="input-set" value="0">
+                                </div>
+                            </div>
+                            <div class="border border-purple-200 rounded-xl p-3 text-center shadow-2xs bg-purple-50/20">
+                                <span class="text-[9px] font-black text-purple-600 block mb-1 uppercase tracking-widest">Set 3</span>
+                                <div class="flex justify-center items-center gap-2 font-black text-2xl text-gray-800">
+                                    <input id="s3Local" type="number" min="0" class="input-set text-purple-600" value="0"> <span class="text-gray-300">:</span> <input id="s3Visit" type="number" min="0" class="input-set" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-center text-[10px] text-gray-400 font-semibold mt-3">Los sets se guardan junto con las estadísticas al presionar "Guardar Estadísticas"</p>
+                    </div>
+
+                    <!-- Selector Segmentado de Equipos -->
+                    <div class="bg-white rounded-xl border border-gray-100 p-1 shadow-xs flex gap-1">
+                        <button id="tabEquipoLocal" onclick="cambiarFiltroEquipo('local')" class="flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all duration-200 bg-purple-600 text-white shadow-xs">
+                            🛡️ <span id="lblTabLocalName">Local</span>
+                        </button>
+                        <button id="tabEquipoVisit" onclick="cambiarFiltroEquipo('visitante')" class="flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all duration-200 text-gray-400 hover:text-gray-700 hover:bg-gray-50">
+                            🛡️ <span id="lblTabVisitName">Visitante</span>
+                        </button>
+                    </div>
+
+                    <!-- Única Tabla Dinámica de Estadísticas -->
+                    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-xs overflow-hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 id="lblTablaActiva" class="font-bold text-base text-gray-900">-</h3>
+                                <p id="lblRolTablaActive" class="text-xs text-gray-400 mt-0.5">Plantilla del Partido</p>
+                            </div>
+                            <button id="btnAgregarJugadorDinamico" class="btn btn-sm bg-blue-600 hover:bg-blue-700 border-none text-white text-xs font-bold">
+                                + Agregar Jugador
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left whitespace-nowrap">
+                                <thead class="text-[10px] text-gray-400 uppercase border-b border-gray-100 font-bold">
+                                    <tr>
+                                        <th class="pb-3 px-2">#</th>
+                                        <th class="pb-3 px-2 min-w-[140px]">Jugador</th>
+                                        <th class="pb-3 px-2 text-center">Pts</th>
+                                        <th class="pb-3 px-1 text-center">Saq</th>
+                                        <th class="pb-3 px-1 text-center">Atq</th>
+                                        <th class="pb-3 px-1 text-center">Blq</th>
+                                        <th class="pb-3 px-1 text-center">Def</th>
+                                        <th class="pb-3 px-1 text-center">Col</th>
+                                        <th class="pb-3 px-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyDinamico" class="divide-y divide-gray-100 font-medium">
+                                    <!-- Rellenado dinámicamente desde JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Lateral Informativo y Control (Ocupa 1 de 3 columnas) -->
+                <aside class="lg:col-span-1 space-y-6">
+                    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-xs space-y-4">
+                        <h4 class="font-bold text-xs uppercase text-gray-400 tracking-wider">Información del Partido</h4>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex items-start gap-3">
+                                <span class="text-base">🏟️</span>
+                                <div>
+                                    <span class="text-[10px] text-gray-400 font-bold block uppercase">Cancha</span>
+                                    <span id="asideCancha" class="font-bold text-gray-800">-</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-base">🏆</span>
+                                <div>
+                                    <span class="text-[10px] text-gray-400 font-bold block uppercase">Categoría</span>
+                                    <span id="asideCategoria" class="font-bold text-gray-800">-</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-base">📋</span>
+                                <div>
+                                    <span class="text-[10px] text-gray-400 font-bold block uppercase">Rama</span>
+                                    <span id="asideRama" class="font-bold text-gray-800">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-xs space-y-3">
+                        <h4 class="font-bold text-xs uppercase text-gray-400 tracking-wider mb-3">Control de Partido</h4>
+                        <div class="flex gap-2">
+                            <button id="btnRetrocederEstado" title="Regresar al estado anterior" class="btn btn-square btn-outline border-gray-200 text-gray-400 hover:bg-gray-100 hover:text-gray-600 hidden">
+                                ↩️
+                            </button>
+                            <button id="btnCambiarEstado" class="btn flex-1 border-none text-white font-bold text-xs tracking-wider uppercase">
+                                ▶️ Iniciar Partido
+                            </button>
+                        </div>
+                        <button class="btn w-full bg-blue-600 hover:bg-blue-700 border-none text-white font-bold text-xs tracking-wider uppercase mt-4" onclick="guardarEstadisticas()">
+                            💾 Guardar Estadísticas
+                        </button>
+                    </div>
+                </aside>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Agregar Jugador -->
+    <dialog id="modalAgregarJugador" class="modal">
+        <div class="modal-box rounded-2xl">
+            <h3 class="font-black text-lg text-gray-900 mb-1">Agregar Jugador al Partido</h3>
+            <p id="modalEquipoNombre" class="text-xs text-gray-400 font-medium mb-4">-</p>
+            <div class="space-y-3">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Jugador disponible</label>
+                <select id="selectJugadorDisponible" class="select select-bordered w-full text-sm font-semibold">
+                    <option value="">-- Selecciona un jugador --</option>
+                </select>
+                <p id="msjSinJugadores" class="text-xs text-red-500 font-semibold hidden">No hay más jugadores disponibles en este equipo para agregar.</p>
+            </div>
+            <div class="modal-action">
+                <button id="btnCancelarModal" class="btn btn-ghost text-xs font-bold">Cancelar</button>
+                <button id="btnConfirmarAgregar" class="btn bg-blue-600 hover:bg-blue-700 border-none text-white text-xs font-bold">Agregar</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>cerrar</button>
+        </form>
+    </dialog>
+
+    <!-- Modal: Confirmar Retroceso Estado -->
+    <dialog id="modalConfirmarRetroceso" class="modal">
+        <div class="modal-box rounded-2xl max-w-sm">
+            <h3 class="font-black text-lg text-gray-900 mb-1">⚠️ Regresar Estado</h3>
+            <p id="msjConfirmarRetroceso" class="text-xs text-gray-500 font-medium mb-4">¿Seguro que quieres regresar el estado del partido? Esto es útil si hubo un error al avanzar.</p>
+            <div class="modal-action">
+                <button id="btnCancelarRetroceso" class="btn btn-ghost text-xs font-bold">Cancelar</button>
+                <button id="btnAceptarRetroceso" class="btn bg-amber-500 hover:bg-amber-600 border-none text-white text-xs font-bold">Sí, regresar</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>cerrar</button>
+        </form>
+    </dialog>
+
+    <!-- Modal: Eliminar Jugador del Partido -->
+    <dialog id="modalConfirmarEliminar" class="modal">
+        <div class="modal-box rounded-2xl max-w-sm">
+            <h3 class="font-black text-lg text-gray-900 mb-1">🗑️ Eliminar Jugador</h3>
+            <p id="msjConfirmarEliminar" class="text-xs text-gray-500 font-medium mb-4">¿Seguro que quieres eliminar a este jugador del partido? Se borrarán sus estadísticas registradas.</p>
+            <div class="modal-action">
+                <button id="btnCancelarEliminar" class="btn btn-ghost text-xs font-bold">Cancelar</button>
+                <button id="btnConfirmarEliminar" class="btn bg-red-600 hover:bg-red-700 border-none text-white text-xs font-bold">Sí, eliminar</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>cerrar</button>
+        </form>
+    </dialog>
+
+    <!-- Scripts de Configuración y Módulos -->
+    <script src="../../js/mock-data.js"></script> 
+    <script src="../../js/modules/admin/registrar-actividad.js"></script>
+    <script src="../../js/modules/admin/estadisticas-admin.js"></script>
+</body>
+</html>

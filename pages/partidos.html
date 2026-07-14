@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolleyStats - Partidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/style.css"> 
+</head>
+<body class="flex flex-col md:flex-row min-h-screen bg-gray-100">
+
+<!-- Sidebar -->
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+        <div class="flex-1">
+            <span class="p-6 block text-3xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            <nav class="flex flex-col gap-2 px-4">
+                <p class="text-[10px] font-bold text-gray-400 px-3 uppercase tracking-wider mb-2">
+                Navegación
+            </p>
+                <a href="partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📅 Partidos</a>
+                <a href="liga.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="jugadores.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+               <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Estadísticas</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+        </div>
+    </aside>
+
+<main class="flex-1 p-8 space-y-6 overflow-y-auto">
+    <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Buscar</label>
+            <input type="text" placeholder="Equipo..." class="input w-full mt-1 border-gray-200">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Fecha</label>
+            <select class="select w-full mt-1 border-gray-200"><option>Todas</option></select>
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Categoría</label>
+            <select class="select w-full mt-1 border-gray-200"><option>Todas</option></select>
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Equipo</label>
+            <select class="select w-full mt-1 border-gray-200"><option>Todos</option></select>
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Grupo</label>
+            <select class="select w-full mt-1 border-gray-200"><option>Todos</option></select>
+        </div>
+    </section>
+
+    <div id="listaPartidos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+</main>
+
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/modules/partidos.js"></script>
+    <script>
+        function logout() { localStorage.clear(); window.location.href = "../index.html"; }
+    </script>
+</body>
+</html>

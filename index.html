@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolleyStats - Autenticación</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        corePlugins: { preflight: true }
+      }
+    </script>
+    <!-- Este archivo es opcional para esta página: si no carga (ruta distinta,
+         404, etc.) el login de admin sigue funcionando igual; solo el login de
+         delegado necesita que exista para conocer los equipos precargados. -->
+    <script src="js/mock-data.js" onerror="console.warn('⚠️ No se encontró js/mock-data.js. El login de admin funciona igual; el de delegado solo verá cuentas ya guardadas en este navegador.')"></script>
+</head>
+<body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-gray-200 shadow-xl space-y-6">
+        
+        <div class="text-center space-y-2">
+            <h1 class="text-3xl font-black text-[#0D132B] tracking-wider">
+                Volley<span class="text-blue-600">Stats</span>
+            </h1>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                Gestión y Control de Torneos
+            </p>
+        </div>
+
+        <div id="alertaError" class="alert alert-error text-xs font-bold hidden py-3 rounded-xl text-red-700 bg-red-50 border border-red-200">
+            <span>❌ Usuario o contraseña incorrectos.</span>
+        </div>
+
+        <!-- onsubmit="return false" como red de seguridad: aunque el script de abajo
+             fallara por cualquier motivo, el formulario NUNCA se recarga a sí mismo
+             (eso era lo que disparaba el error de seguridad en file://). -->
+        <form id="formLogin" class="space-y-4" onsubmit="return false;">
+            <div>
+                <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">Usuario</label>
+                <input id="inputUsuario" type="text" placeholder="Ej: admin" class="input input-bordered w-full bg-white text-sm h-11 focus:outline-blue-600" required />
+            </div>
+            
+            <div>
+                <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">Contraseña</label>
+                <input id="inputPassword" type="password" placeholder="••••••••" class="input input-bordered w-full bg-white text-sm h-11 focus:outline-blue-600" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full bg-blue-600 hover:bg-blue-700 border-none text-white font-bold rounded-xl h-11 min-h-0 normal-case shadow-md shadow-blue-200">
+                Ingresar
+            </button>
+        </form>
+
+        <p class="text-[11px] text-gray-400 font-medium text-center -mt-2">
+            El mismo formulario de arriba sirve tanto para el <b>admin</b> como para los
+            <b>delegados de equipo</b> ya registrados. Ingresa tu usuario y contraseña.
+        </p>
+
+        <div class="divider text-[10px] font-bold text-gray-400 uppercase tracking-wider">O también</div>
+
+        <div class="text-center space-y-3">
+            <a href="pages/delegado/acceso-delegado.html" class="btn btn-outline w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 font-bold rounded-xl h-11 min-h-0 normal-case tracking-wide">
+                📝 Registrar mi equipo
+            </a>
+            <a href="pages/partidos.html" class="btn btn-outline border-2 border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 w-full font-bold rounded-xl h-11 min-h-0 normal-case tracking-wide">
+                📢 Entrar como Invitado
+            </a>
+            <p class="text-[11px] text-gray-400 font-medium mt-3">
+                Ver calendarios, estadísticas y resultados públicos. No necesitas usuario ni contraseña.
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        function mostrarErrorLogin() {
+            document.getElementById('alertaError').classList.remove('hidden');
+        }
+
+        function ocultarErrorLogin() {
+            document.getElementById('alertaError').classList.add('hidden');
+        }
+
+        // Busca un delegado con ese usuario/contraseña.
+        // FIX: antes, si ya existía localStorage['volleyData'] (de cualquier
+        // sesión/prueba anterior), esta función usaba SOLO esos datos guardados
+        // y nunca volvía a mirar mock-data.js. Por eso un delegado agregado en
+        // mock-data.js (ej. "delegado_lopse") podía no encontrarse: el
+        // navegador ya tenía su propia copia vieja de 'volleyData' que no lo
+        // incluía. Ahora se revisan AMBAS fuentes: primero lo que el usuario
+        // ya tiene guardado en este navegador, y si no aparece ahí, se
+        // revisan los delegados precargados de mock-data.js.
+        function buscarDelegado(usuario, password) {
+            let dataLocal = null;
+            try {
+                const raw = localStorage.getItem('volleyData');
+                dataLocal = raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                dataLocal = null;
+            }
+
+            const listaLocal = (dataLocal && Array.isArray(dataLocal.usuariosDelegados))
+                ? dataLocal.usuariosDelegados : [];
+            const listaMock = (window.VolleyAppData && Array.isArray(window.VolleyAppData.usuariosDelegados))
+                ? window.VolleyAppData.usuariosDelegados : [];
+
+            const encontradoLocal = listaLocal.find(u => u.usuario === usuario && u.password === password);
+            if (encontradoLocal) return encontradoLocal;
+
+            const encontradoMock = listaMock.find(u => u.usuario === usuario && u.password === password);
+            if (encontradoMock) return encontradoMock;
+
+            return null;
+        }
+
+        document.getElementById('formLogin').addEventListener('submit', (e) => {
+            e.preventDefault();
+            ocultarErrorLogin();
+
+            const usuario = document.getElementById('inputUsuario').value.trim();
+            const password = document.getElementById('inputPassword').value.trim();
+
+            // 1. ¿Es el admin?
+            if (usuario === "admin" && password === "1234") {
+                localStorage.setItem("session_admin", "true");
+                window.location.href = "pages/admin/dashboard.html";
+                return;
+            }
+
+            // 2. ¿Es un delegado ya registrado?
+            const delegado = buscarDelegado(usuario, password);
+            if (delegado) {
+                localStorage.setItem('session_delegado_id', delegado.id);
+                localStorage.setItem('session_equipo_id', delegado.id_equipo ?? '');
+                window.location.href = "pages/delegado/dashboard-delegado.html";
+                return;
+            }
+
+            // 3. Ninguno coincide
+            mostrarErrorLogin();
+        });
+    </script>
+</body>
+</html>

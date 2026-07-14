@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolleyStats - Tabla de Posiciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { corePlugins: { preflight: true } }
+    </script>
+</head>
+<body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex flex-col md:flex-row">
+
+<!-- Sidebar -->
+<aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+    <div class="flex-1">
+        <span class="p-6 block text-3xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+        <nav class="flex flex-col gap-2 px-4">
+            <p class="text-[10px] font-bold text-gray-400 px-3 uppercase tracking-wider mb-2">Navegación</p>
+            <a href="partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
+            <a href="liga.html"     class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">🏆 Liga</a>
+            <a href="jugadores.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+            <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Estadísticas</a>
+        </nav>
+    </div>
+    <div class="p-4 border-t">
+        <a href="../index.html" style="color:#4b5563 !important" class="font-bold hover:bg-gray-100 p-3 rounded-lg w-full text-left block no-underline">&larr; Volver al inicio</a>
+    </div>
+</aside>
+
+<main class="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto">
+
+    <div>
+        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Tabla de Posiciones</h2>
+        <p class="text-xs text-gray-400 font-semibold mt-1 uppercase tracking-wider">Solo partidos finalizados</p>
+    </div>
+
+    <!-- Filtro -->
+    <section class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <div class="relative border border-gray-200 rounded-xl px-3 py-1.5 focus-within:border-blue-600 transition-all">
+            <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider block absolute -top-2 left-3 bg-white px-1">
+                Categoría · Rama
+            </span>
+            <select id="selectCategoriaPosiciones"
+                    class="w-full bg-white text-sm font-bold text-gray-800 outline-none pt-1 cursor-pointer appearance-none">
+            </select>
+            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 text-xs">▼</div>
+        </div>
+    </section>
+
+    <!-- Tablas por grupo -->
+    <div id="contenedorTablasPosiciones" class="space-y-6"></div>
+
+</main>
+
+<script src="../js/mock-data.js"></script>
+<script src="../js/modules/liga.js"></script>
+</body>
+</html>

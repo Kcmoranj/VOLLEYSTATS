@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolleyStats - Jugadores</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/style.css"> </head>
+</head>
+
+<body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex flex-col md:flex-row">
+
+<!-- Sidebar -->
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+        <div class="flex-1">
+            <span class="p-6 block text-3xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            <nav class="flex flex-col gap-2 px-4">
+                <p class="text-[10px] font-bold text-gray-400 px-3 uppercase tracking-wider mb-2">
+                Navegación
+            </p>
+                <a href="partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
+                <a href="liga.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="jugadores.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">👤 Jugadores</a>
+               <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Estadísticas</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+        </div>
+    </aside>
+
+
+
+<!-- Main -->
+<main class="flex-1 p-4 md:p-8 space-y-6">
+
+    <section class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        <h2 class="text-xl font-bold text-gray-800">Directorio de Jugadores</h2>
+
+        <div class="relative w-full md:w-72">
+            <input type="text" id="inputBuscarJugador"
+                   placeholder="Buscar por nombre..."
+                   class="input input-bordered w-full bg-white h-10" />
+        </div>
+    </section>
+
+    <div id="gridJugadores" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+</main>
+
+<!-- Modal -->
+<input type="checkbox" id="modal_perfil" class="modal-toggle" />
+<div class="modal" role="dialog">
+    <div class="modal-box bg-white max-w-lg p-0 overflow-hidden rounded-2xl">
+
+        <div class="bg-blue-600 h-24 w-full relative">
+            <div class="avatar placeholder absolute -bottom-10 left-6">
+                <div class="bg-slate-200 text-slate-500 rounded-full w-24 border-4 border-white shadow-md">
+                    <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8 pt-12 space-y-4">
+
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 id="perfil_nombre" class="text-2xl font-black text-gray-800">---</h3>
+                    <p id="perfil_categoria" class="text-blue-600 font-bold text-sm uppercase tracking-widest">---</p>
+                </div>
+
+                <label for="modal_perfil" class="btn btn-sm btn-circle btn-ghost">✕</label>
+            </div>
+
+            <div class="divider">Inscripciones Actuales</div>
+
+            <div id="perfil_inscripciones" class="space-y-3"></div>
+
+        </div>
+    </div>
+</div>
+
+<script src="../js/mock-data.js"></script>
+<script src="../js/data-manager.js"></script> <script src="../js/modules/jugadores.js"></script>
+<script src="../js/modules/auth.js"></script>
+</body>
+</html>

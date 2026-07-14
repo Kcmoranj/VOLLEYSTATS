@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Equipo | VolleyStats Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+    </style>
+</head>
+<body class="bg-[#F3F4F6] min-h-screen flex font-sans">
+
+  <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+        <div class="flex-1">
+            <span class="brand-title p-6 block text-2xl font-black">Volley<span class="brand-highlight text-blue-600">Stats</span></span>
+            <nav class="flex flex-col gap-2 px-4">
+                <a href="dashboard.html"  class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
+                <a href="partidos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
+                <a href="jugadores-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+                <a href="equipos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 active bg-blue-50 text-blue-600">🛡️ Equipos</a>
+                <a href="liga-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="actividades-recientes.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100">📝 Actividades</a>
+                <a href="solicitudes-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">
+                ➡️ Cerrar sesión
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <a href="equipos-admin.html" class="text-blue-600 font-bold hover:underline mb-6 block">← Volver a Equipos</a>
+        <h1 id="nombreEquipo" class="text-3xl font-black mb-2 uppercase text-gray-900">Cargando equipo...</h1>
+        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">
+            Las categorías/participaciones ahora las crea el delegado del equipo. Aquí puedes aprobarlas,
+            editar datos del cuerpo técnico y gestionar la nómina.
+        </p>
+
+        <div id="participacionesContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+    </main>
+
+    <dialog id="modalEditor" class="modal">
+        <div class="modal-box bg-white max-w-lg">
+            <h3 class="font-black text-lg mb-6 uppercase border-b pb-4">Configurar Participación</h3>
+
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <input id="editTecnico" class="input input-bordered w-full text-sm font-bold" placeholder="Técnico">
+                    <input id="editAsistente" class="input input-bordered w-full text-sm font-bold" placeholder="Asistente">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold uppercase text-gray-400">Capitán:</label>
+                    <select id="editCapitan" class="select select-bordered w-full text-sm font-bold mt-1">
+                        <option value="">Sin capitán asignado</option>
+                    </select>
+                </div>
+
+                <div class="border-t pt-4">
+                    <label class="text-xs font-bold uppercase text-gray-400">Nómina actual:</label>
+                    <div id="listaJugadoresEditar" class="space-y-2 mt-2 max-h-48 overflow-y-auto"></div>
+                </div>
+
+                <div class="border-t pt-4">
+                    <label class="text-xs font-bold uppercase text-gray-400">Agregar jugador ya aprobado:</label>
+                    <div class="flex gap-2 mt-2 relative">
+                        <div class="flex-1 relative">
+                            <input
+                                id="inputBuscarJugador"
+                                type="text"
+                                autocomplete="off"
+                                placeholder="Buscar jugador..."
+                                class="input input-bordered input-sm w-full"
+                            >
+                            <div id="listaSugerenciasJugador"
+                                 class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            </div>
+                        </div>
+                        <input
+                            id="inputCamisetaNuevo"
+                            type="number"
+                            min="0"
+                            placeholder="#"
+                            class="input input-bordered input-sm w-16 text-center"
+                        >
+                        <button id="btnAgregarConfirmado" type="button" class="btn btn-sm btn-primary">Añadir</button>
+                    </div>
+                    <p id="msjJugadorSeleccionado" class="text-[10px] text-blue-600 font-bold mt-1 hidden"></p>
+                    <p class="text-[10px] text-gray-400 mt-2">
+                        ¿El jugador todavía no existe o está pendiente de aprobación? Revísalo en
+                        <a href="solicitudes-admin.html" class="text-blue-600 font-bold hover:underline">Solicitudes</a>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn btn-ghost">Cancelar</button>
+                </form>
+                <button id="btnGuardarModal" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>cerrar</button>
+        </form>
+    </dialog>
+
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/shared/data-bridge.js"></script>
+    <script src="../../js/shared/elegibilidad.js"></script>
+    <script src="../../js/modules/admin/registrar-actividad.js"></script>
+    <script src="../../js/modules/admin/detalle-equipo.js"></script>
+</body>
+</html>

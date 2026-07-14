@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Jugadores | VolleyStats Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+    </style>
+</head>
+<body class="bg-[#F3F4F6] flex h-screen font-sans">
+
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+
+        <div class="flex-1">
+            <span class="brand-title p-6 block text-2xl font-black">Volley<span class="brand-highlight text-blue-600">Stats</span></span>
+            <nav class="flex flex-col gap-2 px-4">
+                <a href="dashboard.html"  class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
+                <a href="partidos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
+                <a href="jugadores-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 active bg-blue-50 text-blue-600">👤 Jugadores</a>
+                <a href="equipos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
+                <a href="liga-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="actividades-recientes.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
+                <a href="solicitudes-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">
+                ➡️ Cerrar sesión
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black text-gray-900 uppercase">Gestión de Jugadores</h1>
+            <button onclick="abrirModalNuevo()" class="btn btn-primary bg-blue-600 text-white">+ Nuevo Jugador</button>
+        </div>
+
+        <div class="card-admin">
+            <table class="table w-full">
+                <thead>
+                    <tr class="text-[10px] uppercase text-gray-400 font-black">
+                        <th>Nombre Completo</th><th>Categoría</th><th>Estado</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaJugadores"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <dialog id="modalJugador" class="modal">
+        <div class="modal-box bg-white">
+            <h3 id="tituloModal" class="font-black text-lg mb-4 uppercase">Registrar Jugador</h3>
+            <div class="space-y-4">
+                <input type="text" id="inputNombre" placeholder="Nombre completo" class="input input-bordered w-full">
+                <select id="selectCatJugador" class="select select-bordered w-full"></select>
+            </div>
+            <div class="modal-action">
+                <button onclick="guardarJugador()" class="btn btn-primary">Guardar Cambios</button>
+                <form method="dialog"><button class="btn btn-ghost">Cancelar</button></form>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/shared/data-bridge.js"></script>
+<script>
+    // 1. FUSIÓN Y CONTROL DE DATOS (Una sola fuente de verdad)
+    // NOTA: usamos window.AppDB si está disponible para que también se vean
+    // los jugadores 'PENDIENTE' propuestos por delegados (con estado y sin
+    // categoría todavía). Si por algo no cargó data-bridge.js, cae al
+    // comportamiento original sin romperse.
+    const data = (window.AppDB ? window.AppDB.get() : window.VolleyAppData);
+
+    // FIX (doble fuente de verdad para jugadores): antes esta línea reemplazaba
+    // data.jugadores con lo guardado en la clave separada 'volley_jugadores'.
+    // El problema: cuando el admin aprueba/rechaza un jugador propuesto desde
+    // Solicitudes (solicitudes-admin.js), esa pantalla SOLO actualiza 'volleyData'
+    // (vía window.AppDB.save), nunca toca 'volley_jugadores'. Como resultado,
+    // al volver a esta página la línea de abajo pisaba los cambios recién hechos
+    // con la copia vieja de 'volley_jugadores': un jugador rechazado podía
+    // "revivir", o uno recién aprobado volvía a mostrarse como pendiente.
+    // Ahora 'volleyData' (leído arriba vía AppDB) es la única fuente de verdad.
+    // data.jugadores = JSON.parse(localStorage.getItem('volley_jugadores')) || data.jugadores;
+
+    let jugadorEditandoId = null;
+
+    // 2. INICIALIZACIÓN DE LA UI
+    const selCat = document.getElementById('selectCatJugador');
+    selCat.innerHTML = ''; // Limpiamos para evitar duplicaciones visuales
+    data.categoriasJugador.forEach(c => {
+        selCat.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+    });
+
+    // 3. RENDERIZADO DE LA TABLA
+    function renderJugadores() {
+        const tbody = document.getElementById('tablaJugadores');
+        if (!tbody) return;
+
+        tbody.innerHTML = data.jugadores.map(j => {
+            const cat = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador)?.nombre || 'Sin Categoría';
+            const estadoBadge = j.estado === 'PENDIENTE'
+                ? `<span class="badge badge-warning badge-sm text-white font-bold">Pendiente</span>`
+                : `<span class="badge badge-success badge-sm text-white font-bold">Aprobado</span>`;
+            return `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="font-bold text-gray-800">${j.nombre}</td>
+                    <td><span class="badge badge-sm badge-ghost">${cat}</span></td>
+                    <td>${estadoBadge}</td>
+                    <td>
+                        <button onclick="editarJugador(${j.id})" class="btn btn-xs btn-ghost text-blue-500 font-bold hover:bg-blue-50">Editar</button>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    // 4. CONTROL DE MODALES
+    function abrirModalNuevo() {
+        jugadorEditandoId = null;
+        document.getElementById('tituloModal').innerText = "Registrar Jugador";
+        document.getElementById('inputNombre').value = '';
+        if (selCat.options.length > 0) selCat.selectedIndex = 0; // Resetea el select al primero
+        document.getElementById('modalJugador').showModal();
+    }
+
+    function editarJugador(id) {
+        const jugador = data.jugadores.find(j => j.id === id);
+        if (!jugador) return;
+
+        jugadorEditandoId = id;
+        document.getElementById('tituloModal').innerText = "Editar Jugador";
+        document.getElementById('inputNombre').value = jugador.nombre;
+        if (jugador.id_categoria_jugador != null) selCat.value = jugador.id_categoria_jugador;
+        document.getElementById('modalJugador').showModal();
+    }
+
+    // 5. GUARDAR Y PERSISTIR
+    function guardarJugador() {
+        const inputNombre = document.getElementById('inputNombre');
+        const nombre = inputNombre.value.trim().toUpperCase();
+        const catId = parseInt(selCat.value);
+
+        if (!nombre) {
+            alert('Por favor, ingresa el nombre del jugador.');
+            return;
+        }
+
+        if (jugadorEditandoId) {
+            const index = data.jugadores.findIndex(j => j.id === jugadorEditandoId);
+            if (index !== -1) {
+                data.jugadores[index].nombre = nombre;
+                data.jugadores[index].id_categoria_jugador = catId;
+                data.jugadores[index].estado = 'APROBADO';
+            }
+        } else {
+            data.jugadores.push({
+                id: Date.now(),
+                nombre,
+                id_categoria_jugador: catId,
+                estado: 'APROBADO'
+            });
+        }
+
+        // FIX: ya no escribimos por separado en 'volley_jugadores' (ver nota arriba).
+        // 'volleyData', vía AppDB, es la única fuente de verdad.
+        if (window.AppDB) window.AppDB.save(data);
+
+        renderJugadores();
+        document.getElementById('modalJugador').close();
+    }
+
+    // 6. CERRAR SESIÓN SEGURO
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userToken');
+        window.location.href = "../../index.html";
+    }
+
+    // Ejecución inicial
+    renderJugadores();
+</script>
+</body>
+</html>
