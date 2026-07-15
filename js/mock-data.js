@@ -130,7 +130,13 @@ estadisticasJugador: [
     // Convocatorias (jugadores citados por partido) y R5 (alineación titular).
     // Empiezan vacíos: los llena cada delegado desde su portal.
     convocatorias: [],
-    r5: []
+    r5: [],
+
+    // Sanciones: tarjetas amarillas/rojas por jugador (con multa opcional) y
+    // multas al equipo completo (no ligadas a un jugador puntual). Las carga
+    // el admin desde el detalle del partido; el delegado solo las visualiza.
+    sancionesJugador: [],
+    multasEquipo: []
 }
 // js/mock-data.js
 window.getData = () => {
@@ -165,6 +171,7 @@ window.datosMinimosDeEmergencia = function () {
         ],
         equipos: [], participaciones: [], jugadores: [], inscripciones: [],
         partidos: [], estadisticasJugador: [],
-        usuariosDelegados: [], convocatorias: [], r5: []
+        usuariosDelegados: [], convocatorias: [], r5: [],
+        sancionesJugador: [], multasEquipo: []
     };
 };
