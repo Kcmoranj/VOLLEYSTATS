@@ -1,4 +1,23 @@
-
+/**
+ * detalle-equipo.js - Versión Corregida (delegado crea, admin solo aprueba/administra)
+ *
+ * CAMBIOS respecto a la versión anterior:
+ *  1. Se eliminó la creación de nuevas participaciones desde el admin
+ *     (window.prepararYAbrirModal / window.confirmarNuevaParticipacion).
+ *     Esa función ahora vive en pages/delegado/mi-equipo.js.
+ *  2. La elegibilidad de jugadores ya NO se calcula aquí con lógica propia rota
+ *     (obtenerNombreCategoria/obtenerNombreTorneo no existían). Ahora se usa
+ *     window.Elegibilidad.jugadorEsElegible(), que trae las reglas correctas:
+ *     Toddler -> todas | C-/C+ -> Cantera+ | B-/B+ -> Semi Pro+ | A-/A+ -> Pro.
+ *  3. Solo se sugieren jugadores con estado 'APROBADO' (los propuestos por un
+ *     delegado y aún pendientes no aparecen hasta que el admin los apruebe en
+ *     solicitudes-admin.html).
+ *  4. FIX (doble fuente de verdad): antes se leía/escribía también
+ *     'volley_jugadores' además de 'volleyData'. Como Solicitudes (aprobar/
+ *     rechazar jugador) solo actualiza 'volleyData', esa segunda copia podía
+ *     quedar vieja y revivir jugadores rechazados o revertir aprobaciones.
+ *     Ahora 'volleyData' es la única fuente de verdad para jugadores.
+ */
 
 const getAppData = () => {
     const localData = localStorage.getItem('volleyData');
@@ -11,14 +30,11 @@ const getAppData = () => {
         console.error('⚠️ No se encontró window.VolleyAppData (js/mock-data.js no cargó). Usando datos mínimos de emergencia.');
         data = window.datosMinimosDeEmergencia ? window.datosMinimosDeEmergencia() : { equipos: [], participaciones: [], jugadores: [], inscripciones: [] };
     }
-    const jugadoresGuardados = JSON.parse(localStorage.getItem('volley_jugadores'));
-    if (jugadoresGuardados) data.jugadores = jugadoresGuardados;
     return window.migrarModeloDelegados ? window.migrarModeloDelegados(data) : data;
 };
 
 const guardarAppData = (data) => {
     localStorage.setItem('volleyData', JSON.stringify(data));
-    localStorage.setItem('volley_jugadores', JSON.stringify(data.jugadores));
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -163,7 +179,9 @@ window.manejarBusquedaJugador = (e) => {
         const coincideNombre = j.nombre.toLowerCase().includes(texto);
         const esElegible = window.Elegibilidad.jugadorEsElegible(data, j, participacionActual.id_categoria_torneo);
         const yaInscrito = data.inscripciones.some(ins => ins.id_participacion === window.currentParticipacionId && ins.id_jugador === j.id);
-        return coincideNombre && esElegible && !yaInscrito;
+        // FIX: que no esté ya jugando esta MISMA categoría/rama con otro equipo.
+        const yaEnOtroEquipoMismaCatRama = window.Elegibilidad.jugadorYaEnCategoriaRama(data, j.id, participacionActual.id_categoria_torneo, participacionActual.id_rama, window.currentParticipacionId);
+        return coincideNombre && esElegible && !yaInscrito && !yaEnOtroEquipoMismaCatRama;
     }).slice(0, 8);
 
     lista.innerHTML = coincidencias.length > 0
@@ -212,6 +230,13 @@ window.agregarJugadorConfirmado = () => {
     }
 
     const data = getAppData();
+
+    const participacionDestino = data.participaciones.find(p => p.id === idParticipacion);
+    const conflicto = window.Elegibilidad.equipoConflictoCategoriaRama(data, window.jugadorSeleccionadoParaAgregar, participacionDestino.id_categoria_torneo, participacionDestino.id_rama, idParticipacion);
+    if (conflicto) {
+        alert(`Este jugador ya está inscrito con "${conflicto}" en esta misma categoría y rama. No puede jugar dos veces el mismo cuadro.`);
+        return;
+    }
 
     const numeroOcupado = data.inscripciones.some(i =>
         i.id_participacion === idParticipacion && i.numero_camiseta === numeroCamiseta

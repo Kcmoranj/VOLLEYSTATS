@@ -225,7 +225,7 @@ function renderizarTablaJugadores(idParticipacion, idPartido, tbodyId, data) {
     const jugadoresEnPartido = rosterEquipo.filter(ins => idsInscripcionEnPartido.includes(ins.id));
 
     if (jugadoresEnPartido.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-center text-gray-400 font-semibold">Aún no se han agregado jugadores a este partido.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="py-4 text-center text-gray-400 font-semibold">Aún no se han agregado jugadores a este partido.</td></tr>`;
         return;
     }
 
@@ -236,16 +236,25 @@ function renderizarTablaJugadores(idParticipacion, idPartido, tbodyId, data) {
 
         const pts = (stats.saque || 0) + (stats.ataque || 0) + (stats.bloqueo || 0) + (stats.defensa || 0) + (stats.colocacion || 0);
 
+        // Tarjetas acumuladas de este jugador (histórico completo, no solo este partido)
+        const sancionesJugador = (data.sancionesJugador || []).filter(s => s.id_inscripcion === ins.id);
+        const nAmarillas = sancionesJugador.filter(s => s.tipo === 'AMARILLA').length;
+        const nRojas = sancionesJugador.filter(s => s.tipo === 'ROJA').length;
+        const badgesSancion = `${nAmarillas ? `<span title="${nAmarillas} amarilla(s)">🟨${nAmarillas > 1 ? `×${nAmarillas}` : ''}</span>` : ''}${nRojas ? `<span title="${nRojas} roja(s)">🟥${nRojas > 1 ? `×${nRojas}` : ''}</span>` : ''}`;
+
         return `
             <tr class="hover:bg-gray-50/50">
                 <td class="py-3 px-2 font-bold text-gray-400">#${ins.numero_camiseta}</td>
-                <td class="py-3 px-2 font-black text-gray-800">${jugador?.nombre || 'Desconocido'}</td>
+                <td class="py-3 px-2 font-black text-gray-800">${jugador?.nombre || 'Desconocido'} <span class="ml-1">${badgesSancion}</span></td>
                 <td class="py-3 px-2 text-center font-black text-blue-600" id="pts-${ins.id}">${pts}</td>
                 <td class="py-3 px-1 text-center"><input type="number" class="input-stat" value="${stats.saque   || 0}" data-ins="${ins.id}" data-cat="saque"      onchange="recalcularPtsFila(${ins.id})"></td>
                 <td class="py-3 px-1 text-center"><input type="number" class="input-stat" value="${stats.ataque  || 0}" data-ins="${ins.id}" data-cat="ataque"     onchange="recalcularPtsFila(${ins.id})"></td>
                 <td class="py-3 px-1 text-center"><input type="number" class="input-stat" value="${stats.bloqueo || 0}" data-ins="${ins.id}" data-cat="bloqueo"    onchange="recalcularPtsFila(${ins.id})"></td>
                 <td class="py-3 px-1 text-center"><input type="number" class="input-stat" value="${stats.defensa || 0}" data-ins="${ins.id}" data-cat="defensa"    onchange="recalcularPtsFila(${ins.id})"></td>
                 <td class="py-3 px-1 text-center"><input type="number" class="input-stat" value="${stats.colocacion || 0}" data-ins="${ins.id}" data-cat="colocacion" onchange="recalcularPtsFila(${ins.id})"></td>
+                <td class="py-3 px-2 text-center">
+                    <button class="btn-sancionar-jugador text-amber-500 hover:text-amber-600" data-ins="${ins.id}" title="Registrar tarjeta / multa">🟨</button>
+                </td>
                 <td class="py-3 px-2 text-center">
                     <button class="btn-eliminar-jugador text-red-400 hover:text-red-600" data-ins="${ins.id}" title="Eliminar jugador del partido">🗑️</button>
                 </td>
@@ -334,7 +343,31 @@ function inicializarEventos() {
     const tbodyDinamico = document.getElementById('tbodyDinamico');
     if (tbodyDinamico) {
         tbodyDinamico.addEventListener('click', manejarClickEliminarJugador);
+        tbodyDinamico.addEventListener('click', manejarClickSancionarJugador);
     }
+
+    // 7. Sanciones (tarjetas por jugador y multa al equipo completo)
+    const btnMultarEquipo = document.getElementById('btnMultarEquipo');
+    if (btnMultarEquipo) {
+        btnMultarEquipo.addEventListener('click', abrirModalMultaEquipo);
+    }
+
+    const btnConfSancion = document.getElementById('btnConfirmarSancion');
+    if (btnConfSancion) {
+        btnConfSancion.addEventListener('click', confirmarSancionJugador);
+    }
+
+    const btnConfMultaEquipo = document.getElementById('btnConfirmarMultaEquipo');
+    if (btnConfMultaEquipo) {
+        btnConfMultaEquipo.addEventListener('click', confirmarMultaEquipo);
+    }
+}
+function manejarClickSancionarJugador(evento) {
+    const btn = evento.target.closest('.btn-sancionar-jugador');
+    if (!btn) return;
+
+    const idInscripcion = parseInt(btn.dataset.ins);
+    abrirModalSancionJugador(idInscripcion);
 }
 function manejarClickEliminarJugador(evento) {
     const btn = evento.target.closest('.btn-eliminar-jugador');
@@ -639,4 +672,115 @@ function guardarEstadisticas() {
     renderizarTablaUnicaDinamica();
 
     alert("¡Estadísticas y sets guardados exitosamente!");
+}
+
+// ==========================================
+// 🟨🟥 SANCIONES: tarjetas por jugador y multas al equipo
+// ==========================================
+
+let idInscripcionSancion = null;
+
+function abrirModalSancionJugador(idInscripcion) {
+    idInscripcionSancion = idInscripcion;
+
+    const data = getAppData();
+    const inscripcion = data.inscripciones.find(i => i.id === idInscripcion);
+    const jugador = inscripcion ? data.jugadores.find(j => j.id === inscripcion.id_jugador) : null;
+
+    document.getElementById('modalSancionJugadorNombre').textContent = jugador?.nombre || 'Jugador';
+    document.getElementById('selectTipoSancion').value = 'AMARILLA';
+    document.getElementById('inputMotivoSancion').value = '';
+    document.getElementById('inputMultaSancion').value = '';
+    document.getElementById('modalSancionJugador').showModal();
+}
+
+function confirmarSancionJugador() {
+    if (idInscripcionSancion === null) return;
+
+    const tipo = document.getElementById('selectTipoSancion').value; // 'AMARILLA' | 'ROJA'
+    const motivo = document.getElementById('inputMotivoSancion').value.trim();
+    const multa = parseFloat(document.getElementById('inputMultaSancion').value) || 0;
+
+    if (!motivo) {
+        alert('Ingresa el motivo de la tarjeta.');
+        return;
+    }
+
+    const data = getAppData();
+    if (!data.sancionesJugador) data.sancionesJugador = [];
+
+    data.sancionesJugador.push({
+        id: Date.now(),
+        id_inscripcion: idInscripcionSancion,
+        id_partido: partidoId,
+        tipo,
+        motivo,
+        multa,
+        fecha: new Date().toISOString(),
+        pagada: false
+    });
+
+    guardarAppData(data);
+
+    if (typeof registrarActividad === 'function') {
+        const inscripcion = data.inscripciones.find(i => i.id === idInscripcionSancion);
+        const jugador = inscripcion ? data.jugadores.find(j => j.id === inscripcion.id_jugador) : null;
+        const emoji = tipo === 'ROJA' ? '🟥' : '🟨';
+        registrarActividad('SANCION_JUGADOR', `${emoji} a ${jugador?.nombre || 'jugador'}: ${motivo}${multa ? ` (multa $${multa.toFixed(2)})` : ''}`);
+    }
+
+    idInscripcionSancion = null;
+    document.getElementById('modalSancionJugador').close();
+    renderizarTablaUnicaDinamica();
+}
+
+function abrirModalMultaEquipo() {
+    const data = getAppData();
+    const partido = data.partidos.find(p => p.id === partidoId);
+    const idParticipacion = equipoSeleccionadoVisualizacion === 'local' ? partido.id_local_participacion : partido.id_visitante_participacion;
+    const nombreEquipo = getNombreEquipoPorParticipacion(data, idParticipacion);
+
+    document.getElementById('modalMultaEquipoNombre').textContent = `Equipo: ${nombreEquipo}`;
+    document.getElementById('inputMotivoMultaEquipo').value = '';
+    document.getElementById('inputMontoMultaEquipo').value = '';
+    document.getElementById('modalMultaEquipo').showModal();
+}
+
+function confirmarMultaEquipo() {
+    const data = getAppData();
+    const partido = data.partidos.find(p => p.id === partidoId);
+    const idParticipacion = equipoSeleccionadoVisualizacion === 'local' ? partido.id_local_participacion : partido.id_visitante_participacion;
+    const participacion = data.participaciones.find(p => p.id === idParticipacion);
+
+    const motivo = document.getElementById('inputMotivoMultaEquipo').value.trim();
+    const monto = parseFloat(document.getElementById('inputMontoMultaEquipo').value) || 0;
+
+    if (!motivo) {
+        alert('Ingresa el motivo de la multa.');
+        return;
+    }
+    if (!monto || monto <= 0) {
+        alert('Ingresa un monto válido.');
+        return;
+    }
+
+    if (!data.multasEquipo) data.multasEquipo = [];
+    data.multasEquipo.push({
+        id: Date.now(),
+        id_equipo: participacion.id_equipo,
+        id_partido: partidoId,
+        motivo,
+        monto,
+        fecha: new Date().toISOString(),
+        pagada: false
+    });
+
+    guardarAppData(data);
+
+    if (typeof registrarActividad === 'function') {
+        const nombreEquipo = getNombreEquipoPorParticipacion(data, idParticipacion);
+        registrarActividad('MULTA_EQUIPO', `Multa de $${monto.toFixed(2)} a ${nombreEquipo}: ${motivo}`);
+    }
+
+    document.getElementById('modalMultaEquipo').close();
 }

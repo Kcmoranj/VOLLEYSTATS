@@ -200,6 +200,12 @@ function crearNuevaParticipacion(e) {
 }
 
 // --- Buscar jugadores existentes elegibles para esta participación ---
+// FIX: además de la elegibilidad por categoría (Elegibilidad.jugadorEsElegible),
+// ahora también se excluye a cualquier jugador que YA esté inscrito en OTRO
+// equipo para esta misma categoría/rama (Elegibilidad.jugadorYaEnCategoriaRama).
+// Antes esto no se validaba: un jugador podía terminar jugando para dos
+// equipos distintos en el mismo cuadro de la misma categoría/rama, cosa que
+// sí debe seguir permitida SOLO si es una categoría/rama diferente.
 function buscarJugadoresDisponibles(e) {
     const texto = e.target.value.toLowerCase().trim();
     const resultados = document.getElementById('resultadosBusquedaJugador');
@@ -214,7 +220,8 @@ function buscarJugadoresDisponibles(e) {
     const coincidencias = data.jugadores.filter(j =>
         j.nombre.toLowerCase().includes(texto) &&
         !yaInscritos.has(j.id) &&
-        window.Elegibilidad.jugadorEsElegible(data, j, p.id_categoria_torneo)
+        window.Elegibilidad.jugadorEsElegible(data, j, p.id_categoria_torneo) &&
+        !window.Elegibilidad.jugadorYaEnCategoriaRama(data, j.id, p.id_categoria_torneo, p.id_rama, p.id)
     ).slice(0, 8);
 
     resultados.innerHTML = coincidencias.length > 0
@@ -229,7 +236,7 @@ function buscarJugadoresDisponibles(e) {
                 </div>
             </div>`;
         }).join('')
-        : `<p class="text-xs text-gray-400 italic p-2">Sin jugadores elegibles con ese nombre. Si no existe, proponlo abajo.</p>`;
+        : `<p class="text-xs text-gray-400 italic p-2">Sin jugadores elegibles con ese nombre (recuerda: un jugador no puede jugar dos veces la misma categoría/rama en equipos distintos). Si no existe, proponlo abajo.</p>`;
 }
 
 function agregarJugadorExistente(idJugador) {
@@ -238,6 +245,16 @@ function agregarJugadorExistente(idJugador) {
     if (isNaN(numero) || numero < 0) { alert('Ingresa un número de camiseta válido.'); return; }
 
     const data = window.AppDB.get();
+    const p = data.participaciones.find(x => x.id === participacionActivaId);
+
+    // FIX: doble chequeo justo antes de guardar (por si la lista de sugerencias
+    // quedó desactualizada, ej. dos pestañas abiertas a la vez).
+    const conflicto = window.Elegibilidad.equipoConflictoCategoriaRama(data, idJugador, p.id_categoria_torneo, p.id_rama, p.id);
+    if (conflicto) {
+        alert(`Este jugador ya está inscrito con "${conflicto}" en esta misma categoría y rama. No puede jugar dos veces el mismo cuadro.`);
+        return;
+    }
+
     const ocupado = data.inscripciones.some(i => i.id_participacion === participacionActivaId && i.numero_camiseta === numero);
     if (ocupado) { alert(`El número #${numero} ya está ocupado en tu equipo.`); return; }
 
@@ -250,6 +267,8 @@ function agregarJugadorExistente(idJugador) {
 }
 
 // --- Proponer un jugador que no existe en la base (queda PENDIENTE, sin categoría) ---
+// Un jugador propuesto recién nace, así que no puede tener todavía un conflicto
+// de categoría/rama con otro equipo (no valida contra sí mismo).
 function proponerJugadorNuevo(e) {
     e.preventDefault();
     const nombre = document.getElementById('inputNombrePropuesto').value.trim().toUpperCase();

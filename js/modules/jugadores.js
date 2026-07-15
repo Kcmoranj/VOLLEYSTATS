@@ -1,42 +1,50 @@
+/**
+ * jugadores.js (vista pública / invitado)
+ *
+ * FIX (#11 consistencia de datos): antes leía localStorage['volleyData'] a
+ * pelo, sin pasar por sembrarDatosPorDefecto(). Si el navegador ya tenía un
+ * volleyData guardado de una sesión anterior, un jugador/equipo nuevo
+ * agregado solo a mock-data.js nunca aparecía en esta vista pública. Ahora
+ * usa window.AppDB.get() (requiere que la página cargue
+ * js/shared/data-bridge.js), igual que las páginas de admin/delegado.
+ *
+ * FIX (#9 doble fuente 'volley_jugadores'): antes esta página fusionaba
+ * data.jugadores con lo guardado en la clave suelta 'volley_jugadores'. Como
+ * aprobar/rechazar un jugador desde Solicitudes solo actualiza 'volleyData',
+ * esa segunda copia podía quedar vieja y mostrar aquí jugadores ya
+ * rechazados, o no reflejar aprobaciones recientes. 'volleyData' (vía
+ * window.AppDB) es ahora la única fuente de verdad.
+ *
+ * FIX (#13 logout duplicado): esta página también carga js/modules/auth.js,
+ * que define su propio logout(). Tener dos definiciones de la misma función
+ * global es confuso y frágil (gana la que se carga después, por casualidad).
+ * Se quitó la definición de aquí; la de auth.js es la única.
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. FUSIÓN Y CARGA DE DATOS DE FORMA SEGURA
-    let data = null;
-    const localData = localStorage.getItem('volleyData');
-    
-    // Cargamos de volleyData o en su defecto de VolleyAppData (mock-data)
-    data = localData ? JSON.parse(localData) : window.VolleyAppData;
-
-    // FIX (doble fuente de verdad para jugadores): antes acá se inyectaba también
-    // lo guardado en 'volley_jugadores', pisando lo que ya venía en 'volleyData'.
-    // Como Solicitudes (aprobar/rechazar jugador) solo actualiza 'volleyData',
-    // esa segunda copia podía quedar vieja y mostrar datos desactualizados
-    // (jugadores rechazados que "reaparecen", aprobaciones que no se reflejan).
-    // 'volleyData' es ahora la única fuente de verdad.
+    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
 
     if (!data) {
         console.error("No se pudieron cargar los datos.");
         return;
     }
 
-    // 2. Referencias a elementos del DOM
     const grid = document.getElementById('gridJugadores');
     const inputBuscar = document.getElementById('inputBuscarJugador');
     const pNombre = document.getElementById('perfil_nombre');
     const pCategoria = document.getElementById('perfil_categoria');
     const pInscripciones = document.getElementById('perfil_inscripciones');
 
-    // 3. Función render principal
     window.renderJugadores = (filtro = "") => {
         if (!grid) return;
         grid.innerHTML = "";
-        
-        const jugadoresFiltrados = data.jugadores.filter(j => 
-            j.nombre.toLowerCase().includes(filtro.toLowerCase())
-        );
+
+        const jugadoresFiltrados = data.jugadores
+            .filter(j => j.estado === 'APROBADO') // los pendientes de aprobación no se muestran al público
+            .filter(j => j.nombre.toLowerCase().includes(filtro.toLowerCase()));
 
         jugadoresFiltrados.forEach(j => {
             const catJugador = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador);
-            
+
             grid.innerHTML += `
             <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
                 <div class="flex items-center gap-4">
@@ -57,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // 4. Función abrir perfil
     window.verPerfilJugador = (id) => {
         const jugador = data.jugadores.find(j => j.id === id);
         if (!jugador) return;
@@ -76,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             inscripciones.forEach(ins => {
                 const participacion = data.participaciones.find(p => p.id === ins.id_participacion);
-                
+
                 const eq = data.equipos.find(e => e.id === participacion?.id_equipo);
                 const rama = data.ramas.find(r => r.id === participacion?.id_rama);
                 const catTorneo = data.categoriasTorneo.find(ct => ct.id === participacion?.id_categoria_torneo);
@@ -98,16 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 5. Eventos
     inputBuscar?.addEventListener('input', (e) => renderJugadores(e.target.value));
-    
-    // Renderizado inicial con los datos fusionados
-    renderJugadores(); 
+    renderJugadores();
 });
-
-// 6. CERRAR SESIÓN SEGURO (Mantiene a salvo tus datos creados)
-function logout() {
-    localStorage.removeItem('isLoggedIn'); 
-    localStorage.removeItem('userToken');
-    window.location.href = "../index.html";
-}

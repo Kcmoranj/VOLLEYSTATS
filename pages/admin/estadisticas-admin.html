@@ -139,9 +139,14 @@
                                 <h3 id="lblTablaActiva" class="font-bold text-base text-gray-900">-</h3>
                                 <p id="lblRolTablaActive" class="text-xs text-gray-400 mt-0.5">Plantilla del Partido</p>
                             </div>
-                            <button id="btnAgregarJugadorDinamico" class="btn btn-sm bg-blue-600 hover:bg-blue-700 border-none text-white text-xs font-bold">
-                                + Agregar Jugador
-                            </button>
+                            <div class="flex gap-2">
+                                <button id="btnMultarEquipo" class="btn btn-sm bg-red-50 hover:bg-red-100 border-none text-red-600 text-xs font-bold" title="Registrar una multa para todo el equipo (no ligada a un jugador puntual)">
+                                    💰 Multar Equipo
+                                </button>
+                                <button id="btnAgregarJugadorDinamico" class="btn btn-sm bg-blue-600 hover:bg-blue-700 border-none text-white text-xs font-bold">
+                                    + Agregar Jugador
+                                </button>
+                            </div>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-xs text-left whitespace-nowrap">
@@ -155,6 +160,7 @@
                                         <th class="pb-3 px-1 text-center">Blq</th>
                                         <th class="pb-3 px-1 text-center">Def</th>
                                         <th class="pb-3 px-1 text-center">Col</th>
+                                        <th class="pb-3 px-2 text-center" title="Registrar tarjeta / multa">🟨</th>
                                         <th class="pb-3 px-2"></th>
                                     </tr>
                                 </thead>
@@ -260,6 +266,63 @@
             <div class="modal-action">
                 <button id="btnCancelarEliminar" class="btn btn-ghost text-xs font-bold">Cancelar</button>
                 <button id="btnConfirmarEliminar" class="btn bg-red-600 hover:bg-red-700 border-none text-white text-xs font-bold">Sí, eliminar</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>cerrar</button>
+        </form>
+    </dialog>
+
+    <!-- Modal: Sancionar Jugador (tarjeta + multa) -->
+    <dialog id="modalSancionJugador" class="modal">
+        <div class="modal-box rounded-2xl max-w-sm">
+            <h3 class="font-black text-lg text-gray-900 mb-1">🟨 Sancionar Jugador</h3>
+            <p id="modalSancionJugadorNombre" class="text-xs text-gray-400 font-medium mb-4">-</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Tipo de tarjeta</label>
+                    <select id="selectTipoSancion" class="select select-bordered w-full text-sm font-semibold">
+                        <option value="AMARILLA">🟨 Amarilla</option>
+                        <option value="ROJA">🟥 Roja</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Motivo</label>
+                    <input id="inputMotivoSancion" type="text" placeholder="Ej: Reclamo al árbitro" class="input input-bordered w-full text-sm">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Multa (opcional, en $)</label>
+                    <input id="inputMultaSancion" type="number" min="0" step="0.01" placeholder="0.00" class="input input-bordered w-full text-sm">
+                </div>
+            </div>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn btn-ghost text-xs font-bold">Cancelar</button></form>
+                <button id="btnConfirmarSancion" class="btn bg-amber-500 hover:bg-amber-600 border-none text-white text-xs font-bold">Guardar Sanción</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>cerrar</button>
+        </form>
+    </dialog>
+
+    <!-- Modal: Multar Equipo Completo -->
+    <dialog id="modalMultaEquipo" class="modal">
+        <div class="modal-box rounded-2xl max-w-sm">
+            <h3 class="font-black text-lg text-gray-900 mb-1">💰 Multar al Equipo</h3>
+            <p id="modalMultaEquipoNombre" class="text-xs text-gray-400 font-medium mb-4">-</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Motivo</label>
+                    <input id="inputMotivoMultaEquipo" type="text" placeholder="Ej: No presentó cédulas / conducta antideportiva" class="input input-bordered w-full text-sm">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Monto ($)</label>
+                    <input id="inputMontoMultaEquipo" type="number" min="0" step="0.01" placeholder="0.00" class="input input-bordered w-full text-sm">
+                </div>
+            </div>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn btn-ghost text-xs font-bold">Cancelar</button></form>
+                <button id="btnConfirmarMultaEquipo" class="btn bg-red-600 hover:bg-red-700 border-none text-white text-xs font-bold">Guardar Multa</button>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop">
