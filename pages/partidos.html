@@ -6,65 +6,83 @@
     <title>VolleyStats - Partidos</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="../css/style.css"> 
+    <link rel="stylesheet" href="../css/brand.css">
 </head>
-<body class="flex flex-col md:flex-row min-h-screen bg-gray-100">
+<body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex flex-col md:flex-row font-sans">
 
-<!-- Sidebar -->
-    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
-        <div class="flex-1">
-            <span class="p-6 block text-3xl font-black">Volley<span class="text-blue-600">Stats</span></span>
-            <nav class="flex flex-col gap-2 px-4">
-                <p class="text-[10px] font-bold text-gray-400 px-3 uppercase tracking-wider mb-2">
-                Navegación
-            </p>
-                <a href="partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📅 Partidos</a>
-                <a href="liga.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
-                <a href="jugadores.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
-               <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Estadísticas</a>
-            </nav>
-        </div>
-        <div class="p-4 border-t">
-            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
-        </div>
-    </aside>
+<aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+    <div class="flex-1">
+        <span class="p-6 block text-3xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+        <nav class="flex flex-col gap-2 px-4">
+            <p class="text-[10px] font-bold text-gray-400 px-3 uppercase tracking-wider mb-2">Navegación</p>
+            <a href="partidos.html"     class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📅 Partidos</a>
+            <a href="liga.html"         class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+            <a href="jugadores.html"    class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+            <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Estadísticas</a>
+        </nav>
+    </div>
+    <div class="p-4 border-t">
+        <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+    </div>
+</aside>
 
-<main class="flex-1 p-8 space-y-6 overflow-y-auto">
-    <section class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div>
-            <label class="text-[10px] font-bold text-gray-400 uppercase">Buscar</label>
-            <input type="text" placeholder="Equipo..." class="input w-full mt-1 border-gray-200">
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-gray-400 uppercase">Fecha</label>
-            <select class="select w-full mt-1 border-gray-200"><option>Todas</option></select>
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-gray-400 uppercase">Categoría</label>
-            <select class="select w-full mt-1 border-gray-200"><option>Todas</option></select>
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-gray-400 uppercase">Equipo</label>
-            <select class="select w-full mt-1 border-gray-200"><option>Todos</option></select>
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-gray-400 uppercase">Grupo</label>
-            <select class="select w-full mt-1 border-gray-200"><option>Todos</option></select>
-        </div>
-    </section>
+<main class="flex-1 p-4 md:p-8 space-y-5 overflow-y-auto">
 
+    <!-- Header row -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h1 class="text-2xl font-black text-gray-900">Calendario de Partidos</h1>
+        <!-- Estado tabs -->
+        <div class="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 self-start">
+            <button id="tabTodos"      onclick="setTab('todos')"      class="tab-btn px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wide transition-all">Todos</button>
+            <button id="tabProximos"   onclick="setTab('proximos')"   class="tab-btn px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wide transition-all">Próximos</button>
+            <button id="tabResultados" onclick="setTab('resultados')" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wide transition-all">Resultados</button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Buscar equipo</label>
+            <input id="filtroTexto" type="text" placeholder="Nombre del equipo..."
+                class="input input-bordered input-sm w-full">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Fecha</label>
+            <select id="filtroFecha" class="select select-bordered select-sm w-full font-semibold">
+                <option value="">Todas las fechas</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Categoría</label>
+            <select id="filtroCategoria" class="select select-bordered select-sm w-full font-semibold">
+                <option value="">Todas</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Rama</label>
+            <select id="filtroRama" class="select select-bordered select-sm w-full font-semibold">
+                <option value="">Todas</option>
+            </select>
+        </div>
+        <div class="flex items-end">
+            <p id="contadorPartidos" class="text-xs text-gray-400 font-semibold pb-1"></p>
+        </div>
+    </div>
+
+    <!-- Cancha tabs + grids -->
+    <div id="canchaTabsContainer" class="hidden">
+        <div id="canchaTabBtns" class="flex gap-2 flex-wrap mb-4"></div>
+        <!-- Per-cancha columns rendered by JS -->
+        <div id="canchaColumnas" class="grid gap-6"></div>
+    </div>
+
+    <!-- Fallback: no cancha split -->
     <div id="listaPartidos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
 </main>
 
-    <script src="../js/mock-data.js"></script>
-    <script src="../js/modules/partidos.js"></script>
-    <script>
-        function logout() {
-    localStorage.removeItem('session_admin');
-    localStorage.removeItem('session_delegado_id');
-    localStorage.removeItem('session_equipo_id');
-    window.location.href = '../index.html';
-}
-    </script>
+<script src="../js/mock-data.js"></script>
+<script src="../js/shared/data-bridge.js"></script>
+<script src="../js/modules/partidos.js"></script>
 </body>
 </html>

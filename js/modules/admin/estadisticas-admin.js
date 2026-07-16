@@ -328,7 +328,7 @@ function inicializarEventos() {
         btnRetrocederEst.addEventListener('click', retrocederEstadoPartido);
     }
 
-    const btnConfRetroceso = document.getElementById('btnConfirmarRetroceso');
+    const btnConfRetroceso = document.getElementById('btnAceptarRetroceso');
     if (btnConfRetroceso) {
         btnConfRetroceso.addEventListener('click', confirmarRetrocesoEstado);
     }
@@ -540,6 +540,14 @@ function confirmarRetrocesoEstado() {
     if (!partido) return;
 
     partido.estado = FLUJO_ESTADOS[idxEstadoDestino];
+
+    // Si volvemos de FINALIZADO, limpiar flags de WO para que se pueda
+    // re-registrar o continuar el partido normalmente
+    if (idxEstadoDestino < FLUJO_ESTADOS.length - 1) {
+        partido.wo = false;
+        partido.wo_equipo = null;
+    }
+
     guardarAppData(data);
 
     if (typeof registrarActividad === 'function') {
@@ -557,6 +565,88 @@ function confirmarRetrocesoEstado() {
 
 // Guardamos qué inscripción se va a eliminar, para aplicarlo si el usuario confirma
 let idInscripcionAEliminar = null;
+
+
+// ─────────────────────────────────────────────────────────────
+// CARGAR R5 DEL DELEGADO
+// Importa automáticamente los jugadores de la alineación enviada
+// por el delegado para este partido. Busca el R5 del equipo
+// actualmente visible (local o visitante). Usa el set con más
+// jugadores asignados (normalmente Set 1).
+// ─────────────────────────────────────────────────────────────
+function cargarDesdeR5() {
+    const data = getAppData();
+    const partido = data.partidos.find(p => p.id === partidoId);
+    if (!partido) return;
+
+    const idParticipacion = equipoSeleccionadoVisualizacion === 'local'
+        ? partido.id_local_participacion
+        : partido.id_visitante_participacion;
+
+    const nombreEquipo = getNombreEquipoPorParticipacion(data, idParticipacion);
+
+    // Buscar todos los R5 para este partido + participación
+    const r5s = (data.r5 || []).filter(r =>
+        r.id_partido === partidoId && r.id_participacion === idParticipacion
+    );
+
+    if (r5s.length === 0) {
+        alert(`El delegado de ${nombreEquipo} todavía no envió el R5 para este partido.`);
+        return;
+    }
+
+    // Usar el set con más jugadores asignados (prioriza Set 1)
+    const r5 = r5s
+        .sort((a, b) => (a.numero_set || 1) - (b.numero_set || 1))
+        .reduce((best, r) => {
+            const count = Object.values(r.alineacion || {}).filter(v => v).length;
+            const bestCount = Object.values(best.alineacion || {}).filter(v => v).length;
+            return count >= bestCount ? r : best;
+        });
+
+    const alineacion = r5.alineacion || {};
+    const idsInscripcion = Object.values(alineacion).filter(v => v);
+
+    if (idsInscripcion.length === 0) {
+        alert(`El R5 del Set ${r5.numero_set || 1} de ${nombreEquipo} no tiene jugadores asignados.`);
+        return;
+    }
+
+    // Agregar a estadisticasJugador los que no estén ya
+    let agregados = 0;
+    idsInscripcion.forEach(idIns => {
+        const yaExiste = data.estadisticasJugador.some(
+            e => e.id_partido === partidoId && e.id_inscripcion === idIns
+        );
+        if (!yaExiste) {
+            // Verificar que la inscripción pertenece a esta participación
+            const ins = data.inscripciones.find(i => i.id === idIns && i.id_participacion === idParticipacion);
+            if (ins) {
+                data.estadisticasJugador.push({
+                    id_partido: partidoId,
+                    id_inscripcion: idIns,
+                    puntos: 0,
+                    saque: 0,
+                    ataque: 0,
+                    bloqueo: 0,
+                    defensa: 0,
+                    colocacion: 0
+                });
+                agregados++;
+            }
+        }
+    });
+
+    guardarAppData(data);
+    renderizarTablaUnicaDinamica();
+
+    const setLabel = r5.numero_set ? `Set ${r5.numero_set}` : 'Set 1';
+    if (agregados > 0) {
+        alert(`✅ Se cargaron ${agregados} jugador${agregados !== 1 ? 'es' : ''} del R5 (${setLabel}) de ${nombreEquipo}.`);
+    } else {
+        alert(`Todos los jugadores del R5 (${setLabel}) ya estaban en la tabla.`);
+    }
+}
 
 // --- Funciones de vista dinámica (tabla única) ---
 
@@ -726,7 +816,7 @@ function confirmarSancionJugador() {
     if (!data.sancionesJugador) data.sancionesJugador = [];
 
     data.sancionesJugador.push({
-        id: Date.now(),
+        id: window.genId ? window.genId() : Date.now(),
         id_inscripcion: idInscripcionSancion,
         id_partido: partidoId,
         tipo,
@@ -773,7 +863,7 @@ function confirmarMultaEquipo() {
 
     if (!data.multasEquipo) data.multasEquipo = [];
     data.multasEquipo.push({
-        id: Date.now(),
+        id: window.genId ? window.genId() : Date.now(),
         id_equipo: participacion.id_equipo,
         id_participacion: idParticipacion,
         id_partido: partidoId,
@@ -895,4 +985,11 @@ function confirmarWO() {
     renderizarCabecera(partido, data);
     renderizarMarcador(partido);
     renderizarBotonEstado(partido);
-} 
+}
+
+function logout() {
+    localStorage.removeItem('session_admin');
+    localStorage.removeItem('session_delegado_id');
+    localStorage.removeItem('session_equipo_id');
+    window.location.href = '../../index.html';
+}

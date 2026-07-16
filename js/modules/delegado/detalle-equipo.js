@@ -1,8 +1,29 @@
+
 /** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
 function escHTML(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+/**
+ * detalle-equipo.js - Versión Corregida (delegado crea, admin solo aprueba/administra)
+ *
+ * CAMBIOS respecto a la versión anterior:
+ *  1. Se eliminó la creación de nuevas participaciones desde el admin
+ *     (window.prepararYAbrirModal / window.confirmarNuevaParticipacion).
+ *     Esa función ahora vive en pages/delegado/mi-equipo.js.
+ *  2. La elegibilidad de jugadores ya NO se calcula aquí con lógica propia rota
+ *     (obtenerNombreCategoria/obtenerNombreTorneo no existían). Ahora se usa
+ *     window.Elegibilidad.jugadorEsElegible(), que trae las reglas correctas:
+ *     Toddler -> todas | C-/C+ -> Cantera+ | B-/B+ -> Semi Pro+ | A-/A+ -> Pro.
+ *  3. Solo se sugieren jugadores con estado 'APROBADO' (los propuestos por un
+ *     delegado y aún pendientes no aparecen hasta que el admin los apruebe en
+ *     solicitudes-admin.html).
+ *  4. FIX (doble fuente de verdad): antes se leía/escribía también
+ *     'volley_jugadores' además de 'volleyData'. Como Solicitudes (aprobar/
+ *     rechazar jugador) solo actualiza 'volleyData', esa segunda copia podía
+ *     quedar vieja y revivir jugadores rechazados o revertir aprobaciones.
+ *     Ahora 'volleyData' es la única fuente de verdad para jugadores.
+ */
 
 const getAppData = () => {
     const localData = localStorage.getItem('volleyData');

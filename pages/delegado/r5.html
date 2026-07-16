@@ -6,20 +6,80 @@
     <title>R5 / Alineación | VolleyStats Delegado</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>.card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }</style>
+    <link rel="stylesheet" href="../../css/brand.css">
+    <style>
+        .card-admin { background:white; border:1px solid #e5e7eb; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.1); padding:1.5rem; }
+        .set-tab { padding:.5rem 1.25rem; border-radius:.5rem; font-weight:800; font-size:.75rem; cursor:pointer;
+                   border:2px solid #e5e7eb; color:#6b7280; transition:all .15s; }
+        .set-tab.active { background:#2563EB; color:white; border-color:#2563EB; }
+
+        /* ── Cancha ── */
+        .cancha-wrap {
+            background: #16a34a;
+            border-radius: .75rem;
+            padding: .75rem;
+            position: relative;
+        }
+        .cancha-half {
+            background: #15803d;
+            border: 2px solid #bbf7d0;
+            border-radius: .5rem;
+            padding: .5rem;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: .4rem;
+            aspect-ratio: 1.8 / 1;
+        }
+        .cancha-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .4rem; }
+        .cancha-cell {
+            background: rgba(255,255,255,.15);
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: .4rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: .35rem .25rem; min-height: 3.5rem; cursor: default; transition: background .15s;
+        }
+        .cancha-cell.filled    { background: rgba(255,255,255,.35); }
+        .cancha-cell .pos-num  { font-size:.6rem; font-weight:900; color:#bbf7d0; text-transform:uppercase; }
+        .cancha-cell .pos-name { font-size:.6rem; font-weight:700; color:white; margin-top:.15rem; text-align:center;
+                                 max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .net-bar {
+            height: .5rem; background: #bbf7d0;
+            border-radius: .25rem; margin: .35rem 0;
+            position: relative; display:flex; align-items:center; justify-content:center;
+        }
+        .net-bar span { font-size: .55rem; font-weight:900; color:#15803d; background:#bbf7d0;
+                        padding: 0 .4rem; border-radius:.25rem; }
+        .libero-slot {
+            display: flex; align-items: center; gap: .6rem;
+            padding: .6rem .9rem; border-radius: .75rem;
+            background: #f3e8ff; border: 1px solid #e9d5ff; margin-top:.75rem;
+        }
+        .libero-badge { width:1.75rem; height:1.75rem; border-radius:50%; background:#7c3aed;
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:.6rem; font-weight:900; color:white; shrink:0; }
+
+        /* ── Position slots (form) ── */
+        .pos-slot { display:flex; align-items:center; gap:.75rem; padding:.65rem .9rem;
+                    border-radius:.75rem; border:1px solid #e5e7eb; background:#f9fafb; }
+        .pos-badge { width:1.75rem; height:1.75rem; border-radius:50%; background:#2563EB;
+                     display:flex; align-items:center; justify-content:center;
+                     font-size:.6rem; font-weight:900; color:white; shrink:0; }
+        .pos-slot.libero .pos-badge { background:#7c3aed; }
+    </style>
 </head>
 <body class="bg-[#F3F4F6] flex h-screen font-sans">
 
-        <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
         <div class="flex-1">
             <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
             <p class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider -mt-4 mb-4">Portal Delegado</p>
             <nav class="flex flex-col gap-2 px-4">
                 <a href="dashboard-delegado.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Resumen</a>
-                <a href="mi-equipo.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Mi Equipo</a>
-                <a href="convocatoria.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📋 Convocatoria</a>
-                <a href="r5.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">🏐 R5 / Alineación</a>
-                <a href="sanciones.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
+                <a href="mi-equipo.html"           class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Mi Equipo</a>
+                <a href="mis-partidos.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Mis Partidos</a>
+                <a href="convocatoria.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📋 Convocatoria</a>
+                <a href="r5.html"                  class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">🏐 R5 / Alineación</a>
+                <a href="sanciones.html"           class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
             </nav>
         </div>
         <div class="p-4 border-t">
@@ -27,25 +87,104 @@
         </div>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto max-w-xl">
-        <h1 class="text-2xl font-black text-gray-900 uppercase mb-1">R5 · Alineación Titular</h1>
-        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-6">Solo puedes elegir jugadores ya convocados</p>
+    <main class="flex-1 overflow-y-auto">
 
-        <div class="mb-6">
-            <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Partido</label>
-            <select id="selectPartidoR5" class="select select-bordered w-full font-bold"></select>
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
+            <h1 class="text-2xl font-black">🏐 R5 · Alineación por Set</h1>
+            <p class="text-blue-200 text-sm mt-1">Define los 6 titulares para cada set. Solo jugadores convocados.</p>
         </div>
 
-        <div id="sinPartidosR5" class="card-admin text-center text-gray-400 font-semibold hidden">
-            No tienes partidos programados todavía.
-        </div>
+        <div class="p-8 space-y-6">
 
-        <div id="sinConvocatoriaR5" class="card-admin text-center text-gray-400 font-semibold hidden">
-            Primero guarda la convocatoria de este partido en la sección "Convocatoria".
-        </div>
+            <!-- Selector de partido -->
+            <div class="card-admin">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Partido</label>
+                <select id="selectPartidoR5" class="select select-bordered w-full font-bold max-w-md"></select>
+            </div>
 
-        <div id="contenidoR5" class="card-admin hidden">
-            <form id="formR5"></form>
+            <div id="sinPartidosR5" class="card-admin text-center hidden">
+                <p class="text-gray-400 font-semibold py-4">No tienes partidos programados todavía.</p>
+            </div>
+
+            <div id="sinConvocatoriaR5" class="card-admin border-l-4 border-l-amber-400 hidden">
+                <p class="font-black text-gray-800 mb-1">Primero guarda la convocatoria</p>
+                <p class="text-sm text-gray-500">Ve a <a href="convocatoria.html" class="text-blue-600 font-bold hover:underline">Convocatoria</a> y guarda la lista de jugadores citados.</p>
+            </div>
+
+            <div id="contenidoR5" class="hidden space-y-4">
+
+                <!-- Tabs de sets -->
+                <div class="flex gap-2 flex-wrap" id="setTabs"></div>
+
+                <!-- Grid: cancha + formulario -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+                    <!-- Diagrama cancha (mitad del campo) -->
+                    <div class="card-admin">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                            Mitad de cancha — <span id="setTabLabel" class="text-blue-600">Set 1</span>
+                        </p>
+
+                        <div class="cancha-wrap">
+                            <!-- Red (límite superior = la red) -->
+                            <div class="net-bar"><span>RED</span></div>
+
+                            <!-- Media cancha: 2 filas × 3 columnas -->
+                            <div class="cancha-half">
+                                <!-- Fila delantera: IV · III · II -->
+                                <div class="cancha-row">
+                                    <div class="cancha-cell" data-cancha="pos4">
+                                        <span class="pos-num">IV</span>
+                                        <span class="pos-name cancha-nombre">—</span>
+                                    </div>
+                                    <div class="cancha-cell" data-cancha="pos3">
+                                        <span class="pos-num">III</span>
+                                        <span class="pos-name cancha-nombre">—</span>
+                                    </div>
+                                    <div class="cancha-cell" data-cancha="pos2">
+                                        <span class="pos-num">II</span>
+                                        <span class="pos-name cancha-nombre">—</span>
+                                    </div>
+                                </div>
+                                <!-- Fila zaguera: V · VI · I -->
+                                <div class="cancha-row">
+                                    <div class="cancha-cell" data-cancha="pos5">
+                                        <span class="pos-num">V</span>
+                                        <span class="pos-name cancha-nombre">—</span>
+                                    </div>
+                                    <div class="cancha-cell" data-cancha="pos6">
+                                        <span class="pos-num">VI</span>
+                                        <span class="pos-name cancha-nombre">—</span>
+                                    </div>
+                                    <div class="cancha-cell" data-cancha="pos1">
+                                        <span class="pos-num">I</span>
+                                        <span class="pos-name cancha-nombre">—</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Línea de fondo -->
+                            <div class="net-bar mt-1"><span>FONDO</span></div>
+                        </div>
+
+                        <!-- Libero fuera de la cancha -->
+                        <div class="libero-slot mt-3">
+                            <div class="libero-badge">LÍB</div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[10px] font-bold text-purple-600 uppercase">Líbero (opcional)</p>
+                                <p class="text-xs font-bold text-gray-700 cancha-nombre" data-cancha="libero">—</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selectores -->
+                    <div class="card-admin">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Asignar jugadores</p>
+                        <form id="formR5" class="space-y-2"></form>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </main>
 

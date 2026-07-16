@@ -7,6 +7,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/brand.css">
     <link rel="stylesheet" href="../css/style.css"> 
 </head>
 
@@ -50,5 +51,13 @@
     <script defer src="../js/modules/estadisticas.js"></script>
 
 
+    <script>
+    function logout() {
+        localStorage.removeItem('session_admin');
+        localStorage.removeItem('session_delegado_id');
+        localStorage.removeItem('session_equipo_id');
+        window.location.href = '../index.html';
+    }
+    </script>
 </body>
 </html>

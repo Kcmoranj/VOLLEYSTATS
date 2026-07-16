@@ -80,7 +80,7 @@ function renderConvocatoria() {
         if (!elegible) {
             badgeEstado = `<span class="badge badge-warning badge-sm text-white">Pendiente de aprobación</span>`;
         } else if (suspension.suspendido) {
-            badgeEstado = `<span class="badge badge-error badge-sm text-white" title="${(window.escapeHtml ? window.escapeHtml(suspension.motivo) : (suspension.motivo || ''))}">🟥 Suspendido</span>`;
+            badgeEstado = `<span class="badge badge-error badge-sm text-white" title="${suspension.motivo}">🟥 Suspendido</span>`;
         }
 
         return `

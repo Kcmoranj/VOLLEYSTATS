@@ -1,4 +1,21 @@
-
+/**
+ * sanciones.js  (js/shared/sanciones.js)
+ * Módulo compartido de sanciones.  Expone window.Sanciones.
+ *
+ * Schema de datos (compatible con v4):
+ *   sancionesJugador[]  – tarjeta por jugador, identificada por id_inscripcion
+ *     { id, id_inscripcion, id_partido, tipo, motivo, multa, fecha, pagada,
+ *       partidos_suspension }
+ *   multasEquipo[]      – multa al equipo completo
+ *     { id, id_equipo, id_partido, motivo, monto, fecha, pagada }
+ *
+ * Usado por:
+ *   estadisticas-admin.js  – emitir tarjetas y multas en un partido (usa su propio modal)
+ *   convocatoria.js        – bloquear jugadores suspendidos
+ *   sanciones-admin.html   – reporte y exportación admin
+ *   delegado/sanciones.js  – vista de solo lectura para el delegado
+ *   jugadores.js           – historial de partidos con tarjetas
+ */
 
 window.Sanciones = (() => {
 
@@ -241,7 +258,7 @@ window.Sanciones = (() => {
             ? (data.partidos.find(p => p.id === id_partido)?.fecha || new Date().toISOString().slice(0, 10))
             : new Date().toISOString().slice(0, 10));
         data.multasEquipo.push({
-            id: window.genId ? window.genId() : Date.now(),
+            id: window.genId ? window.genId() : Date.now() * 1000),
             id_equipo, id_partido, id_participacion,
             monto: parseFloat(monto) || 0,
             motivo: motivo.trim(),

@@ -1,161 +1,174 @@
-/** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
 function escHTML(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+
 document.addEventListener('DOMContentLoaded', () => {
     const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    if (!data) return;
 
-    if (!data) {
-        console.error("No se pudieron cargar los datos.");
-        return;
+    // Populate nivel filter
+    const selNivel = document.getElementById('selectNivel');
+    if (selNivel && data.categoriasJugador) {
+        data.categoriasJugador.forEach(cat => {
+            selNivel.innerHTML += `<option value="${cat.id}">${escHTML(cat.nombre)}</option>`;
+        });
     }
 
-    const grid = document.getElementById('gridJugadores');
-    const inputBuscar = document.getElementById('inputBuscarJugador');
-    const pNombre = document.getElementById('perfil_nombre');
-    const pCategoria = document.getElementById('perfil_categoria');
-    const pInscripciones = document.getElementById('perfil_inscripciones');
+    const render = () => {
+        const texto   = document.getElementById('inputBuscarJugador')?.value.toLowerCase().trim() || '';
+        const nivelId = parseInt(document.getElementById('selectNivel')?.value) || 0;
 
-    window.renderJugadores = (filtro = "") => {
+        const jugadores = data.jugadores
+            .filter(j => j.estado === 'APROBADO')
+            .filter(j => !texto || j.nombre.toLowerCase().includes(texto))
+            .filter(j => !nivelId || j.id_categoria_jugador === nivelId);
+
+        const contador = document.getElementById('contadorJugadores');
+        if (contador) contador.textContent = `${jugadores.length} jugador${jugadores.length !== 1 ? 'es' : ''}`;
+
+        const grid = document.getElementById('gridJugadores');
         if (!grid) return;
-        grid.innerHTML = "";
 
-        const jugadoresFiltrados = data.jugadores
-            .filter(j => j.estado === 'APROBADO') // los pendientes de aprobación no se muestran al público
-            .filter(j => j.nombre.toLowerCase().includes(filtro.toLowerCase()));
+        if (jugadores.length === 0) {
+            grid.innerHTML = `<div class="col-span-3 text-center py-16 text-gray-400 font-semibold">
+                <p class="text-4xl mb-3">👤</p><p>No hay jugadores con ese filtro.</p></div>`;
+            return;
+        }
 
-        jugadoresFiltrados.forEach(j => {
-            const catJugador = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador);
-
-            grid.innerHTML += `
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="avatar placeholder">
-                        <div class="bg-slate-100 text-slate-400 rounded-full w-12 flex items-center justify-center">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path></svg>
-                        </div>
+        grid.innerHTML = jugadores.map(j => {
+            const cat = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador);
+            const levelColor = getLevelColor(cat?.nombre || '');
+            return `
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-4 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs shrink-0">
+                        ${escHTML(j.nombre.charAt(0))}
                     </div>
-                    <div>
-                        <h4 class="font-bold text-gray-800 text-sm leading-tight">${escHTML(j.nombre)}</h4>
-                        <span class="badge badge-ghost badge-sm font-bold text-blue-600 mt-1">${catJugador?.nombre || 'Sin categoría'}</span>
+                    <div class="min-w-0">
+                        <p class="font-bold text-gray-800 text-sm truncate">${escHTML(j.nombre)}</p>
+                        <span class="inline-block text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full mt-0.5 ${levelColor}">
+                            ${escHTML(cat?.nombre || 'Sin nivel')}
+                        </span>
                     </div>
                 </div>
-                <label for="modal_perfil" onclick="verPerfilJugador(${j.id})" class="btn btn-primary btn-sm rounded-lg text-white font-bold cursor-pointer">
-                    Ver Perfil
+                <label for="modal_perfil" onclick="verPerfilJugador(${j.id})"
+                       class="btn btn-primary btn-sm bg-blue-600 border-none text-white font-bold shrink-0 cursor-pointer">
+                    Ver
                 </label>
             </div>`;
-        });
+        }).join('');
     };
 
+    document.getElementById('inputBuscarJugador')?.addEventListener('input', render);
+    document.getElementById('selectNivel')?.addEventListener('change', render);
+    render();
+
+    // ── Perfil modal ──────────────────────────────────────────
     window.verPerfilJugador = (id) => {
-        const jugador = data.jugadores.find(j => j.id === id);
-        if (!jugador) return;
+        const j = data.jugadores.find(x => x.id === id);
+        if (!j) return;
 
-        const catJugador = data.categoriasJugador.find(c => c.id === jugador.id_categoria_jugador);
+        const cat = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador);
+        document.getElementById('perfil_nombre').textContent    = j.nombre;
+        document.getElementById('perfil_categoria').textContent = `Nivel: ${cat?.nombre || '—'}`;
 
-        if (pNombre) pNombre.innerText = jugador.nombre;
-        if (pCategoria) pCategoria.innerText = `Categoría del Jugador: ${catJugador?.nombre || '-'}`;
-
+        // Inscripciones
         const inscripciones = data.inscripciones.filter(i => i.id_jugador === id);
-        if (!pInscripciones) return;
-        pInscripciones.innerHTML = "";
-
-        if (inscripciones.length === 0) {
-            pInscripciones.innerHTML = `<p class="text-gray-400 text-center text-sm italic">Sin inscripciones activas.</p>`;
-        } else {
-            inscripciones.forEach(ins => {
-                const participacion = data.participaciones.find(p => p.id === ins.id_participacion);
-
-                const eq = data.equipos.find(e => e.id === participacion?.id_equipo);
-                const rama = data.ramas.find(r => r.id === participacion?.id_rama);
-                const catTorneo = data.categoriasTorneo.find(ct => ct.id === participacion?.id_categoria_torneo);
-
-                pInscripciones.innerHTML += `
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex justify-between items-center mb-2">
-                    <div>
-                        <p class="font-bold text-gray-800 text-sm">${eq?.nombre || 'Sin equipo'}</p>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">
-                            ${catTorneo?.nombre || '-'} • ${rama?.nombre || '-'}
-                        </p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Camiseta</p>
-                        <p class="text-xl font-black text-blue-600 leading-none mt-1">#${ins.numero_camiseta}</p>
-                    </div>
-                </div>`;
-            });
-        }
-
-        // Historial de partidos jugados
-        const elHistorial = document.getElementById('perfil_historial');
-        if (!elHistorial) return;
-
-        const historial = window.Sanciones ? window.Sanciones.historialPartidosJugador(id) : [];
-
-        if (historial.length === 0) {
-            elHistorial.innerHTML = `<p class="text-gray-400 text-center text-sm italic">Sin partidos registrados.</p>`;
-        } else {
-            const totales = historial.reduce((acc, h) => ({
-                puntos: acc.puntos + h.stats.puntos,
-                victorias: acc.victorias + (h.gano ? 1 : 0),
-                amarillas: acc.amarillas + h.tarjetas.filter(t => t.tipo === 'AMARILLA').length,
-                rojas: acc.rojas + h.tarjetas.filter(t => t.tipo === 'ROJA').length
-            }), { puntos: 0, victorias: 0, amarillas: 0, rojas: 0 });
-
-            elHistorial.innerHTML = `
-                <div class="grid grid-cols-3 gap-2 mb-4">
-                    <div class="bg-blue-50 rounded-xl p-3 text-center">
-                        <p class="text-2xl font-black text-blue-600">${historial.length}</p>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Partidos</p>
-                    </div>
-                    <div class="bg-green-50 rounded-xl p-3 text-center">
-                        <p class="text-2xl font-black text-green-600">${totales.victorias}</p>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Victorias</p>
-                    </div>
-                    <div class="bg-purple-50 rounded-xl p-3 text-center">
-                        <p class="text-2xl font-black text-purple-600">${totales.puntos}</p>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Pts Total</p>
-                    </div>
-                </div>
-                ${(totales.amarillas > 0 || totales.rojas > 0) ? `
-                <div class="flex gap-2 mb-4">
-                    ${totales.amarillas > 0 ? `<span class="badge badge-warning text-white font-bold text-xs">🟨 ${totales.amarillas} amarilla${totales.amarillas > 1 ? 's' : ''}</span>` : ''}
-                    ${totales.rojas > 0 ? `<span class="badge badge-error text-white font-bold text-xs">🟥 ${totales.rojas} roja${totales.rojas > 1 ? 's' : ''}</span>` : ''}
-                </div>` : ''}
-                <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
-                ${historial.map(h => {
-                    const resBadge = h.gano
-                        ? `<span class="badge badge-success badge-xs text-white font-bold">W</span>`
-                        : `<span class="badge badge-error badge-xs text-white font-bold">L</span>`;
-                    const tarjetasBadges = [
-                        ...h.tarjetas.filter(t => t.tipo === 'AMARILLA').map(() => '🟨'),
-                        ...h.tarjetas.filter(t => t.tipo === 'ROJA').map(() => '🟥')
-                    ].join('');
+        const elIns = document.getElementById('perfil_inscripciones');
+        if (elIns) {
+            if (!inscripciones.length) {
+                elIns.innerHTML = `<p class="text-gray-400 text-center text-sm italic">Sin inscripciones activas.</p>`;
+            } else {
+                elIns.innerHTML = inscripciones.map(ins => {
+                    const part    = data.participaciones.find(p => p.id === ins.id_participacion);
+                    const eq      = data.equipos.find(e => e.id === part?.id_equipo);
+                    const rama    = data.ramas.find(r => r.id === part?.id_rama);
+                    const catTorn = data.categoriasTorneo.find(c => c.id === part?.id_categoria_torneo);
                     return `
-                    <div class="bg-gray-50 rounded-lg px-3 py-2 text-xs border border-gray-100">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <span class="font-black text-gray-700">vs ${h.rival}</span>
-                                <span class="text-gray-400 ml-1">(${h.esLocal ? 'Local' : 'Visita'})</span>
-                                ${tarjetasBadges ? `<span class="ml-1">${tarjetasBadges}</span>` : ''}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                ${resBadge}
-                                <span class="font-black text-gray-500 text-[10px]">${h.resultado}</span>
-                            </div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">${escHTML(eq?.nombre || '—')}</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mt-0.5">${escHTML(catTorn?.nombre || '—')} · ${escHTML(rama?.nombre || '—')}</p>
                         </div>
-                        <div class="flex gap-3 mt-1 text-[10px] text-gray-400 font-bold">
-                            <span>${h.partido.fecha}</span>
-                            <span>${h.categoria} · ${h.rama}</span>
-                            <span class="text-blue-600">${h.stats.puntos}pts</span>
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase">Camiseta</p>
+                            <p class="text-xl font-black text-blue-600 leading-none mt-0.5">#${ins.numero_camiseta}</p>
                         </div>
                     </div>`;
-                }).join('')}
-                </div>`;
+                }).join('');
+            }
         }
-    };
 
-    inputBuscar?.addEventListener('input', (e) => renderJugadores(e.target.value));
-    renderJugadores();
+        // Historial
+        const elHist = document.getElementById('perfil_historial');
+        if (!elHist) return;
+        const historial = window.Sanciones ? window.Sanciones.historialPartidosJugador(id) : [];
+        if (!historial.length) {
+            elHist.innerHTML = `<p class="text-gray-400 text-center text-sm italic">Sin partidos registrados.</p>`;
+            return;
+        }
+
+        const totales = historial.reduce((acc, h) => ({
+            victorias: acc.victorias + (h.gano ? 1 : 0),
+            puntos:    acc.puntos    + (h.stats?.puntos || 0),
+            amarillas: acc.amarillas + h.tarjetas.filter(t => t.tipo === 'AMARILLA').length,
+            rojas:     acc.rojas     + h.tarjetas.filter(t => t.tipo === 'ROJA').length,
+        }), { victorias:0, puntos:0, amarillas:0, rojas:0 });
+
+        elHist.innerHTML = `
+        <div class="grid grid-cols-3 gap-2 mb-3">
+            <div class="bg-blue-50 rounded-xl p-3 text-center">
+                <p class="text-2xl font-black text-blue-600">${historial.length}</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Partidos</p>
+            </div>
+            <div class="bg-green-50 rounded-xl p-3 text-center">
+                <p class="text-2xl font-black text-green-600">${totales.victorias}</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Victorias</p>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-3 text-center">
+                <p class="text-2xl font-black text-blue-600">${totales.puntos}</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Pts total</p>
+            </div>
+        </div>
+        ${(totales.amarillas || totales.rojas) ? `<div class="flex gap-2 mb-3">
+            ${totales.amarillas ? `<span class="badge badge-warning text-white font-bold text-xs">🟨 ${totales.amarillas}</span>` : ''}
+            ${totales.rojas     ? `<span class="badge badge-error text-white font-bold text-xs">🟥 ${totales.rojas}</span>` : ''}
+        </div>` : ''}
+        <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
+        ${historial.map(h => {
+            const win = h.gano;
+            const tBadges = [...h.tarjetas.filter(t=>t.tipo==='AMARILLA').map(()=>'🟨'),
+                             ...h.tarjetas.filter(t=>t.tipo==='ROJA').map(()=>'🟥')].join('');
+            return `<div class="bg-gray-50 rounded-lg px-3 py-2 text-xs border border-gray-100">
+                <div class="flex justify-between items-center">
+                    <div><span class="font-black text-gray-700">vs ${escHTML(h.rival)}</span>
+                        <span class="text-gray-400 ml-1">(${h.esLocal ? 'Local' : 'Visita'})</span>
+                        ${tBadges ? `<span class="ml-1">${tBadges}</span>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="badge ${win ? 'badge-success' : 'badge-error'} badge-xs text-white font-bold">${win ? 'W' : 'L'}</span>
+                        <span class="font-black text-gray-500 text-[10px]">${h.resultado}</span>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-1 text-[10px] text-gray-400 font-bold">
+                    <span>${h.partido.fecha}</span>
+                    <span>${escHTML(h.categoria)} · ${escHTML(h.rama)}</span>
+                    <span class="text-blue-600">${h.stats?.puntos || 0}pts</span>
+                </div>
+            </div>`;
+        }).join('')}
+        </div>`;
+    };
 });
+
+function getLevelColor(nombre) {
+    const n = (nombre || '').toUpperCase();
+    if (n.includes('A+') || n === 'PRO')    return 'bg-purple-100 text-purple-700';
+    if (n.includes('A-'))                   return 'bg-indigo-100 text-indigo-700';
+    if (n.includes('B+'))                   return 'bg-blue-100 text-blue-700';
+    if (n.includes('B-'))                   return 'bg-cyan-100 text-cyan-700';
+    if (n.includes('C+'))                   return 'bg-green-100 text-green-700';
+    if (n.includes('C-') || n === 'SEMI')   return 'bg-lime-100 text-lime-700';
+    if (n === 'TODDLER' || n === 'CANTERA') return 'bg-amber-100 text-amber-700';
+    return 'bg-gray-100 text-gray-600';
+}

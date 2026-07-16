@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Partidos | VolleyStats Delegado</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../css/brand.css">
+    <style>
+        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+        .tab-btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.7rem; font-weight: 800;
+                   text-transform: uppercase; letter-spacing: .05em; cursor: pointer; transition: all .15s; color: #6b7280; }
+        .tab-btn.active { background: #2563EB; color: white; }
+        .stat-mini { text-align: center; padding: .5rem .75rem; background: #f9fafb; border-radius: .75rem; }
+    </style>
+</head>
+<body class="bg-[#F3F4F6] flex h-screen font-sans">
+
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+        <div class="flex-1">
+            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            <p class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider -mt-4 mb-4">Portal Delegado</p>
+            <nav class="flex flex-col gap-2 px-4">
+                <a href="dashboard-delegado.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Resumen</a>
+                <a href="mi-equipo.html"           class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Mi Equipo</a>
+                <a href="mis-partidos.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📅 Mis Partidos</a>
+                <a href="convocatoria.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📋 Convocatoria</a>
+                <a href="r5.html"                  class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏐 R5 / Alineación</a>
+                <a href="sanciones.html"           class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t">
+            <button onclick="logoutDelegado()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto">
+
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
+            <h1 class="text-2xl font-black">📅 Mis Partidos</h1>
+            <p class="text-blue-200 text-sm mt-1">Calendario, resultados y estadísticas de tu equipo</p>
+        </div>
+
+        <div class="p-8 space-y-6">
+
+            <!-- Tabs -->
+            <div class="flex gap-2">
+                <button id="tabProximos"   class="tab-btn active" onclick="setTab('proximos')">Próximos</button>
+                <button id="tabResultados" class="tab-btn"        onclick="setTab('resultados')">Resultados</button>
+                <button id="tabTodos"      class="tab-btn"        onclick="setTab('todos')">Todos</button>
+            </div>
+
+            <!-- Sin equipo -->
+            <div id="sinEquipo" class="hidden card-admin text-center">
+                <p class="font-black text-gray-800 mb-2">Aún no tienes equipo creado</p>
+                <a href="mi-equipo.html" class="btn btn-primary btn-sm bg-blue-600 border-none text-white font-bold">Ir a Mi Equipo</a>
+            </div>
+
+            <!-- Lista de partidos -->
+            <div id="listaPartidos" class="space-y-4"></div>
+
+        </div>
+    </main>
+
+    <script src="../../js/mock-data.js"></script>
+    <script src="../../js/shared/data-bridge.js"></script>
+    <script src="../../js/modules/auth.js"></script>
+<script>
+function escHTML(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+let _tab = 'proximos';
+
+document.addEventListener('DOMContentLoaded', () => {
+    verificarSesionDelegado();
+    renderPartidos();
+});
+
+window.setTab = function(tab) {
+    _tab = tab;
+    ['tabProximos','tabResultados','tabTodos'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.className = 'tab-btn' + (id === `tab${tab.charAt(0).toUpperCase()+tab.slice(1)}` ? ' active' : '');
+    });
+    renderPartidos();
+};
+
+function normEstado(e) { return String(e || '').toUpperCase().trim(); }
+
+function renderPartidos() {
+    const data = window.AppDB.get();
+    const equipo = getMiEquipo(data);
+
+    if (!equipo) {
+        document.getElementById('sinEquipo').classList.remove('hidden');
+        document.getElementById('listaPartidos').innerHTML = '';
+        return;
+    }
+
+    const participaciones = getParticipacionesDeMiEquipo(data);
+    const idsP = participaciones.map(p => p.id);
+
+    let partidos = data.partidos.filter(p =>
+        idsP.includes(p.id_local_participacion) || idsP.includes(p.id_visitante_participacion)
+    );
+
+    if (_tab === 'proximos')   partidos = partidos.filter(p => normEstado(p.estado) !== 'FINALIZADO');
+    if (_tab === 'resultados') partidos = partidos.filter(p => normEstado(p.estado) === 'FINALIZADO');
+
+    partidos.sort((a, b) => {
+        const da = new Date(a.fecha + 'T' + (a.hora || '00:00'));
+        const db = new Date(b.fecha + 'T' + (b.hora || '00:00'));
+        return _tab === 'resultados' ? db - da : da - db;
+    });
+
+    const lista = document.getElementById('listaPartidos');
+    if (partidos.length === 0) {
+        lista.innerHTML = `<div class="card-admin text-center text-gray-400 font-semibold py-8">
+            <p class="text-3xl mb-3">🏐</p>
+            <p>${_tab === 'proximos' ? 'No hay partidos próximos.' : _tab === 'resultados' ? 'No hay resultados todavía.' : 'No hay partidos registrados.'}</p>
+        </div>`;
+        return;
+    }
+
+    lista.innerHTML = partidos.map(p => buildCard(p, data, idsP)).join('');
+}
+
+function buildCard(p, data, idsP) {
+    const esLocal   = idsP.includes(p.id_local_participacion);
+    const idMia     = esLocal ? p.id_local_participacion : p.id_visitante_participacion;
+    const idRival   = esLocal ? p.id_visitante_participacion : p.id_local_participacion;
+
+    const partRival = data.participaciones.find(x => x.id === idRival);
+    const eqRival   = data.equipos.find(e => e.id === partRival?.id_equipo);
+    const catObj    = data.categoriasTorneo.find(c => c.id === data.participaciones.find(x=>x.id===idMia)?.id_categoria_torneo);
+    const ramaObj   = data.ramas.find(r => r.id === data.participaciones.find(x=>x.id===idMia)?.id_rama);
+
+    const estado = normEstado(p.estado);
+    let sL = 0, sV = 0;
+    (p.sets || []).forEach(s => { if (s.local > s.visitante) sL++; else sV++; });
+    const misSets   = esLocal ? sL : sV;
+    const susSets   = esLocal ? sV : sL;
+    const gane      = misSets > susSets;
+    const finalizado = estado === 'FINALIZADO';
+
+    // Result color
+    const resultColor = !finalizado ? 'text-gray-400'
+                       : p.wo ? 'text-amber-600'
+                       : gane ? 'text-green-600' : 'text-red-500';
+    const resultLabel = !finalizado ? ''
+                       : p.wo ? (p.wo_equipo === (esLocal ? 'local' : 'visitante') ? 'W.O. (tú)' : 'W.O. (rival)')
+                       : gane ? 'Victoria' : 'Derrota';
+
+    // Mis stats en este partido
+    const misInsIds = data.inscripciones
+        .filter(i => i.id_participacion === idMia)
+        .map(i => i.id);
+    const statsPartido = data.estadisticasJugador
+        .filter(s => s.id_partido === p.id && misInsIds.includes(s.id_inscripcion))
+        .sort((a, b) => (b.puntos || 0) - (a.puntos || 0));
+
+    const statsHTML = statsPartido.length === 0 ? '' : `
+        <div class="mt-4 border-t pt-4">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Estadísticas del partido</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead><tr class="text-[9px] text-gray-400 uppercase">
+                        <th class="text-left pb-1">Jugador</th>
+                        <th class="text-center pb-1">Pts</th>
+                        <th class="text-center pb-1">Atq</th>
+                        <th class="text-center pb-1">Blq</th>
+                        <th class="text-center pb-1">Saq</th>
+                        <th class="text-center pb-1">Def</th>
+                        <th class="text-center pb-1">Col</th>
+                    </tr></thead>
+                    <tbody>
+                    ${statsPartido.map(s => {
+                        const ins = data.inscripciones.find(i => i.id === s.id_inscripcion);
+                        const j   = data.jugadores.find(x => x.id === ins?.id_jugador);
+                        return `<tr class="border-t border-gray-50">
+                            <td class="py-1 font-semibold text-gray-700">#${ins?.numero_camiseta} ${escHTML(j?.nombre?.split(' ')[0] || '—')}</td>
+                            <td class="text-center font-black text-blue-600">${s.puntos || 0}</td>
+                            <td class="text-center text-gray-500">${s.ataque || 0}</td>
+                            <td class="text-center text-gray-500">${s.bloqueo || 0}</td>
+                            <td class="text-center text-gray-500">${s.saque || 0}</td>
+                            <td class="text-center text-gray-500">${s.defensa || 0}</td>
+                            <td class="text-center text-gray-500">${s.colocacion || 0}</td>
+                        </tr>`;
+                    }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
+
+    const setsBadge = finalizado
+        ? `<span class="font-black text-lg ${resultColor}">${misSets}–${susSets}</span>`
+        : `<span class="text-gray-400 text-sm font-semibold">${p.fecha}</span>`;
+
+    return `
+    <div class="card-admin">
+        <div class="flex items-start justify-between mb-3">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-sm font-black text-gray-800">${esLocal ? 'vs' : '@'} ${escHTML(eqRival?.nombre || '—')}</span>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full">${escHTML(catObj?.nombre || '—')} · ${escHTML(ramaObj?.nombre || '—')}</span>
+                </div>
+                <p class="text-xs text-gray-400">📅 ${p.fecha} · 🕒 ${p.hora || '—'} · 📍 ${escHTML(p.ubicacion || '—')} · ${esLocal ? 'Local' : 'Visitante'}</p>
+            </div>
+            <div class="text-right shrink-0 ml-4">
+                ${setsBadge}
+                ${resultLabel ? `<p class="text-[10px] font-bold ${resultColor} mt-0.5">${resultLabel}</p>` : ''}
+            </div>
+        </div>
+        ${(p.sets?.length && finalizado) ? `<div class="flex gap-1 flex-wrap">
+            ${p.sets.map(s => `<span class="bg-slate-50 text-slate-500 px-2 py-0.5 rounded text-[11px] font-semibold border">${s.local}–${s.visitante}</span>`).join('')}
+        </div>` : ''}
+        ${statsHTML}
+    </div>`;
+}
+</script>
+</body>
+</html>

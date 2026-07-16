@@ -3,116 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalle Equipo | VolleyStats Admin</title>
+    <title>Equipo | VolleyStats</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
-    </style>
+    <link rel="stylesheet" href="../css/brand.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="bg-[#F3F4F6] min-h-screen flex font-sans">
+<body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
-        <div class="flex-1">
-            <span class="brand-title p-6 block text-2xl font-black">Volley<span class="brand-highlight text-blue-600">Stats</span></span>
-            <nav class="flex flex-col gap-2 px-4">
-                <a href="dashboard.html"  class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
-                <a href="partidos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
-                <a href="jugadores-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
-                <a href="equipos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 active bg-blue-50 text-blue-600">🛡️ Equipos</a>
-                <a href="liga-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
-                <a href="actividades-recientes.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100">📝 Actividades</a>
-                <a href="solicitudes-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
-            </nav>
+<aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+    <div class="flex-1">
+        <span class="p-6 block text-3xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+        <nav class="flex flex-col gap-2 px-4">
+            <p class="text-[10px] font-bold text-gray-400 px-3 uppercase tracking-wider mb-2">Navegación</p>
+            <a href="partidos.html"     class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
+            <a href="liga.html"         class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+            <a href="jugadores.html"    class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+            <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Estadísticas</a>
+        </nav>
+    </div>
+    <div class="p-4 border-t">
+        <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+    </div>
+</aside>
+
+<main class="flex-1 overflow-y-auto">
+
+    <!-- Hero -->
+    <div class="bg-gradient-to-r from-blue-700 to-blue-800 px-8 py-8 text-white">
+        <a href="javascript:history.back()" class="text-slate-300 text-sm font-bold hover:text-white mb-3 block">← Volver</a>
+        <h1 id="nombreEquipo" class="text-3xl font-black">—</h1>
+        <p id="subtituloEquipo" class="text-slate-300 text-sm mt-1">—</p>
+    </div>
+
+    <div class="p-8 space-y-8 max-w-4xl">
+
+        <!-- Sin datos -->
+        <div id="sinDatos" class="hidden bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400 font-semibold">
+            No se encontró este equipo.
         </div>
-        <div class="p-4 border-t">
-            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">
-                ➡️ Cerrar sesión
-            </button>
-        </div>
-    </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
-        <a href="equipos-admin.html" class="text-blue-600 font-bold hover:underline mb-6 block">← Volver a Equipos</a>
-        <h1 id="nombreEquipo" class="text-3xl font-black mb-2 uppercase text-gray-900">Cargando equipo...</h1>
-        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">
-            Las categorías/participaciones ahora las crea el delegado del equipo. Aquí puedes aprobarlas,
-            editar datos del cuerpo técnico y gestionar la nómina.
-        </p>
+        <!-- Participaciones -->
+        <div id="contenidoEquipo" class="space-y-6"></div>
 
-        <div id="participacionesContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
-    </main>
+    </div>
+</main>
 
-    <dialog id="modalEditor" class="modal">
-        <div class="modal-box bg-white max-w-lg">
-            <h3 class="font-black text-lg mb-6 uppercase border-b pb-4">Configurar Participación</h3>
+<script src="../js/mock-data.js"></script>
+<script src="../js/shared/data-bridge.js"></script>
+<script>
+function escHTML(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
-            <div class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <input id="editTecnico" class="input input-bordered w-full text-sm font-bold" placeholder="Técnico">
-                    <input id="editAsistente" class="input input-bordered w-full text-sm font-bold" placeholder="Asistente">
-                </div>
+function logout() {
+    localStorage.removeItem('session_admin');
+    localStorage.removeItem('session_delegado_id');
+    localStorage.removeItem('session_equipo_id');
+    window.location.href = '../index.html';
+}
 
-                <div>
-                    <label class="text-xs font-bold uppercase text-gray-400">Capitán:</label>
-                    <select id="editCapitan" class="select select-bordered w-full text-sm font-bold mt-1">
-                        <option value="">Sin capitán asignado</option>
-                    </select>
-                </div>
+document.addEventListener('DOMContentLoaded', () => {
+    const data = window.AppDB.get();
+    const idEquipo = parseInt(new URLSearchParams(window.location.search).get('id'));
+    const equipo = data.equipos.find(e => e.id === idEquipo);
 
-                <div class="border-t pt-4">
-                    <label class="text-xs font-bold uppercase text-gray-400">Nómina actual:</label>
-                    <div id="listaJugadoresEditar" class="space-y-2 mt-2 max-h-48 overflow-y-auto"></div>
-                </div>
+    if (!equipo) {
+        document.getElementById('sinDatos').classList.remove('hidden');
+        return;
+    }
 
-                <div class="border-t pt-4">
-                    <label class="text-xs font-bold uppercase text-gray-400">Agregar jugador ya aprobado:</label>
-                    <div class="flex gap-2 mt-2 relative">
-                        <div class="flex-1 relative">
-                            <input
-                                id="inputBuscarJugador"
-                                type="text"
-                                autocomplete="off"
-                                placeholder="Buscar jugador..."
-                                class="input input-bordered input-sm w-full"
-                            >
-                            <div id="listaSugerenciasJugador"
-                                 class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                            </div>
-                        </div>
-                        <input
-                            id="inputCamisetaNuevo"
-                            type="number"
-                            min="0"
-                            placeholder="#"
-                            class="input input-bordered input-sm w-16 text-center"
-                        >
-                        <button id="btnAgregarConfirmado" type="button" class="btn btn-sm btn-primary">Añadir</button>
+    document.title = `${equipo.nombre} | VolleyStats`;
+    document.getElementById('nombreEquipo').textContent = equipo.nombre;
+
+    const participaciones = data.participaciones.filter(p => p.id_equipo === idEquipo);
+    const aprobadas = participaciones.filter(p => p.aprobado).length;
+    document.getElementById('subtituloEquipo').textContent =
+        `${participaciones.length} participación${participaciones.length !== 1 ? 'es' : ''} · ${aprobadas} aprobada${aprobadas !== 1 ? 's' : ''}`;
+
+    const contenido = document.getElementById('contenidoEquipo');
+
+    if (participaciones.length === 0) {
+        contenido.innerHTML = `<div class="bg-white rounded-xl border p-6 text-center text-gray-400">Sin participaciones registradas.</div>`;
+        return;
+    }
+
+    contenido.innerHTML = participaciones.map(p => {
+        const cat  = data.categoriasTorneo.find(c => c.id === p.id_categoria_torneo);
+        const rama = data.ramas.find(r => r.id === p.id_rama);
+
+        const inscripciones = data.inscripciones.filter(i => i.id_participacion === p.id);
+        const jugadores = inscripciones.map(ins => {
+            const j = data.jugadores.find(x => x.id === ins.id_jugador);
+            const catJ = data.categoriasJugador.find(c => c.id === j?.id_categoria_jugador);
+            return { ins, j, catJ };
+        }).filter(x => x.j && x.j.estado === 'APROBADO');
+
+        const estadoBadge = p.aprobado
+            ? '<span class="badge badge-success badge-sm text-white font-bold">Aprobado</span>'
+            : '<span class="badge badge-warning badge-sm text-white font-bold">Pendiente</span>';
+
+        const jugadoresHTML = jugadores.length === 0
+            ? '<p class="text-gray-400 italic text-sm py-2">Sin jugadores registrados.</p>'
+            : `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                ${jugadores.map(({ ins, j, catJ }) => `
+                <div class="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
+                    <span class="text-lg font-black text-blue-600 w-8 text-center">#${ins.numero_camiseta}</span>
+                    <div>
+                        <p class="font-bold text-gray-800 text-sm">${escHTML(j.nombre)}</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">${escHTML(catJ?.nombre || '—')}</p>
                     </div>
-                    <p id="msjJugadorSeleccionado" class="text-[10px] text-blue-600 font-bold mt-1 hidden"></p>
-                    <p class="text-[10px] text-gray-400 mt-2">
-                        ¿El jugador todavía no existe o está pendiente de aprobación? Revísalo en
-                        <a href="solicitudes-admin.html" class="text-blue-600 font-bold hover:underline">Solicitudes</a>.
-                    </p>
+                </div>`).join('')}
+               </div>`;
+
+        // Partidos de esta participación
+        const partidos = data.partidos.filter(pt =>
+            pt.id_local_participacion === p.id || pt.id_visitante_participacion === p.id
+        ).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        const historialHTML = partidos.length === 0
+            ? ''
+            : `<div class="mt-4 border-t pt-4">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Historial</p>
+                <div class="space-y-1">
+                ${partidos.slice(0, 5).map(pt => {
+                    const esLocal = pt.id_local_participacion === p.id;
+                    const idRival = esLocal ? pt.id_visitante_participacion : pt.id_local_participacion;
+                    const partRival = data.participaciones.find(x => x.id === idRival);
+                    const rival = data.equipos.find(e => e.id === partRival?.id_equipo)?.nombre || '—';
+                    let sL = 0, sV = 0;
+                    (pt.sets || []).forEach(s => { if (s.local > s.visitante) sL++; else sV++; });
+                    const gano = esLocal ? sL > sV : sV > sL;
+                    const estado = String(pt.estado || '').toUpperCase();
+                    const marcador = estado === 'FINALIZADO'
+                        ? `<span class="font-black ${gano ? 'text-green-600' : 'text-red-500'}">${esLocal ? sL : sV}–${esLocal ? sV : sL}</span>`
+                        : `<span class="text-gray-400 text-xs">${pt.fecha}</span>`;
+                    return `<div class="flex justify-between items-center text-xs py-1">
+                        <span class="text-gray-600">${estado === 'FINALIZADO' ? (gano ? '✅' : '❌') : '📅'} vs ${escHTML(rival)}</span>
+                        ${marcador}
+                    </div>`;
+                }).join('')}
                 </div>
-            </div>
+               </div>`;
 
-            <div class="modal-action">
-                <form method="dialog">
-                    <button class="btn btn-ghost">Cancelar</button>
-                </form>
-                <button id="btnGuardarModal" class="btn btn-primary">Guardar Cambios</button>
+        return `
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div>
+                    <p class="font-black text-gray-900">${escHTML(cat?.nombre || '—')} · ${escHTML(rama?.nombre || '—')}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Grupo ${escHTML(p.grupo || '—')} · ${jugadores.length} jugador${jugadores.length !== 1 ? 'es' : ''}</p>
+                </div>
+                ${estadoBadge}
             </div>
-        </div>
-        <form method="dialog" class="modal-backdrop">
-            <button>cerrar</button>
-        </form>
-    </dialog>
-
-    <script src="../js/mock-data.js"></script>
-    <script src="../js/shared/data-bridge.js"></script>
-    <script src="../js/shared/elegibilidad.js"></script>
-    <script src="../js/modules/admin/registrar-actividad.js"></script>
-    <script src="../js/modules/admin/detalle-equipo.js"></script>
+            <div class="px-6 py-4">
+                ${p.tecnico ? `<p class="text-xs text-gray-500 mb-3">👨‍🏫 Técnico: <strong>${escHTML(p.tecnico)}</strong>${p.asistente ? ` · Asistente: <strong>${escHTML(p.asistente)}</strong>` : ''}</p>` : ''}
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Plantel</p>
+                ${jugadoresHTML}
+                ${historialHTML}
+            </div>
+        </div>`;
+    }).join('');
+});
+</script>
 </body>
 </html>

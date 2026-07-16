@@ -6,20 +6,25 @@
     <title>Panel del Delegado | VolleyStats</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>.card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }</style>
+    <link rel="stylesheet" href="../../css/brand.css">
+    <style>
+        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+        .stat-card { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    </style>
 </head>
 <body class="bg-[#F3F4F6] flex h-screen font-sans">
 
-        <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
         <div class="flex-1">
             <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
             <p class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider -mt-4 mb-4">Portal Delegado</p>
             <nav class="flex flex-col gap-2 px-4">
                 <a href="dashboard-delegado.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📊 Resumen</a>
-                <a href="mi-equipo.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Mi Equipo</a>
-                <a href="convocatoria.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📋 Convocatoria</a>
-                <a href="r5.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏐 R5 / Alineación</a>
-                <a href="sanciones.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
+                <a href="mi-equipo.html"           class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Mi Equipo</a>
+                <a href="mis-partidos.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Mis Partidos</a>
+                <a href="convocatoria.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📋 Convocatoria</a>
+                <a href="r5.html"                  class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏐 R5 / Alineación</a>
+                <a href="sanciones.html"           class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
             </nav>
         </div>
         <div class="p-4 border-t">
@@ -27,35 +32,86 @@
         </div>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
-        <h1 class="text-2xl font-black text-gray-900 mb-1 uppercase">Mi Equipo: <span id="nombreEquipo" class="text-blue-600">—</span></h1>
-        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">Panel del delegado</p>
+    <main class="flex-1 overflow-y-auto">
 
-        <div id="avisoSinEquipo" class="card-admin text-center hidden">
-            <p class="font-black text-gray-900 mb-2">Todavía no has creado tu equipo</p>
-            <p class="text-xs text-gray-400 mb-4">Ve a "Mi Equipo" en el menú para ponerle nombre y elegir su primera categoría/rama.</p>
-            <a href="mi-equipo.html" class="btn btn-outline border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-bold">Ir a Mi Equipo</a>
+        <!-- Hero banner -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8 text-white">
+            <p class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">Bienvenido,</p>
+            <h1 class="text-3xl font-black" id="nombreDelegado">—</h1>
+            <p class="text-blue-200 text-sm mt-1 font-medium">Equipo: <span id="nombreEquipo" class="text-white font-black">—</span></p>
         </div>
 
-        <div id="resumenConEquipo" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="card-admin">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">Participaciones aprobadas</span>
-                    <p id="statAprobadas" class="text-2xl font-black mt-2 text-green-600">0</p>
-                </div>
-                <div class="card-admin">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">Participaciones pendientes</span>
-                    <p id="statPendientes" class="text-2xl font-black mt-2 text-orange-500">0</p>
-                </div>
-                <div class="card-admin">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">Jugadores propuestos pendientes</span>
-                    <p id="statJugadoresPendientes" class="text-2xl font-black mt-2 text-blue-600">0</p>
+        <div class="p-8 space-y-8">
+
+            <!-- Sin equipo -->
+            <div id="avisoSinEquipo" class="hidden">
+                <div class="card-admin border-l-4 border-l-amber-400 flex items-start gap-4">
+                    <span class="text-3xl">⚠️</span>
+                    <div>
+                        <p class="font-black text-gray-900 mb-1">Todavía no has creado tu equipo</p>
+                        <p class="text-sm text-gray-500 mb-4">Ve a "Mi Equipo" para registrar tu equipo y empezar a participar.</p>
+                        <a href="mi-equipo.html" class="btn btn-primary btn-sm bg-blue-600 border-none text-white font-bold">Ir a Mi Equipo →</a>
+                    </div>
                 </div>
             </div>
 
-            <div class="card-admin">
-                <span class="text-[10px] font-bold text-blue-600 uppercase">Próximo Partido</span>
-                <div id="proximoPartido" class="mt-2">Cargando...</div>
+            <!-- Con equipo -->
+            <div id="resumenConEquipo" class="hidden space-y-8">
+
+                <!-- Stats row -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="stat-card">
+                        <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-lg shrink-0">✅</div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Participaciones aprobadas</p>
+                            <p id="statAprobadas" class="text-2xl font-black text-green-600 mt-0.5">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-lg shrink-0">⏳</div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">En espera de aprobación</p>
+                            <p id="statPendientes" class="text-2xl font-black text-amber-500 mt-0.5">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg shrink-0">👤</div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Jugadores pendientes</p>
+                            <p id="statJugadoresPendientes" class="text-2xl font-black text-blue-600 mt-0.5">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Próximo partido -->
+                <div class="card-admin">
+                    <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-3">🏐 Próximo Partido</p>
+                    <div id="proximoPartido" class="text-gray-400 italic text-sm">Cargando...</div>
+                </div>
+
+                <!-- Accesos rápidos -->
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Accesos rápidos</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <a href="mi-equipo.html"    class="card-admin hover:shadow-md transition-all text-center cursor-pointer no-underline">
+                            <div class="text-2xl mb-2">🛡️</div>
+                            <p class="text-xs font-black text-gray-700 uppercase">Mi Equipo</p>
+                        </a>
+                        <a href="convocatoria.html" class="card-admin hover:shadow-md transition-all text-center cursor-pointer no-underline">
+                            <div class="text-2xl mb-2">📋</div>
+                            <p class="text-xs font-black text-gray-700 uppercase">Convocatoria</p>
+                        </a>
+                        <a href="r5.html"           class="card-admin hover:shadow-md transition-all text-center cursor-pointer no-underline">
+                            <div class="text-2xl mb-2">🏐</div>
+                            <p class="text-xs font-black text-gray-700 uppercase">R5</p>
+                        </a>
+                        <a href="sanciones.html"    class="card-admin hover:shadow-md transition-all text-center cursor-pointer no-underline">
+                            <div class="text-2xl mb-2">🟨</div>
+                            <p class="text-xs font-black text-gray-700 uppercase">Sanciones</p>
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>

@@ -36,14 +36,14 @@ function inicializarPagina() {
 
         const selCat = document.getElementById('crearCategoria');
         const selRama = document.getElementById('crearRama');
-        selCat.innerHTML = data.categoriasTorneo.map(c => `<option value="${c.id}">${(window.escapeHtml ? window.escapeHtml(c.nombre) : (c.nombre || ''))}</option>`).join('');
-        selRama.innerHTML = data.ramas.map(r => `<option value="${r.id}">${(window.escapeHtml ? window.escapeHtml(r.nombre) : (r.nombre || ''))}</option>`).join('');
+        selCat.innerHTML = data.categoriasTorneo.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+        selRama.innerHTML = data.ramas.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
         return;
     }
 
     bloqueCrear.classList.add('hidden');
     bloqueGestion.classList.remove('hidden');
-    document.getElementById('nombreMiEquipo').textContent = `: ${(window.escapeHtml ? window.escapeHtml(equipo.nombre) : (equipo.nombre || ''))}`;
+    document.getElementById('nombreMiEquipo').textContent = `: ${equipo.nombre}`;
 
     inicializarSelectorParticipaciones();
 }
@@ -86,8 +86,8 @@ function inicializarSelectorParticipaciones() {
     // Poblar selects del modal "Agregar categoría"
     const selCat = document.getElementById('nuevaCategoria');
     const selRama = document.getElementById('nuevaRama');
-    if (selCat) selCat.innerHTML = data.categoriasTorneo.map(c => `<option value="${c.id}">${(window.escapeHtml ? window.escapeHtml(c.nombre) : (c.nombre || ''))}</option>`).join('');
-    if (selRama) selRama.innerHTML = data.ramas.map(r => `<option value="${r.id}">${(window.escapeHtml ? window.escapeHtml(r.nombre) : (r.nombre || ''))}</option>`).join('');
+    if (selCat) selCat.innerHTML = data.categoriasTorneo.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    if (selRama) selRama.innerHTML = data.ramas.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
 }
 
 function renderParticipacionActiva(idParticipacion) {
@@ -229,7 +229,7 @@ function buscarJugadoresDisponibles(e) {
             const cat = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador)?.nombre || '-';
             return `
             <div class="flex items-center justify-between p-2 border-b border-gray-50 text-xs">
-                <span class="font-bold">${(window.escapeHtml ? window.escapeHtml(j.nombre) : (j.nombre || ''))} <span class="badge badge-ghost badge-xs ml-1">${cat}</span></span>
+                <span class="font-bold">${j.nombre} <span class="badge badge-ghost badge-xs ml-1">${cat}</span></span>
                 <div class="flex items-center gap-2">
                     <input type="number" min="0" placeholder="#" class="input input-bordered input-xs w-14 text-center" id="camiseta-${j.id}">
                     <button class="btn btn-xs btn-primary" onclick="agregarJugadorExistente(${j.id})">Agregar</button>
@@ -278,8 +278,21 @@ function proponerJugadorNuevo(e) {
     if (isNaN(numero) || numero < 0) { alert('Ingresa un número de camiseta válido.'); return; }
 
     const data = window.AppDB.get();
-    const ocupado = data.inscripciones.some(i => i.id_participacion === participacionActivaId && i.numero_camiseta === numero);
-    if (ocupado) { alert(`El número #${numero} ya está ocupado en tu equipo.`); return; }
+
+    // Validar número de camiseta duplicado
+    const camisetaOcupada = data.inscripciones.some(
+        i => i.id_participacion === participacionActivaId && i.numero_camiseta === numero
+    );
+    if (camisetaOcupada) { alert(`El número #${numero} ya está ocupado en tu equipo.`); return; }
+
+    // Validar nombre duplicado — evita proponer al mismo jugador dos veces
+    const nombreOcupado = data.jugadores.some(
+        j => j.nombre === nombre
+    );
+    if (nombreOcupado) {
+        alert(`Ya existe un jugador con el nombre "${nombre}" en el sistema. Si es el mismo jugador, búscalo en "Agregar jugador ya aprobado".`);
+        return;
+    }
 
     const nuevoJugador = {
         id: window.genId ? window.genId() : Date.now(),
@@ -293,7 +306,7 @@ function proponerJugadorNuevo(e) {
     window.AppDB.save(data);
 
     if (typeof registrarActividad === 'function') {
-        registrarActividad('JUGADOR_PROPUESTO', `Se propuso al jugador ${(window.escapeHtml ? window.escapeHtml(nombre) : (nombre || ''))} para revisión del admin`);
+        registrarActividad('JUGADOR_PROPUESTO', `Se propuso al jugador ${nombre} para revisión del admin`);
     }
 
     document.getElementById('formProponerJugador').reset();

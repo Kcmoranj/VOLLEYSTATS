@@ -113,7 +113,7 @@ function registrarDelegado({ usuario, password, nombreDelegado }) {
     }
 
     const usuarioDelegado = {
-        id: window.genId ? window.genId() : Date.now(),
+        id: Date.now(),
         usuario,
         password,
         nombreDelegado: (nombreDelegado || '').trim() || usuario,
@@ -185,7 +185,7 @@ function crearEquipoParaDelegado({ nombreEquipo, idCategoria, idRama }) {
     data.equipos.push(equipo);
 
     const participacion = {
-        id: window.genId ? window.genId() : Date.now(),
+        id: Date.now(),
         id_equipo: equipo.id,
         id_categoria_torneo: parseInt(idCategoria),
         id_rama: parseInt(idRama),
@@ -205,7 +205,7 @@ function crearEquipoParaDelegado({ nombreEquipo, idCategoria, idRama }) {
     localStorage.setItem('session_equipo_id', equipo.id);
 
     if (typeof registrarActividad === 'function') {
-        registrarActividad('EQUIPO_SOLICITADO', `El delegado ${delegado.nombreDelegado} creó el equipo ${(window.escapeHtml ? window.escapeHtml(equipo.nombre) : (equipo.nombre || ''))}`);
+        registrarActividad('EQUIPO_SOLICITADO', `El delegado ${delegado.nombreDelegado} creó el equipo ${equipo.nombre}`);
     }
 
     return { ok: true, equipo, participacion };

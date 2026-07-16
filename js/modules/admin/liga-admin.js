@@ -1,3 +1,4 @@
+
 /** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
 function escHTML(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')

@@ -1,0 +1,73 @@
+/*
+ * VolleyStats — Brand tokens
+ * Primary:   #2563EB  (blue-600)
+ * Primary dk: #1d4ed8 (blue-700)
+ * Danger:    #dc2626  (red-600)
+ * Warning:   #d97706  (amber-600)  — WO, retroceso, sanciones
+ * Success:   #16a34a  (green-600)
+ * Neutral bg: #F3F4F6
+ * Card bg:   #ffffff
+ * Border:    #e5e7eb
+ * Text 1:    #111827  (gray-900)
+ * Text 2:    #6b7280  (gray-500)
+ * Text 3:    #9ca3af  (gray-400)
+ */
+
+:root {
+  --vs-primary:     #2563EB;
+  --vs-primary-dk:  #1d4ed8;
+  --vs-primary-lt:  #eff6ff;
+  --vs-danger:      #dc2626;
+  --vs-warning:     #d97706;
+  --vs-success:     #16a34a;
+  --vs-bg:          #F3F4F6;
+  --vs-card:        #ffffff;
+  --vs-border:      #e5e7eb;
+  --vs-text-1:      #111827;
+  --vs-text-2:      #6b7280;
+  --vs-text-3:      #9ca3af;
+}
+
+.card-admin {
+  background: var(--vs-card);
+  border: 1px solid var(--vs-border);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+}
+
+/* Sidebar active link */
+.nav-active {
+  background: var(--vs-primary-lt) !important;
+  color: var(--vs-primary) !important;
+}
+
+/* Brand hero banner */
+.vs-hero {
+  background: linear-gradient(to right, var(--vs-primary), var(--vs-primary-dk));
+  padding: 1.75rem 2rem;
+  color: white;
+}
+
+/* Primary button */
+.btn-brand {
+  background: var(--vs-primary);
+  color: white;
+  font-weight: 800;
+  border: none;
+}
+.btn-brand:hover { background: var(--vs-primary-dk); }
+
+/* Danger / logout */
+.btn-danger { color: var(--vs-danger); }
+
+/* Stat cards */
+.stat-card {
+  background: var(--vs-card);
+  border: 1px solid var(--vs-border);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}

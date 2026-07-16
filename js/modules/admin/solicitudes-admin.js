@@ -67,12 +67,12 @@ function renderSolicitudesJugadores() {
         return `
         <div class="card-admin flex justify-between items-center gap-4">
             <div>
-                <p class="font-black text-gray-900">${(window.escapeHtml ? window.escapeHtml(j.nombre) : (j.nombre || ''))}</p>
+                <p class="font-black text-gray-900">${j.nombre}</p>
                 <p class="text-xs text-gray-400 font-bold uppercase">Propuesto por: ${equipo}</p>
             </div>
             <div class="flex items-center gap-2">
                 <select id="cat-${j.id}" class="select select-bordered select-sm font-bold">
-                    ${data.categoriasJugador.map(c => `<option value="${c.id}">${(window.escapeHtml ? window.escapeHtml(c.nombre) : (c.nombre || ''))}</option>`).join('')}
+                    ${data.categoriasJugador.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')}
                 </select>
                 <button onclick="aprobarJugador(${j.id})" class="btn btn-sm btn-success text-white font-bold">✅ Aprobar</button>
                 <button onclick="rechazarJugador(${j.id})" class="btn btn-sm btn-outline text-red-500 font-bold">✕ Rechazar</button>
@@ -93,7 +93,7 @@ function aprobarJugador(idJugador) {
     window.AppDB.save(data);
 
     if (typeof registrarActividad === 'function') {
-        registrarActividad('JUGADOR_APROBADO', `Se aprobó al jugador ${(window.escapeHtml ? window.escapeHtml(j.nombre) : (j.nombre || ''))}`);
+        registrarActividad('JUGADOR_APROBADO', `Se aprobó al jugador ${j.nombre}`);
     }
 
     renderSolicitudesJugadores();

@@ -8,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const equipo = getMiEquipo(data);
     const participaciones = getParticipacionesDeMiEquipo(data);
 
-    document.getElementById('nombreDelegado').textContent = delegado.nombreDelegado;
-    document.getElementById('nombreEquipo').textContent = equipo?.nombre || '—';
+    const elNombreDelegado = document.getElementById('nombreDelegado');
+    const elNombreEquipo   = document.getElementById('nombreEquipo');
+    if (elNombreDelegado) elNombreDelegado.textContent = delegado.nombreDelegado || delegado.usuario;
+    if (elNombreEquipo)   elNombreEquipo.textContent   = equipo?.nombre || '—';
 
     if (!equipo) {
         document.getElementById('avisoSinEquipo').classList.remove('hidden');
@@ -19,37 +21,51 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('avisoSinEquipo').classList.add('hidden');
     document.getElementById('resumenConEquipo').classList.remove('hidden');
 
-    const aprobadas = participaciones.filter(p => p.aprobado).length;
+    const aprobadas  = participaciones.filter(p => p.aprobado).length;
     const pendientes = participaciones.filter(p => !p.aprobado).length;
-
-    document.getElementById('statAprobadas').textContent = aprobadas;
+    document.getElementById('statAprobadas').textContent  = aprobadas;
     document.getElementById('statPendientes').textContent = pendientes;
 
-    // Jugadores propuestos por este equipo aún pendientes de que el admin les asigne categoría
     const idsParticipaciones = participaciones.map(p => p.id);
     const inscripcionesEquipo = data.inscripciones.filter(i => idsParticipaciones.includes(i.id_participacion));
     const jugadoresPendientes = inscripcionesEquipo
         .map(i => data.jugadores.find(j => j.id === i.id_jugador))
         .filter(j => j && j.estado === 'PENDIENTE');
-
     document.getElementById('statJugadoresPendientes').textContent = jugadoresPendientes.length;
 
-    // Próximo partido de cualquiera de las participaciones del equipo
+    // Próximo partido
     const proximo = data.partidos
-        .filter(p => idsParticipaciones.includes(p.id_local_participacion) || idsParticipaciones.includes(p.id_visitante_participacion))
-        .filter(p => String(p.estado).toUpperCase() !== 'FINALIZADO')
-        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))[0];
+        .filter(p =>
+            idsParticipaciones.includes(p.id_local_participacion) ||
+            idsParticipaciones.includes(p.id_visitante_participacion)
+        )
+        .filter(p => String(p.estado).toUpperCase().trim() !== 'FINALIZADO')
+        .sort((a, b) => new Date(a.fecha + 'T' + (a.hora || '00:00')) - new Date(b.fecha + 'T' + (b.hora || '00:00')))[0];
 
     const cont = document.getElementById('proximoPartido');
     if (proximo) {
-        const nombreEquipo = (idParticipacion) => {
-            const part = data.participaciones.find(p => p.id === idParticipacion);
+        const getNombre = (idPart) => {
+            const part = data.participaciones.find(p => p.id === idPart);
             return data.equipos.find(e => e.id === part?.id_equipo)?.nombre || '—';
         };
+        const local = getNombre(proximo.id_local_participacion);
+        const visita = getNombre(proximo.id_visitante_participacion);
+        const esSuspendido = (() => {
+            const localPart = data.participaciones.find(p => p.id === proximo.id_local_participacion);
+            const visitPart = data.participaciones.find(p => p.id === proximo.id_visitante_participacion);
+            return (localPart && !localPart.aprobado) || (visitPart && !visitPart.aprobado);
+        })();
         cont.innerHTML = `
-            <p class="text-lg font-bold">${nombreEquipo(proximo.id_local_participacion)} vs ${nombreEquipo(proximo.id_visitante_participacion)}</p>
-            <p class="text-sm text-gray-500">📅 ${proximo.fecha} · 🕒 ${proximo.hora} · 📍 ${(window.escapeHtml ? window.escapeHtml(proximo.ubicacion) : (proximo.ubicacion || ''))}</p>
-        `;
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex-1">
+                    <p class="text-lg font-black text-gray-900">${local} <span class="text-gray-400 font-normal text-sm">vs</span> ${visita}</p>
+                    <p class="text-sm text-gray-500 mt-1">📅 ${proximo.fecha} &nbsp;·&nbsp; 🕒 ${proximo.hora || '—'} &nbsp;·&nbsp; 📍 ${proximo.ubicacion || '—'}</p>
+                </div>
+                ${esSuspendido
+                    ? `<span class="badge badge-error text-white font-bold text-xs px-3">⚠️ Equipo inhabilitado</span>`
+                    : `<a href="convocatoria.html" class="btn btn-sm btn-primary bg-blue-600 border-none text-white font-bold shrink-0">Ir a Convocatoria →</a>`
+                }
+            </div>`;
     } else {
         cont.innerHTML = `<p class="text-gray-400 font-semibold">No tienes partidos próximos.</p>`;
     }
