@@ -695,7 +695,6 @@ function abrirModalSancionJugador(idInscripcion) {
     document.getElementById('modalSancionJugadorNombre').textContent = jugador?.nombre || 'Jugador';
     document.getElementById('selectTipoSancion').value = 'AMARILLA';
     document.getElementById('inputMotivoSancion').value = '';
-    document.getElementById('inputMultaSancion').value = '';
     document.getElementById('modalSancionJugador').showModal();
 }
 
@@ -704,7 +703,6 @@ function confirmarSancionJugador() {
 
     const tipo = document.getElementById('selectTipoSancion').value; // 'AMARILLA' | 'ROJA'
     const motivo = document.getElementById('inputMotivoSancion').value.trim();
-    const multa = parseFloat(document.getElementById('inputMultaSancion').value) || 0;
     const partidos_suspension = tipo === 'ROJA'
         ? (parseInt(document.getElementById('inputPartidosSuspension')?.value) || 1)
         : 0;
@@ -723,7 +721,6 @@ function confirmarSancionJugador() {
         id_partido: partidoId,
         tipo,
         motivo,
-        multa,
         fecha: new Date().toISOString(),
         pagada: false,
         partidos_suspension
@@ -736,7 +733,7 @@ function confirmarSancionJugador() {
         const jugador = inscripcion ? data.jugadores.find(j => j.id === inscripcion.id_jugador) : null;
         const emoji = tipo === 'ROJA' ? '🟥' : '🟨';
         const suspLabel = tipo === 'ROJA' ? ` [${partidos_suspension}P susp.]` : '';
-        registrarActividad('SANCION_JUGADOR', `${emoji} a ${jugador?.nombre || 'jugador'}: ${motivo}${multa ? ` (multa $${multa.toFixed(2)})` : ''}${suspLabel}`);
+        registrarActividad('SANCION_JUGADOR', `${emoji} a ${jugador?.nombre || 'jugador'}: ${motivo}${suspLabel}`);
     }
 
     idInscripcionSancion = null;
@@ -785,10 +782,9 @@ function confirmarMultaEquipo() {
         pagada: false
     });
 
-    // Inhabilitar todas las participaciones del equipo multado
-    data.participaciones
-        .filter(p => p.id_equipo === participacion.id_equipo)
-        .forEach(p => { p.aprobado = false; });
+    // Inhabilitar solo la participación (equipo+rama+categoría) involucrada en la multa
+    const partAFallar = data.participaciones.find(p => p.id === idParticipacion);
+    if (partAFallar) partAFallar.aprobado = false;
 
     guardarAppData(data);
 
