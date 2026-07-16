@@ -135,7 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function logout() {
-    localStorage.removeItem('isLoggedIn'); 
-    localStorage.removeItem('userToken');
+    localStorage.removeItem("session_admin");
+    localStorage.removeItem("session_delegado_id");
+    localStorage.removeItem("session_equipo_id");
     window.location.href = "../index.html";
 }

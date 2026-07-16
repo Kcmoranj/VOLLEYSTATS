@@ -1,5 +1,20 @@
+/**
+ * partidos-admin.js
+ *
+ * FIX: el menú de "Editar / Eliminar" se recortaba en los partidos recién
+ * creados porque siempre se agregan al FINAL de la tabla, y el contenedor
+ * tenía `overflow-hidden` + el menú se abría hacia abajo (se salía del
+ * contenedor visible, dejando solo "Editar" visible/clicable).
+ * Ahora: las últimas filas abren el menú hacia arriba (`dropdown-top`).
+ */
 
-const getAppData = () => JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData;
+const getAppData = () => window.AppDB
+    ? window.AppDB.get()
+    : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+
+const guardarDatos = (data) => window.AppDB
+    ? window.AppDB.save(data)
+    : guardarDatos(data);
 
 // Variable global para saber si estamos editando
 let partidoEditandoId = null;
@@ -232,7 +247,7 @@ document.getElementById('btnGuardar')?.addEventListener('click', () => {
         data.partidos.push(partidoData);
     }
 
-    localStorage.setItem('volleyData', JSON.stringify(data));
+    guardarDatos(data);
 
     const nombresEnfrentamiento = obtenerNombresEnfrentamiento(data, idLocal, idVisitante);
     if (typeof registrarActividad === 'function') {
@@ -304,7 +319,7 @@ function eliminarPartido(id) {
         : `partido #${id}`;
 
     data.partidos = data.partidos.filter(p => p.id !== id);
-    localStorage.setItem('volleyData', JSON.stringify(data));
+    guardarDatos(data);
 
     if (typeof registrarActividad === 'function') {
         registrarActividad('PARTIDO_ELIMINADO', `Se eliminó el partido ${nombresEnfrentamiento}`);

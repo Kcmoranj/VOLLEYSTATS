@@ -13,7 +13,7 @@
 <body class="bg-[#F3F4F6] flex h-screen font-sans">
 
     <!-- Sidebar -->
-    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
+        <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
         <div class="flex-1">
             <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
             <nav class="flex flex-col gap-2 px-4">
@@ -57,10 +57,11 @@
 
     <script>
         function logout() {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userToken');
-            window.location.href = "../../index.html";
-        }
+    localStorage.removeItem("session_admin");
+    localStorage.removeItem("session_delegado_id");
+    localStorage.removeItem("session_equipo_id");
+    window.location.href = "../../index.html";
+}
     </script>
     <!-- Scripts -->
     <script src="../../js/modules/admin/registrar-actividad.js"></script>

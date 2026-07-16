@@ -1,3 +1,4 @@
+// admin-liga.js - ESTRUCTURA LIMPIA Y CORREGIDA
 
 // 1. Variables Globales
 let catSeleccionada = null;
@@ -11,9 +12,9 @@ const getAppData = () => {
     return window.VolleyAppData;
 };
 
-const guardarDatos = (data) => {
-    localStorage.setItem('volleyData', JSON.stringify(data));
-};
+const guardarDatos = (data) => window.AppDB
+    ? window.AppDB.save(data)
+    : localStorage.setItem('volleyData', JSON.stringify(data));
 
 // 3. Render Categorías
 const renderCategorias = () => {
@@ -161,6 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.VolleyAppData) renderCategorias();
 });
 function logout() {
-    localStorage.clear();
+    localStorage.removeItem("session_admin");
+    localStorage.removeItem("session_delegado_id");
+    localStorage.removeItem("session_equipo_id");
     window.location.href = "../../index.html";
 }

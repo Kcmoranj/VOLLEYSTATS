@@ -2,8 +2,13 @@
  * estadisticas-admin.js - Lógica completa
  */
 
-const getAppData = () => JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData;
-const guardarAppData = (data) => localStorage.setItem('volleyData', JSON.stringify(data));
+const getAppData = () => window.AppDB
+    ? window.AppDB.get()
+    : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+
+const guardarAppData = (data) => window.AppDB
+    ? window.AppDB.save(data)
+    : localStorage.setItem('volleyData', JSON.stringify(data));
 
 // Capturamos ID de la URL
 const params = new URLSearchParams(window.location.search);
@@ -779,6 +784,11 @@ function confirmarMultaEquipo() {
         fecha: new Date().toISOString(),
         pagada: false
     });
+
+    // Inhabilitar todas las participaciones del equipo multado
+    data.participaciones
+        .filter(p => p.id_equipo === participacion.id_equipo)
+        .forEach(p => { p.aprobado = false; });
 
     guardarAppData(data);
 

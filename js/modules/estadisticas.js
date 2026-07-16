@@ -1,3 +1,4 @@
+// 1. VARIABLE GLOBAL DE DATOS UNIFICADOS
 let data = null;
 
 // Función interna para inicializar y fusionar datos de manera consistente
@@ -104,7 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 4. Logout Seguro (evita vaciar por completo el almacenamiento local)
 function logout() {
-    localStorage.removeItem('isLoggedIn'); 
-    localStorage.removeItem('userToken');
+    localStorage.removeItem("session_admin");
+    localStorage.removeItem("session_delegado_id");
+    localStorage.removeItem("session_equipo_id");
     window.location.href = "../index.html";
 }

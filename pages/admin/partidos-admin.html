@@ -10,33 +10,23 @@
 <body class="bg-[#F3F4F6] min-h-screen flex text-gray-800">
 
     <!-- Sidebar Navegación -->
-    <aside class="flex flex-col h-screen w-64 bg-white border-r border-gray-200 sticky top-0 shrink-0">
+        <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
         <div class="flex-1">
-            <span class="brand-title p-6 block text-2xl font-black">Volley<span class="brand-highlight text-blue-600">Stats</span></span>
+            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
             <nav class="flex flex-col gap-2 px-4">
-                <a href="dashboard.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
-                <a href="partidos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-bold bg-blue-50 text-blue-600">📅 Partidos</a>
-                <a href="jugadores-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
-                <a href="equipos-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
-                <a href="liga-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
-                <a href="actividades-recientes.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
+                <a href="dashboard.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
+                <a href="partidos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📅 Partidos</a>
+                <a href="jugadores-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
+                <a href="equipos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
+                <a href="liga-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
+                <a href="actividades-recientes.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
                 <a href="sanciones-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
-                <a href="solicitudes-admin.html" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
+                <a href="solicitudes-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
             </nav>
         </div>
-        <div class="p-4 border-t border-gray-100">
-            <button onclick="window.logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left transition-colors duration-150">
-                ➡️ Cerrar sesión
-            </button>
+        <div class="p-4 border-t">
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
         </div>
-
-        <script>
-            window.logout = function() {
-                localStorage.removeItem('isLoggedIn'); 
-                localStorage.removeItem('userToken');
-                window.location.href = "../../index.html";
-            };
-        </script>
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
@@ -197,5 +187,14 @@
     <script src="../../js/mock-data.js"></script>
     <script src="../../js/modules/admin/registrar-actividad.js"></script>
     <script src="../../js/modules/admin/partidos-admin.js"></script>
+
+    <script>
+    function logout() {
+        localStorage.removeItem('session_admin');
+        localStorage.removeItem('session_delegado_id');
+        localStorage.removeItem('session_equipo_id');
+        window.location.href = '../../index.html';
+    }
+    </script>
 </body>
 </html>

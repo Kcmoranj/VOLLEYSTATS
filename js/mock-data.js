@@ -108,12 +108,12 @@ window.VolleyAppData = {
     }
 ],
 estadisticasJugador: [
-        { id_partido: 1, id_inscripcion: 1, puntos: 12, ataque: 5, bloqueo: 1, saque: 2,defensa: 0, colocacion:10},
-        { id_partido: 1, id_inscripcion: 4, puntos: 8, ataque: 3, bloqueo: 0, saque: 1 , defensa:10, colocacion:5},
-        { id_partido: 2, id_inscripcion: 5, puntos: 6, ataque: 2, bloqueo: 0, saque: 1 , defensa:1, colocacion:0},
-        { id_partido: 2, id_inscripcion: 6, puntos: 5, ataque: 1, bloqueo: 1, saque: 0, defensa:0, colocacion:0 },
-        { id_partido: 3, id_inscripcion: 3, puntos: 4, ataque: 1, bloqueo: 0, saque: 0, defensa:0, colocacion:0},
-        { id_partido: 1, id_inscripcion: 7, puntos: 15, ataque: 7, bloqueo: 2, saque: 3, defensa:0, colocacion:0}
+        { id_partido: 1, id_inscripcion: 1, puntos: 18, ataque: 5, bloqueo: 1, saque: 2,defensa: 0, colocacion:10},
+        { id_partido: 1, id_inscripcion: 4, puntos: 19, ataque: 3, bloqueo: 0, saque: 1 , defensa:10, colocacion:5},
+        { id_partido: 2, id_inscripcion: 5, puntos: 4, ataque: 2, bloqueo: 0, saque: 1 , defensa:1, colocacion:0},
+        { id_partido: 2, id_inscripcion: 6, puntos: 2, ataque: 1, bloqueo: 1, saque: 0, defensa:0, colocacion:0 },
+        { id_partido: 3, id_inscripcion: 3, puntos: 1, ataque: 1, bloqueo: 0, saque: 0, defensa:0, colocacion:0},
+        { id_partido: 1, id_inscripcion: 7, puntos: 12, ataque: 7, bloqueo: 2, saque: 3, defensa:0, colocacion:0}
     ],
 
     // USUARIOS DELEGADOS: uno por cada equipo ya existente, con usuario y

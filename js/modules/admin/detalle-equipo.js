@@ -1,13 +1,29 @@
+/**
+ * detalle-equipo.js - Versión Corregida, Sincronizada y con Jerarquía de Categorías
+ *
+ * FIX #1 (buscador de jugadores roto): esta versión usaba su propia tabla
+ * REGLAS_ELEGIBILIDAD y llamaba a obtenerNombreCategoria()/obtenerNombreTorneo(),
+ * dos funciones que NUNCA se definían en este archivo. Resultado: al escribir
+ * 2+ letras en "Agregar jugador ya aprobado" la página reventaba con
+ * ReferenceError y el buscador no funcionaba. Ahora se usa window.Elegibilidad
+ * (js/shared/elegibilidad.js), que es la única fuente de verdad de reglas de
+ * elegibilidad y ya la usa correctamente la versión de delegado.
+ *
+ * FIX #2 (doble fuente de verdad de jugadores): antes se leía/escribía también
+ * 'volley_jugadores' además de 'volleyData'. Como Solicitudes (aprobar/rechazar
+ * jugador) solo actualiza 'volleyData', esa segunda copia podía quedar vieja y
+ * "resucitar" jugadores ya rechazados o revertir aprobaciones. Ahora 'volleyData'
+ * es la única fuente de verdad para jugadores.
+ */
 
 const getAppData = () => {
     const localData = localStorage.getItem('volleyData');
     return localData ? JSON.parse(localData) : window.VolleyAppData;
 };
 
-const guardarAppData = (data) => {
-    // FIX: ya no se sincroniza por separado en 'volley_jugadores' (ver nota arriba).
-    localStorage.setItem('volleyData', JSON.stringify(data));
-};
+const guardarAppData = (data) => window.AppDB
+    ? window.AppDB.save(data)
+    : localStorage.setItem('volleyData', JSON.stringify(data));
 
 document.addEventListener('DOMContentLoaded', () => {
     initDetalle();
@@ -311,8 +327,8 @@ window.eliminarParticipacion = (idParticipacion) => {
 };
 
 function logout() {
-    // Evitamos usar .clear() para proteger los datos de participaciones y jugadores creados
-    localStorage.removeItem('isLoggedIn'); 
-    localStorage.removeItem('userToken');
+    localStorage.removeItem("session_admin");
+    localStorage.removeItem("session_delegado_id");
+    localStorage.removeItem("session_equipo_id");
     window.location.href = "../../index.html";
 }

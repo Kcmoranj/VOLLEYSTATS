@@ -41,6 +41,8 @@ window.guardarProgramacion = () => {
     renderPartidos();
 };
 function logout() {
-    localStorage.clear();
+    localStorage.removeItem("session_admin");
+    localStorage.removeItem("session_delegado_id");
+    localStorage.removeItem("session_equipo_id");
     window.location.href = "../../index.html";
 }

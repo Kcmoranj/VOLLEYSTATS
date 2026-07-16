@@ -8,12 +8,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>.card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 1.5rem; }</style>
+    <style>
+        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+    </style>
 </head>
 <body class="bg-[#F3F4F6] flex h-screen font-sans">
 
-    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0 shrink-0">
+    <!-- SIDEBAR (canónico) -->
+    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
         <div class="flex-1">
             <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
             <nav class="flex flex-col gap-2 px-4">
@@ -22,50 +24,50 @@
                 <a href="jugadores-admin.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
                 <a href="equipos-admin.html"          class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
                 <a href="liga-admin.html"             class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
-                <a href="sanciones-admin.html"        class="flex items-center gap-3 p-3 rounded-lg font-bold bg-yellow-50 text-yellow-700">🟨 Sanciones</a>
                 <a href="actividades-recientes.html"  class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
+                <a href="sanciones-admin.html"        class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">🟨 Sanciones</a>
                 <a href="solicitudes-admin.html"      class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
             </nav>
         </div>
         <div class="p-4 border-t">
-            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
         </div>
     </aside>
 
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 p-8 overflow-y-auto">
 
-        <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-            <div>
-                <h1 class="text-2xl font-black text-gray-900 uppercase">Sanciones y Multas</h1>
-                <p class="text-sm text-gray-400 mt-1">Registro de tarjetas, suspensiones y multas por equipo</p>
-            </div>
-            <div class="flex gap-2 flex-wrap">
-                <button onclick="exportarPDF()" class="btn btn-sm bg-red-600 hover:bg-red-700 border-none text-white font-bold">📄 PDF</button>
-                <button onclick="exportarExcel()" class="btn btn-sm bg-green-600 hover:bg-green-700 border-none text-white font-bold">📊 Excel</button>
-                <button onclick="abrirModalNuevaMulta()" class="btn btn-sm bg-orange-500 hover:bg-orange-600 border-none text-white font-bold">💰 Nueva Multa</button>
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black text-gray-900 uppercase">Sanciones y Multas</h1>
+            <div class="flex gap-3">
+                <button onclick="exportarPDF()" class="btn btn-sm btn-outline border-gray-300 font-bold text-gray-600 hover:bg-gray-100">
+                    📄 Exportar PDF
+                </button>
+                <button onclick="abrirModalNuevaMulta()" class="btn btn-primary bg-blue-600 border-none text-white font-bold shadow-md shadow-blue-200">
+                    💰 Nueva Multa
+                </button>
             </div>
         </div>
 
-        <!-- Filtros -->
-        <div class="card-admin mb-6 flex flex-col md:flex-row gap-4 items-end">
-            <div class="flex-1">
+        <!-- Filtro -->
+        <div class="card-admin mb-6 flex flex-wrap gap-4 items-end">
+            <div>
                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Equipo</label>
-                <select id="selectEquipoFiltro" onchange="renderReporte()" class="select select-bordered w-full max-w-xs font-semibold">
-                    <option value="todos">Todos los equipos</option>
-                </select>
+                <select id="selectEquipoFiltro" onchange="renderReporte()" class="select select-bordered font-semibold"></select>
             </div>
             <div>
-                <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Tipo</label>
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Ver</label>
                 <select id="selectTipoFiltro" onchange="renderReporte()" class="select select-bordered font-semibold">
-                    <option value="todos">Todos</option>
+                    <option value="todos">Todo</option>
                     <option value="tarjetas">Solo Tarjetas</option>
                     <option value="multas">Solo Multas</option>
                 </select>
             </div>
         </div>
 
-        <!-- Resumen -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="resumenTarjetas"></div>
+        <!-- Resumen (tarjetas stat) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="resumenCards"></div>
 
         <!-- Tabla Tarjetas -->
         <div id="seccionTarjetas" class="card-admin mb-6">
@@ -73,68 +75,71 @@
                 <h2 class="font-black text-gray-800 uppercase text-sm tracking-wider">🟨🟥 Tarjetas por Jugador</h2>
                 <span id="contadorTarjetas" class="badge badge-ghost font-bold">0</span>
             </div>
-            <div class="overflow-x-auto">
-                <table class="table w-full text-sm">
-                    <thead>
-                        <tr class="text-[10px] uppercase text-gray-400 font-black">
-                            <th>Fecha</th><th>Equipo</th><th>Jugador</th><th class="text-center">Tipo</th>
-                            <th>Motivo</th><th>Partido</th><th class="text-center">Susp.</th><th class="text-right">Multa</th><th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaTarjetas">
-                        <tr><td colspan="9" class="text-center text-gray-400 py-6 italic">Sin tarjetas registradas.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="table w-full text-sm">
+                <thead>
+                    <tr class="text-[10px] uppercase text-gray-400 font-black">
+                        <th>Fecha</th><th>Equipo</th><th>Jugador</th>
+                        <th class="text-center">Tarjeta</th><th>Motivo</th>
+                        <th class="text-center">Susp.</th><th class="text-right">Multa</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaTarjetas">
+                    <tr><td colspan="8" class="text-center text-gray-400 py-6 italic text-sm">Sin tarjetas registradas.</td></tr>
+                </tbody>
+            </table>
         </div>
 
-        <!-- Tabla Multas Equipo -->
+        <!-- Tabla Multas al Equipo -->
         <div id="seccionMultas" class="card-admin">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="font-black text-gray-800 uppercase text-sm tracking-wider">💰 Multas al Equipo</h2>
+                <div>
+                    <h2 class="font-black text-gray-800 uppercase text-sm tracking-wider">💰 Multas al Equipo</h2>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Al registrar una multa el equipo queda inhabilitado automáticamente.</p>
+                </div>
                 <span id="contadorMultas" class="badge badge-ghost font-bold">$0.00</span>
             </div>
-            <div class="overflow-x-auto">
-                <table class="table w-full text-sm">
-                    <thead>
-                        <tr class="text-[10px] uppercase text-gray-400 font-black">
-                            <th>Fecha</th><th>Equipo</th><th>Monto</th><th>Motivo</th><th class="text-center">Estado</th><th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaMultas">
-                        <tr><td colspan="6" class="text-center text-gray-400 py-6 italic">Sin multas registradas.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="table w-full text-sm">
+                <thead>
+                    <tr class="text-[10px] uppercase text-gray-400 font-black">
+                        <th>Fecha</th><th>Equipo</th><th>Monto</th><th>Motivo</th><th class="text-center">Estado</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaMultas">
+                    <tr><td colspan="6" class="text-center text-gray-400 py-6 italic text-sm">Sin multas registradas.</td></tr>
+                </tbody>
+            </table>
         </div>
 
     </main>
 
     <!-- Modal: Nueva Multa -->
     <dialog id="modalNuevaMulta" class="modal">
-        <div class="modal-box rounded-2xl bg-white max-w-sm">
-            <h3 class="font-black text-lg text-gray-900 mb-4">💰 Nueva Multa al Equipo</h3>
+        <div class="modal-box bg-white rounded-2xl max-w-sm">
+            <h3 class="font-black text-lg mb-1">💰 Registrar Multa al Equipo</h3>
+            <p class="text-xs text-gray-400 mb-4">El equipo quedará <strong>inhabilitado</strong> automáticamente.</p>
             <div class="space-y-3">
                 <div>
                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Equipo</label>
-                    <select id="modalSelectEquipo" class="select select-bordered select-sm w-full font-semibold"></select>
+                    <select id="modalSelectEquipo" class="select select-bordered w-full font-semibold"></select>
                 </div>
                 <div>
                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Monto ($)</label>
-                    <input type="number" id="modalMonto" min="0" step="0.01" placeholder="0.00" class="input input-bordered input-sm w-full font-bold">
+                    <input type="number" id="modalMonto" min="0" step="0.01" placeholder="0.00"
+                        class="input input-bordered w-full font-bold">
                 </div>
                 <div>
                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Motivo</label>
-                    <input type="text" id="modalMotivo" placeholder="Describe el motivo de la multa" class="input input-bordered input-sm w-full">
+                    <input type="text" id="modalMotivo" placeholder="Describe el motivo"
+                        class="input input-bordered w-full">
                 </div>
                 <div>
                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Fecha</label>
-                    <input type="date" id="modalFecha" class="input input-bordered input-sm w-full">
+                    <input type="date" id="modalFecha" class="input input-bordered w-full">
                 </div>
             </div>
             <div class="modal-action">
-                <button onclick="document.getElementById('modalNuevaMulta').close()" class="btn btn-ghost text-xs font-bold">Cancelar</button>
-                <button onclick="guardarNuevaMulta()" class="btn bg-orange-500 hover:bg-orange-600 border-none text-white text-xs font-bold">Registrar</button>
+                <button onclick="cerrarModalMulta()" class="btn btn-ghost font-bold">Cancelar</button>
+                <button onclick="guardarNuevaMulta()" class="btn btn-primary bg-blue-600 border-none text-white font-bold">Registrar Multa</button>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>cerrar</button></form>
@@ -145,6 +150,9 @@
     <script src="../../js/shared/sanciones.js"></script>
 <script>
 
+// ----------------------------------------------------------------
+// LOGOUT
+// ----------------------------------------------------------------
 function logout() {
     localStorage.removeItem('session_admin');
     localStorage.removeItem('session_delegado_id');
@@ -152,29 +160,31 @@ function logout() {
     window.location.href = '../../index.html';
 }
 
-function getData() { return window.AppDB.get(); }
-
+// ----------------------------------------------------------------
+// INIT
+// ----------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
     const sesion = localStorage.getItem('session_admin');
     if (!sesion) { window.location.href = '../../index.html'; return; }
-    poblarFiltros();
-    renderReporte();
-    document.getElementById('modalFecha').value = new Date().toISOString().slice(0, 10);
-});
 
-function poblarFiltros() {
-    const data = getData();
-    const sel = document.getElementById('selectEquipoFiltro');
-    sel.innerHTML = '<option value="todos">Todos los equipos</option>' +
+    const data = window.AppDB.get();
+
+    // Poblar filtros
+    const selFiltro = document.getElementById('selectEquipoFiltro');
+    selFiltro.innerHTML = '<option value="todos">Todos los equipos</option>' +
         data.equipos.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
-    const selM = document.getElementById('modalSelectEquipo');
-    selM.innerHTML = data.equipos.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
-}
+
+    const selModal = document.getElementById('modalSelectEquipo');
+    selModal.innerHTML = data.equipos.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+
+    document.getElementById('modalFecha').value = new Date().toISOString().slice(0, 10);
+
+    renderReporte();
+});
 
 // ----------------------------------------------------------------
 // HELPERS
 // ----------------------------------------------------------------
-
 function equipoDeInscripcion(data, idInscripcion) {
     const ins = data.inscripciones.find(i => i.id === idInscripcion);
     if (!ins) return null;
@@ -182,7 +192,13 @@ function equipoDeInscripcion(data, idInscripcion) {
     return part ? data.equipos.find(e => e.id === part.id_equipo) : null;
 }
 
+function jugadorDeInscripcion(data, idInscripcion) {
+    const ins = data.inscripciones.find(i => i.id === idInscripcion);
+    return ins ? data.jugadores.find(j => j.id === ins.id_jugador) : null;
+}
+
 function rivalDePartido(data, partido, idEquipo) {
+    if (!partido) return '-';
     const partsEq = data.participaciones.filter(p => p.id_equipo === idEquipo).map(p => p.id);
     const esLocal = partsEq.includes(partido.id_local_participacion);
     const idRival = esLocal ? partido.id_visitante_participacion : partido.id_local_participacion;
@@ -193,117 +209,123 @@ function rivalDePartido(data, partido, idEquipo) {
 // ----------------------------------------------------------------
 // RENDER
 // ----------------------------------------------------------------
-
 function renderReporte() {
-    const data = getData();
+    const data = window.AppDB.get();
     const filtroEquipo = document.getElementById('selectEquipoFiltro').value;
-    const filtroTipo = document.getElementById('selectTipoFiltro').value;
+    const filtroTipo   = document.getElementById('selectTipoFiltro').value;
 
-    const idsEquiposFiltrados = filtroEquipo === 'todos'
+    const idsEq = filtroEquipo === 'todos'
         ? data.equipos.map(e => e.id)
         : [parseInt(filtroEquipo)];
 
-    // Participaciones e inscripciones de los equipos filtrados
-    const partsFiltradas = data.participaciones.filter(p => idsEquiposFiltrados.includes(p.id_equipo)).map(p => p.id);
-    const idsFiltrados = data.inscripciones.filter(i => partsFiltradas.includes(i.id_participacion)).map(i => i.id);
+    const partsFilt = data.participaciones.filter(p => idsEq.includes(p.id_equipo)).map(p => p.id);
+    const idsFilt   = data.inscripciones.filter(i => partsFilt.includes(i.id_participacion)).map(i => i.id);
 
-    const sanciones = (data.sancionesJugador || []).filter(s => idsFiltrados.includes(s.id_inscripcion));
-    const multas = (data.multasEquipo || []).filter(m => idsEquiposFiltrados.includes(m.id_equipo));
+    const sanciones = (data.sancionesJugador || []).filter(s => idsFilt.includes(s.id_inscripcion));
+    const multas    = (data.multasEquipo || []).filter(m => idsEq.includes(m.id_equipo));
 
     renderResumen(sanciones, multas);
 
-    document.getElementById('seccionTarjetas').classList.toggle('hidden', filtroTipo === 'multas');
-    document.getElementById('seccionMultas').classList.toggle('hidden', filtroTipo === 'tarjetas');
+    const mostrarTarjetas = filtroTipo !== 'multas';
+    const mostrarMultas   = filtroTipo !== 'tarjetas';
+    document.getElementById('seccionTarjetas').classList.toggle('hidden', !mostrarTarjetas);
+    document.getElementById('seccionMultas').classList.toggle('hidden', !mostrarMultas);
 
-    if (filtroTipo !== 'multas') renderTarjetas(sanciones, data);
-    if (filtroTipo !== 'tarjetas') renderMultas(multas, data);
+    if (mostrarTarjetas) renderTarjetas(sanciones, data);
+    if (mostrarMultas)   renderMultas(multas, data);
 }
 
 function renderResumen(sanciones, multas) {
     const amarillas = sanciones.filter(s => s.tipo === 'AMARILLA').length;
-    const rojas = sanciones.filter(s => s.tipo === 'ROJA').length;
-    const totalMultasTarjetas = sanciones.reduce((a, s) => a + (s.multa || 0), 0);
-    const totalMultasEquipo = multas.reduce((a, m) => a + (m.monto || 0), 0);
-    const pendientes = multas.filter(m => !m.pagada).reduce((a, m) => a + m.monto, 0);
+    const rojas     = sanciones.filter(s => s.tipo === 'ROJA').length;
+    const mulTarj   = sanciones.reduce((a, s) => a + (s.multa || 0), 0);
+    const mulEq     = multas.reduce((a, m) => a + (m.monto || 0), 0);
+    const pendiente = multas.filter(m => !m.pagada).reduce((a, m) => a + m.monto, 0);
 
-    document.getElementById('resumenTarjetas').innerHTML = `
-        <div class="card-admin text-center"><p class="text-3xl font-black text-yellow-500">${amarillas}</p><p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Amarillas</p></div>
-        <div class="card-admin text-center"><p class="text-3xl font-black text-red-600">${rojas}</p><p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Rojas</p></div>
-        <div class="card-admin text-center"><p class="text-3xl font-black text-orange-500">$${(totalMultasTarjetas + totalMultasEquipo).toFixed(2)}</p><p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Total Multas</p></div>
-        <div class="card-admin text-center"><p class="text-3xl font-black text-red-500">$${pendientes.toFixed(2)}</p><p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Pendientes</p></div>`;
+    document.getElementById('resumenCards').innerHTML = `
+        <div class="card-admin text-center">
+            <span class="text-[10px] font-bold text-gray-400 uppercase block">Tarjetas Amarillas</span>
+            <p class="text-3xl font-black text-yellow-500 mt-1">${amarillas}</p>
+        </div>
+        <div class="card-admin text-center">
+            <span class="text-[10px] font-bold text-gray-400 uppercase block">Tarjetas Rojas</span>
+            <p class="text-3xl font-black text-red-600 mt-1">${rojas}</p>
+        </div>
+        <div class="card-admin text-center">
+            <span class="text-[10px] font-bold text-gray-400 uppercase block">Total Multas</span>
+            <p class="text-3xl font-black text-orange-500 mt-1">$${(mulTarj + mulEq).toFixed(2)}</p>
+        </div>
+        <div class="card-admin text-center">
+            <span class="text-[10px] font-bold text-red-400 uppercase block">Pendiente de Pago</span>
+            <p class="text-3xl font-black text-red-600 mt-1">$${pendiente.toFixed(2)}</p>
+        </div>`;
 }
 
 function renderTarjetas(sanciones, data) {
-    const tbody = document.getElementById('tablaTarjetas');
     document.getElementById('contadorTarjetas').textContent = sanciones.length;
-
+    const tbody = document.getElementById('tablaTarjetas');
     if (sanciones.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-gray-400 py-6 italic">Sin tarjetas registradas.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-400 py-6 italic text-sm">Sin tarjetas registradas.</td></tr>`;
         return;
     }
-
     tbody.innerHTML = [...sanciones]
         .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))
         .map(s => {
-            const ins = data.inscripciones.find(i => i.id === s.id_inscripcion);
-            const jugador = data.jugadores.find(j => j.id === ins?.id_jugador);
-            const equipo = equipoDeInscripcion(data, s.id_inscripcion);
+            const equipo  = equipoDeInscripcion(data, s.id_inscripcion);
+            const jugador = jugadorDeInscripcion(data, s.id_inscripcion);
             const partido = data.partidos.find(p => p.id === s.id_partido);
-            const rival = partido && equipo ? rivalDePartido(data, partido, equipo.id) : '-';
-            const fecha = String(s.fecha || '').slice(0, 10);
+            const fecha   = String(s.fecha || '').slice(0, 10);
             const badgeTipo = s.tipo === 'AMARILLA'
                 ? `<span class="badge badge-warning badge-sm text-white font-bold">🟨 Amarilla</span>`
                 : `<span class="badge badge-error badge-sm text-white font-bold">🟥 Roja</span>`;
-            return `
-                <tr class="hover:bg-gray-50">
-                    <td class="font-bold text-gray-600 text-xs">${fecha}</td>
-                    <td class="font-black text-gray-800 text-xs">${equipo?.nombre || '-'}</td>
-                    <td class="font-semibold text-gray-700 text-xs">${jugador?.nombre || '-'}</td>
-                    <td class="text-center">${badgeTipo}</td>
-                    <td class="text-gray-500 text-xs">${s.motivo || '-'}</td>
-                    <td class="text-gray-500 text-xs">${partido ? `vs ${rival} (${fecha})` : '-'}</td>
-                    <td class="text-center font-bold text-xs">${(s.partidos_suspension || 0) > 0 ? `<span class="text-red-600">${s.partidos_suspension}P</span>` : '-'}</td>
-                    <td class="text-right font-black text-xs ${s.multa ? 'text-red-600' : 'text-gray-300'}">${s.multa ? '$' + parseFloat(s.multa).toFixed(2) : '—'}</td>
-                    <td><button onclick="eliminarTarjeta(${s.id})" class="btn btn-xs btn-ghost text-red-400 hover:text-red-600 font-bold">✕</button></td>
-                </tr>`;
+            const suspLabel = (s.partidos_suspension || 0) > 0
+                ? `<span class="font-black text-red-600">${s.partidos_suspension}P</span>` : '-';
+            const multaLabel = s.multa
+                ? `<span class="font-black text-red-600">$${parseFloat(s.multa).toFixed(2)}</span>` : '—';
+            return `<tr class="hover:bg-gray-50 transition-colors">
+                <td class="font-bold text-gray-500 text-xs">${fecha}</td>
+                <td class="font-black text-gray-800 text-xs">${equipo?.nombre || '-'}</td>
+                <td class="font-semibold text-gray-700 text-xs">${jugador?.nombre || '-'}</td>
+                <td class="text-center">${badgeTipo}</td>
+                <td class="text-gray-500 text-xs">${s.motivo || '-'}</td>
+                <td class="text-center text-xs">${suspLabel}</td>
+                <td class="text-right text-xs">${multaLabel}</td>
+                <td><button onclick="eliminarTarjeta(${s.id})" class="btn btn-xs btn-ghost text-red-400 hover:text-red-600 font-black">✕</button></td>
+            </tr>`;
         }).join('');
 }
 
 function renderMultas(multas, data) {
-    const tbody = document.getElementById('tablaMultas');
     const total = multas.reduce((a, m) => a + (m.monto || 0), 0);
     document.getElementById('contadorMultas').textContent = `$${total.toFixed(2)}`;
-
+    const tbody = document.getElementById('tablaMultas');
     if (multas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-400 py-6 italic">Sin multas al equipo.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-400 py-6 italic text-sm">Sin multas al equipo.</td></tr>`;
         return;
     }
-
     tbody.innerHTML = [...multas]
         .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))
         .map(m => {
             const equipo = data.equipos.find(e => e.id === m.id_equipo);
             const estadoBadge = m.pagada
-                ? `<span class="badge badge-success badge-sm text-white font-bold cursor-pointer" onclick="togglePagada(${m.id})">Pagada</span>`
-                : `<span class="badge badge-error badge-sm text-white font-bold cursor-pointer" onclick="togglePagada(${m.id})">Pendiente</span>`;
-            return `
-                <tr class="hover:bg-gray-50">
-                    <td class="font-bold text-gray-600 text-xs">${String(m.fecha || '').slice(0, 10)}</td>
-                    <td class="font-black text-gray-800 text-xs">${equipo?.nombre || '-'}</td>
-                    <td class="font-black text-orange-600">$${parseFloat(m.monto || 0).toFixed(2)}</td>
-                    <td class="text-gray-500 text-xs">${m.motivo || '-'}</td>
-                    <td class="text-center">${estadoBadge}</td>
-                    <td><button onclick="eliminarMulta(${m.id})" class="btn btn-xs btn-ghost text-red-400 hover:text-red-600 font-bold">✕</button></td>
-                </tr>`;
+                ? `<button onclick="togglePagada(${m.id})" class="badge badge-success text-white font-bold text-xs cursor-pointer">Pagada</button>`
+                : `<button onclick="togglePagada(${m.id})" class="badge badge-error text-white font-bold text-xs cursor-pointer">Pendiente</button>`;
+            return `<tr class="hover:bg-gray-50 transition-colors">
+                <td class="font-bold text-gray-500 text-xs">${String(m.fecha || '').slice(0, 10)}</td>
+                <td class="font-black text-gray-800 text-xs">${equipo?.nombre || '-'}</td>
+                <td class="font-black text-orange-600">$${parseFloat(m.monto || 0).toFixed(2)}</td>
+                <td class="text-gray-500 text-xs">${m.motivo || '-'}</td>
+                <td class="text-center">${estadoBadge}</td>
+                <td><button onclick="eliminarMulta(${m.id})" class="btn btn-xs btn-ghost text-red-400 hover:text-red-600 font-black">✕</button></td>
+            </tr>`;
         }).join('');
 }
 
 // ----------------------------------------------------------------
 // ACCIONES
 // ----------------------------------------------------------------
-
 function eliminarTarjeta(id) {
-    if (!confirm('¿Eliminar esta tarjeta/sanción?')) return;
+    if (!confirm('¿Eliminar esta tarjeta?')) return;
     window.Sanciones.eliminarTarjeta(id);
     renderReporte();
 }
@@ -320,46 +342,61 @@ function togglePagada(id) {
 }
 
 function abrirModalNuevaMulta() {
+    // Repoblar el selector de equipos con datos frescos
+    const data = window.AppDB.get();
+    const selModal = document.getElementById('modalSelectEquipo');
+    selModal.innerHTML = data.equipos.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
     document.getElementById('modalFecha').value = new Date().toISOString().slice(0, 10);
     document.getElementById('modalMonto').value = '';
     document.getElementById('modalMotivo').value = '';
     document.getElementById('modalNuevaMulta').showModal();
 }
 
+function cerrarModalMulta() {
+    document.getElementById('modalNuevaMulta').close();
+}
+
 function guardarNuevaMulta() {
     const idEquipo = parseInt(document.getElementById('modalSelectEquipo').value);
-    const monto = parseFloat(document.getElementById('modalMonto').value);
-    const motivo = document.getElementById('modalMotivo').value;
-    const fecha = document.getElementById('modalFecha').value;
-    if (!idEquipo || isNaN(monto) || monto <= 0) {
-        alert('Completa equipo y monto válido.');
-        return;
-    }
+    const monto    = parseFloat(document.getElementById('modalMonto').value);
+    const motivo   = document.getElementById('modalMotivo').value.trim();
+    const fecha    = document.getElementById('modalFecha').value;
+
+    if (!idEquipo) { alert('Selecciona un equipo.'); return; }
+    if (isNaN(monto) || monto <= 0) { alert('Ingresa un monto válido mayor a 0.'); return; }
+    if (!motivo) { alert('Ingresa el motivo de la multa.'); return; }
+
     window.Sanciones.registrarMulta({ id_equipo: idEquipo, monto, motivo, fecha });
+
+    const data = window.AppDB.get();
+    const eq = data.equipos.find(e => e.id === idEquipo);
+    alert(`Multa registrada. El equipo ${eq?.nombre || ''} ha sido inhabilitado.`);
+
     document.getElementById('modalNuevaMulta').close();
     renderReporte();
 }
 
 // ----------------------------------------------------------------
-// EXPORTACIÓN PDF
+// EXPORTAR PDF
 // ----------------------------------------------------------------
-
 function exportarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'landscape' });
-    const data = getData();
+    const data = window.AppDB.get();
     const filtroEquipo = document.getElementById('selectEquipoFiltro').value;
 
-    const idsEq = filtroEquipo === 'todos' ? data.equipos.map(e => e.id) : [parseInt(filtroEquipo)];
+    const idsEq = filtroEquipo === 'todos'
+        ? data.equipos.map(e => e.id)
+        : [parseInt(filtroEquipo)];
     const partsFilt = data.participaciones.filter(p => idsEq.includes(p.id_equipo)).map(p => p.id);
-    const idsFilt = data.inscripciones.filter(i => partsFilt.includes(i.id_participacion)).map(i => i.id);
+    const idsFilt   = data.inscripciones.filter(i => partsFilt.includes(i.id_participacion)).map(i => i.id);
     const sanciones = (data.sancionesJugador || []).filter(s => idsFilt.includes(s.id_inscripcion))
         .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
     const multas = (data.multasEquipo || []).filter(m => idsEq.includes(m.id_equipo))
         .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
 
     const titulo = filtroEquipo === 'todos'
-        ? 'Reporte General - Sanciones y Multas'
+        ? 'Reporte General — Sanciones y Multas'
         : `Reporte: ${data.equipos.find(e => e.id === parseInt(filtroEquipo))?.nombre || ''}`;
 
     doc.setFontSize(16); doc.setFont('helvetica', 'bold');
@@ -370,11 +407,11 @@ function exportarPDF() {
 
     let y = 32;
     const amarillas = sanciones.filter(s => s.tipo === 'AMARILLA').length;
-    const rojas = sanciones.filter(s => s.tipo === 'ROJA').length;
-    const totalM = multas.reduce((a, m) => a + (m.monto || 0), 0);
-    const pend = multas.filter(m => !m.pagada).reduce((a, m) => a + m.monto, 0);
+    const rojas     = sanciones.filter(s => s.tipo === 'ROJA').length;
+    const totalMul  = multas.reduce((a, m) => a + (m.monto || 0), 0);
+    const pend      = multas.filter(m => !m.pagada).reduce((a, m) => a + m.monto, 0);
     doc.setFontSize(9); doc.setFont('helvetica', 'bold');
-    doc.text(`Amarillas: ${amarillas}   Rojas: ${rojas}   Multas al equipo: $${totalM.toFixed(2)}   Pendientes: $${pend.toFixed(2)}`, 14, y);
+    doc.text(`Amarillas: ${amarillas}   Rojas: ${rojas}   Total multas: $${totalMul.toFixed(2)}   Pendientes: $${pend.toFixed(2)}`, 14, y);
     y += 10;
 
     if (sanciones.length > 0) {
@@ -382,29 +419,25 @@ function exportarPDF() {
         doc.text('Tarjetas por Jugador', 14, y); y += 4;
         doc.autoTable({
             startY: y,
-            head: [['Fecha', 'Equipo', 'Jugador', 'Tipo', 'Motivo', 'Partido', 'Susp.', 'Multa']],
+            head: [['Fecha','Equipo','Jugador','Tipo','Motivo','Susp.','Multa']],
             body: sanciones.map(s => {
-                const ins = data.inscripciones.find(i => i.id === s.id_inscripcion);
-                const jugador = data.jugadores.find(j => j.id === ins?.id_jugador);
-                const equipo = equipoDeInscripcion(data, s.id_inscripcion);
-                const partido = data.partidos.find(p => p.id === s.id_partido);
-                const rival = partido && equipo ? rivalDePartido(data, partido, equipo.id) : '-';
+                const eq = equipoDeInscripcion(data, s.id_inscripcion);
+                const jug = jugadorDeInscripcion(data, s.id_inscripcion);
                 return [
-                    String(s.fecha || '').slice(0, 10),
-                    equipo?.nombre || '-',
-                    jugador?.nombre || '-',
+                    String(s.fecha || '').slice(0,10),
+                    eq?.nombre || '-',
+                    jug?.nombre || '-',
                     s.tipo,
                     s.motivo || '-',
-                    partido ? `vs ${rival}` : '-',
                     (s.partidos_suspension || 0) > 0 ? `${s.partidos_suspension}P` : '-',
                     s.multa ? `$${parseFloat(s.multa).toFixed(2)}` : '-'
                 ];
             }),
             styles: { fontSize: 7, cellPadding: 2 },
-            headStyles: { fillColor: [37, 99, 235], fontStyle: 'bold', fontSize: 7 },
-            didParseCell: (d) => {
+            headStyles: { fillColor: [37,99,235], fontStyle: 'bold', fontSize: 7 },
+            didParseCell: d => {
                 if (d.section === 'body' && d.column.index === 3) {
-                    d.cell.styles.textColor = d.cell.raw === 'ROJA' ? [220, 38, 38] : [202, 138, 4];
+                    d.cell.styles.textColor = d.cell.raw === 'ROJA' ? [220,38,38] : [202,138,4];
                     d.cell.styles.fontStyle = 'bold';
                 }
             }
@@ -413,107 +446,33 @@ function exportarPDF() {
     }
 
     if (multas.length > 0) {
-        if (y > 170) { doc.addPage(); y = 20; }
+        if (y > 165) { doc.addPage(); y = 20; }
         doc.setFontSize(11); doc.setFont('helvetica', 'bold');
         doc.text('Multas al Equipo', 14, y); y += 4;
         doc.autoTable({
             startY: y,
-            head: [['Fecha', 'Equipo', 'Monto', 'Motivo', 'Estado']],
+            head: [['Fecha','Equipo','Monto','Motivo','Estado']],
             body: multas.map(m => [
-                String(m.fecha || '').slice(0, 10),
+                String(m.fecha || '').slice(0,10),
                 data.equipos.find(e => e.id === m.id_equipo)?.nombre || '-',
                 `$${parseFloat(m.monto || 0).toFixed(2)}`,
                 m.motivo || '-',
                 m.pagada ? 'Pagada' : 'Pendiente'
             ]),
             styles: { fontSize: 7, cellPadding: 2 },
-            headStyles: { fillColor: [234, 88, 12], fontStyle: 'bold', fontSize: 7 },
-            didParseCell: (d) => {
+            headStyles: { fillColor: [234,88,12], fontStyle: 'bold', fontSize: 7 },
+            didParseCell: d => {
                 if (d.section === 'body' && d.column.index === 4) {
-                    d.cell.styles.textColor = d.cell.raw === 'Pagada' ? [22, 163, 74] : [220, 38, 38];
+                    d.cell.styles.textColor = d.cell.raw === 'Pagada' ? [22,163,74] : [220,38,38];
                     d.cell.styles.fontStyle = 'bold';
                 }
             }
         });
     }
 
-    const equNombre = filtroEquipo === 'todos' ? 'general' : (data.equipos.find(e => e.id === parseInt(filtroEquipo))?.nombre?.toLowerCase().replace(/\s/g, '-') || '');
-    doc.save(`sanciones-${equNombre}-${new Date().toISOString().slice(0, 10)}.pdf`);
-}
-
-// ----------------------------------------------------------------
-// EXPORTACIÓN EXCEL
-// ----------------------------------------------------------------
-
-function exportarExcel() {
-    const data = getData();
-    const filtroEquipo = document.getElementById('selectEquipoFiltro').value;
-
-    const idsEq = filtroEquipo === 'todos' ? data.equipos.map(e => e.id) : [parseInt(filtroEquipo)];
-    const partsFilt = data.participaciones.filter(p => idsEq.includes(p.id_equipo)).map(p => p.id);
-    const idsFilt = data.inscripciones.filter(i => partsFilt.includes(i.id_participacion)).map(i => i.id);
-    const sanciones = (data.sancionesJugador || []).filter(s => idsFilt.includes(s.id_inscripcion))
-        .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
-    const multas = (data.multasEquipo || []).filter(m => idsEq.includes(m.id_equipo))
-        .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
-
-    const wb = XLSX.utils.book_new();
-
-    // Hoja 1: Tarjetas
-    const rowsTarjetas = [['Fecha', 'Equipo', 'Jugador', 'Tipo', 'Motivo', 'Partido', 'Partidos Susp.', 'Multa ($)']];
-    sanciones.forEach(s => {
-        const ins = data.inscripciones.find(i => i.id === s.id_inscripcion);
-        const jugador = data.jugadores.find(j => j.id === ins?.id_jugador);
-        const equipo = equipoDeInscripcion(data, s.id_inscripcion);
-        const partido = data.partidos.find(p => p.id === s.id_partido);
-        const rival = partido && equipo ? rivalDePartido(data, partido, equipo.id) : '-';
-        rowsTarjetas.push([
-            String(s.fecha || '').slice(0, 10),
-            equipo?.nombre || '-',
-            jugador?.nombre || '-',
-            s.tipo,
-            s.motivo || '-',
-            partido ? `vs ${rival}` : '-',
-            s.partidos_suspension || 0,
-            s.multa || 0
-        ]);
-    });
-    const wsTarjetas = XLSX.utils.aoa_to_sheet(rowsTarjetas);
-    wsTarjetas['!cols'] = [10, 15, 30, 12, 25, 22, 12, 10].map(w => ({ wch: w }));
-    XLSX.utils.book_append_sheet(wb, wsTarjetas, 'Tarjetas');
-
-    // Hoja 2: Multas
-    const rowsMultas = [['Fecha', 'Equipo', 'Monto ($)', 'Motivo', 'Estado']];
-    multas.forEach(m => {
-        const equipo = data.equipos.find(e => e.id === m.id_equipo);
-        rowsMultas.push([
-            String(m.fecha || '').slice(0, 10),
-            equipo?.nombre || '-',
-            m.monto || 0,
-            m.motivo || '-',
-            m.pagada ? 'Pagada' : 'Pendiente'
-        ]);
-    });
-    const wsMultas = XLSX.utils.aoa_to_sheet(rowsMultas);
-    wsMultas['!cols'] = [10, 15, 12, 30, 12].map(w => ({ wch: w }));
-    XLSX.utils.book_append_sheet(wb, wsMultas, 'Multas Equipo');
-
-    // Hoja 3: Resumen
-    const rowsResumen = [['Equipo', 'Amarillas', 'Rojas', 'Multa en Tarjetas ($)', 'Multas Equipo ($)', 'Pendientes ($)']];
-    const equiposTarget = filtroEquipo === 'todos' ? data.equipos : data.equipos.filter(e => e.id === parseInt(filtroEquipo));
-    equiposTarget.forEach(eq => {
-        const reporte = window.Sanciones.reporteEquipo(eq.id);
-        rowsResumen.push([eq.nombre, reporte.amarillas, reporte.rojas,
-            reporte.totalMultasTarjetas.toFixed(2),
-            reporte.totalMultasEquipo.toFixed(2),
-            reporte.multasPendientes.toFixed(2)]);
-    });
-    const wsResumen = XLSX.utils.aoa_to_sheet(rowsResumen);
-    wsResumen['!cols'] = [20, 10, 10, 20, 18, 15].map(w => ({ wch: w }));
-    XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
-
-    const equNombre = filtroEquipo === 'todos' ? 'general' : (data.equipos.find(e => e.id === parseInt(filtroEquipo))?.nombre?.toLowerCase().replace(/\s/g, '-') || '');
-    XLSX.writeFile(wb, `sanciones-${equNombre}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    const slug = filtroEquipo === 'todos' ? 'general'
+        : (data.equipos.find(e => e.id === parseInt(filtroEquipo))?.nombre?.toLowerCase().replace(/\s+/g,'-') || 'equipo');
+    doc.save(`sanciones-${slug}-${new Date().toISOString().slice(0,10)}.pdf`);
 }
 
 </script>
