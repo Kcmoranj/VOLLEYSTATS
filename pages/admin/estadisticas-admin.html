@@ -132,8 +132,8 @@
                                 <p id="lblRolTablaActive" class="text-xs text-gray-400 mt-0.5">Plantilla del Partido</p>
                             </div>
                             <div class="flex gap-2">
-                                <button id="btnMultarEquipo" class="btn btn-sm bg-red-50 hover:bg-red-100 border-none text-red-600 text-xs font-bold" title="Registrar una multa para todo el equipo (no ligada a un jugador puntual)">
-                                    💰 Multar Equipo
+                                <button id="btnMultarEquipo" class="btn btn-sm bg-red-50 hover:bg-red-100 border-none text-red-600 text-xs font-bold" title="Inhabilitar este equipo en este partido">
+                                    🚫 Inhabilitar Equipo
                                 </button>
                                 <button id="btnAgregarJugadorDinamico" class="btn btn-sm bg-blue-600 hover:bg-blue-700 border-none text-white text-xs font-bold">
                                     + Agregar Jugador
@@ -205,6 +205,9 @@
                         </div>
                         <button class="btn w-full bg-blue-600 hover:bg-blue-700 border-none text-white font-bold text-xs tracking-wider uppercase mt-4" onclick="guardarEstadisticas()">
                             💾 Guardar Estadísticas
+                        </button>
+                        <button id="btnWO" class="btn w-full bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 font-bold text-xs tracking-wider uppercase" onclick="abrirModalWO()">
+                            🏳️ W.O. — No se presentó
                         </button>
                     </div>
                 </aside>
@@ -301,29 +304,53 @@
         </form>
     </dialog>
 
-    <!-- Modal: Multar Equipo Completo -->
+    <!-- Modal: Inhabilitar Equipo -->
     <dialog id="modalMultaEquipo" class="modal">
         <div class="modal-box rounded-2xl max-w-sm">
-            <h3 class="font-black text-lg text-gray-900 mb-1">💰 Multar al Equipo</h3>
+            <h3 class="font-black text-lg text-gray-900 mb-1">🚫 Inhabilitar Equipo</h3>
             <p id="modalMultaEquipoNombre" class="text-xs text-gray-400 font-medium mb-4">-</p>
             <div class="space-y-3">
                 <div>
                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Motivo</label>
                     <input id="inputMotivoMultaEquipo" type="text" placeholder="Ej: No presentó cédulas / conducta antideportiva" class="input input-bordered w-full text-sm">
                 </div>
-                <div>
-                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Monto ($)</label>
-                    <input id="inputMontoMultaEquipo" type="number" min="0" step="0.01" placeholder="0.00" class="input input-bordered w-full text-sm">
-                </div>
             </div>
             <div class="modal-action">
                 <form method="dialog"><button class="btn btn-ghost text-xs font-bold">Cancelar</button></form>
-                <button id="btnConfirmarMultaEquipo" class="btn bg-red-600 hover:bg-red-700 border-none text-white text-xs font-bold">Guardar Multa</button>
+                <button id="btnConfirmarMultaEquipo" class="btn bg-red-600 hover:bg-red-700 border-none text-white text-xs font-bold">Inhabilitar</button>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop">
             <button>cerrar</button>
         </form>
+    </dialog>
+
+    <!-- Modal: W.O. (No se presentó) -->
+    <dialog id="modalWO" class="modal">
+        <div class="modal-box rounded-2xl max-w-sm bg-white">
+            <h3 class="font-black text-lg text-gray-900 mb-1">🏳️ W.O. — No se presentó</h3>
+            <p class="text-xs text-gray-400 mb-4">El equipo que no llegó pierde 0–2 por defecto. El partido queda como Finalizado.</p>
+            <div class="space-y-3">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">¿Quién no se presentó?</label>
+                <div class="flex gap-2">
+                    <button id="btnWOLocal" onclick="seleccionarWO('local')"
+                        class="flex-1 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-500 font-black text-xs uppercase tracking-wider transition-all">
+                        🛡️ <span id="lblWOLocal">Local</span>
+                    </button>
+                    <button id="btnWOVisit" onclick="seleccionarWO('visitante')"
+                        class="flex-1 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-500 font-black text-xs uppercase tracking-wider transition-all">
+                        🛡️ <span id="lblWOVisit">Visitante</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-action">
+                <button onclick="document.getElementById('modalWO').close()" class="btn btn-ghost text-xs font-bold">Cancelar</button>
+                <button id="btnConfirmarWO" onclick="confirmarWO()" class="btn bg-amber-500 hover:bg-amber-600 border-none text-white text-xs font-bold" disabled>
+                    Confirmar W.O.
+                </button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>cerrar</button></form>
     </dialog>
 
     <!-- Scripts de Configuración y Módulos -->

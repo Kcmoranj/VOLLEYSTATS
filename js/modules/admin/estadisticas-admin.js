@@ -130,10 +130,14 @@ function renderizarCabecera(partido, data) {
             EN_PROGRESO: { emoji: "🔴", texto: "En Progreso", color: "text-red-500" },
             FINALIZADO: { emoji: "✅", texto: "Finalizado", color: "text-green-600" }
         }[estadoNorm] || { emoji: "❔", texto: partido.estado, color: "text-gray-500" };
+        const woBadge = partido.wo
+            ? `<span class="text-gray-200">|</span><span class="text-amber-600 font-black">🏳️ W.O.</span>`
+            : '';
         pill.innerHTML = `
             <span>${partido.fecha} · ${partido.hora}</span>
             <span class="text-gray-200">|</span>
             <span class="${estadoInfo.color}">${estadoInfo.emoji} ${estadoInfo.texto}</span>
+            ${woBadge}
         `;
     }
 }
@@ -209,6 +213,12 @@ function renderizarBotonEstado(partido) {
         btn.disabled = true;
         btnAtras.classList.remove('hidden');
         btnAtras.title = "Regresar a En Progreso";
+    }
+
+    // Botón W.O.: solo visible si el partido no está finalizado
+    const btnWO = document.getElementById('btnWO');
+    if (btnWO) {
+        btnWO.classList.toggle('hidden', normalizarEstado(partido.estado) === 'FINALIZADO');
     }
 }
 
@@ -749,7 +759,6 @@ function abrirModalMultaEquipo() {
 
     document.getElementById('modalMultaEquipoNombre').textContent = `Equipo: ${nombreEquipo}`;
     document.getElementById('inputMotivoMultaEquipo').value = '';
-    document.getElementById('inputMontoMultaEquipo').value = '';
     document.getElementById('modalMultaEquipo').showModal();
 }
 
@@ -760,29 +769,21 @@ function confirmarMultaEquipo() {
     const participacion = data.participaciones.find(p => p.id === idParticipacion);
 
     const motivo = document.getElementById('inputMotivoMultaEquipo').value.trim();
-    const monto = parseFloat(document.getElementById('inputMontoMultaEquipo').value) || 0;
-
-    if (!motivo) {
-        alert('Ingresa el motivo de la multa.');
-        return;
-    }
-    if (!monto || monto <= 0) {
-        alert('Ingresa un monto válido.');
-        return;
-    }
+    if (!motivo) { alert('Ingresa el motivo.'); return; }
 
     if (!data.multasEquipo) data.multasEquipo = [];
     data.multasEquipo.push({
         id: Date.now(),
         id_equipo: participacion.id_equipo,
+        id_participacion: idParticipacion,
         id_partido: partidoId,
         motivo,
-        monto,
+        monto: 0,
         fecha: new Date().toISOString(),
         pagada: false
     });
 
-    // Inhabilitar solo la participación (equipo+rama+categoría) involucrada en la multa
+    // Inhabilitar solo esta participación (equipo+rama+categoría)
     const partAFallar = data.participaciones.find(p => p.id === idParticipacion);
     if (partAFallar) partAFallar.aprobado = false;
 
@@ -790,8 +791,108 @@ function confirmarMultaEquipo() {
 
     if (typeof registrarActividad === 'function') {
         const nombreEquipo = getNombreEquipoPorParticipacion(data, idParticipacion);
-        registrarActividad('MULTA_EQUIPO', `Multa de $${monto.toFixed(2)} a ${nombreEquipo}: ${motivo}`);
+        registrarActividad('INHABILITACION', `${nombreEquipo} inhabilitado: ${motivo}`);
     }
 
     document.getElementById('modalMultaEquipo').close();
+}
+
+// ================================================================
+// W.O. — WALKOVER / NO SE PRESENTÓ
+// ================================================================
+
+let woEquipoSeleccionado = null; // 'local' | 'visitante'
+
+function abrirModalWO() {
+    const data = getAppData();
+    const partido = data.partidos.find(p => p.id === partidoId);
+    if (!partido) return;
+
+    woEquipoSeleccionado = null;
+
+    const nombreLocal = getNombreEquipoPorParticipacion(data, partido.id_local_participacion);
+    const nombreVisit = getNombreEquipoPorParticipacion(data, partido.id_visitante_participacion);
+    document.getElementById('lblWOLocal').textContent = nombreLocal;
+    document.getElementById('lblWOVisit').textContent = nombreVisit;
+
+    // Si uno de los dos equipos está inhabilitado, pre-seleccionarlo
+    const partLocal = data.participaciones.find(p => p.id === partido.id_local_participacion);
+    const partVisit = data.participaciones.find(p => p.id === partido.id_visitante_participacion);
+    if (partLocal && !partLocal.aprobado) {
+        seleccionarWO('local');
+    } else if (partVisit && !partVisit.aprobado) {
+        seleccionarWO('visitante');
+    } else {
+        seleccionarWO(null);
+    }
+
+    document.getElementById('modalWO').showModal();
+}
+
+function seleccionarWO(lado) {
+    woEquipoSeleccionado = lado;
+
+    const btnL = document.getElementById('btnWOLocal');
+    const btnV = document.getElementById('btnWOVisit');
+    const btnConfirmar = document.getElementById('btnConfirmarWO');
+
+    if (lado === 'local') {
+        btnL.className = 'flex-1 py-2 rounded-lg border-2 border-amber-400 bg-amber-100 text-amber-800 font-black text-xs uppercase tracking-wider transition-all';
+        btnV.className = 'flex-1 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-400 font-black text-xs uppercase tracking-wider transition-all';
+    } else if (lado === 'visitante') {
+        btnL.className = 'flex-1 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-400 font-black text-xs uppercase tracking-wider transition-all';
+        btnV.className = 'flex-1 py-2 rounded-lg border-2 border-amber-400 bg-amber-100 text-amber-800 font-black text-xs uppercase tracking-wider transition-all';
+    } else {
+        btnL.className = 'flex-1 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-500 font-black text-xs uppercase tracking-wider transition-all';
+        btnV.className = 'flex-1 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-500 font-black text-xs uppercase tracking-wider transition-all';
+    }
+
+    if (btnConfirmar) btnConfirmar.disabled = !lado;
+}
+
+function confirmarWO() {
+    if (!woEquipoSeleccionado) return;
+
+    const data = getAppData();
+    const partido = data.partidos.find(p => p.id === partidoId);
+    if (!partido) return;
+
+    // El equipo que NO se presentó pierde 0–2
+    // Sets: el ganador gana 25-0 en cada set (claro que fue por WO)
+    if (woEquipoSeleccionado === 'local') {
+        // Local no se presentó → visitante gana 2-0
+        partido.sets = [
+            { local: 0, visitante: 25 },
+            { local: 0, visitante: 25 }
+        ];
+    } else {
+        // Visitante no se presentó → local gana 2-0
+        partido.sets = [
+            { local: 25, visitante: 0 },
+            { local: 25, visitante: 0 }
+        ];
+    }
+
+    partido.estado  = 'FINALIZADO';
+    partido.wo      = true;         // marca para poder identificarlo
+    partido.wo_equipo = woEquipoSeleccionado; // quién no llegó
+
+    guardarAppData(data);
+
+    if (typeof registrarActividad === 'function') {
+        const nombreEq = getNombreEquipoPorParticipacion(
+            data,
+            woEquipoSeleccionado === 'local'
+                ? partido.id_local_participacion
+                : partido.id_visitante_participacion
+        );
+        registrarActividad('WO', `W.O.: ${nombreEq} no se presentó — partido ${partidoId} cerrado por defecto`);
+    }
+
+    document.getElementById('modalWO').close();
+
+    // Refrescar UI
+    renderizarCabecera(partido, data);
+    renderizarMarcador(partido);
+    renderizarBotonEstado(partido);
 }
