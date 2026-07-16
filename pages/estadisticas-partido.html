@@ -57,21 +57,10 @@
     </main>
 
     <script src="../js/mock-data.js"></script>
+    <script src="../js/shared/data-bridge.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. FUSIÓN Y CARGA DE DATOS DE FORMA SEGURA
-            let data = null;
-            const localData = localStorage.getItem('volleyData');
-            
-            // Prioridad a la base de datos local simulada
-            data = localData ? JSON.parse(localData) : window.VolleyAppData;
-
-            // FIX (doble fuente de verdad para jugadores): antes acá se inyectaban
-            // también los jugadores guardados en 'volley_jugadores', pisando lo que
-            // ya venía en 'volleyData'. Como Solicitudes (aprobar/rechazar jugador)
-            // solo actualiza 'volleyData', esa segunda copia podía quedar vieja y
-            // mostrar en el ranking datos de jugadores ya rechazados o desactualizados.
-            // 'volleyData' es ahora la única fuente de verdad.
+            const data = window.AppDB.get();
 
             const listaPartidos = document.getElementById('tablaJugadores');
             if (!data || !listaPartidos) return;
@@ -93,15 +82,15 @@
                 <div class="flex justify-center items-center gap-4 w-full">
                     <div class="flex items-center gap-3 text-2xl font-black text-gray-900 justify-end flex-1">
                         <span class="text-3xl">🛡️</span>
-                        <span class="truncate">${eqLocal?.nombre || '---'}</span>
+                        <span class="truncate">${escHTML(eqLocal?.nombre || '---')}</span>
                     </div>
                     <div class="text-blue-500 font-black text-xl px-6">VS</div>
                     <div class="flex items-center gap-3 text-2xl font-black text-gray-900 justify-start flex-1">
-                        <span class="truncate">${eqVisit?.nombre || '---'}</span>
+                        <span class="truncate">${escHTML(eqVisit?.nombre || '---')}</span>
                         <span class="text-3xl">🛡️</span>
                     </div>
                 </div>
-                <p class="text-gray-500 font-medium mt-6 text-sm">📅 ${partido.fecha || '--/--'} &nbsp;•&nbsp; 📍 ${partido.ubicacion || 'Sin asignar'}</p>
+                <p class="text-gray-500 font-medium mt-6 text-sm">📅 ${partido.fecha || '--/--'} &nbsp;•&nbsp; 📍 ${escHTML(partido.ubicacion || 'Sin asignar')}</p>
             `;
 
             // Filtrar y ordenar las estadísticas incorporando la nueva estructura ampliada
@@ -123,7 +112,7 @@
                     <td class="py-4 flex items-center gap-4">
                         <div class="w-8 flex justify-center">${puestoDisplay}</div>
                         <div class="bg-blue-50 text-blue-500 w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0">👤</div>
-                        <span class="font-bold text-gray-800 truncate">${jug?.nombre || 'Jugador'}</span>
+                        <span class="font-bold text-gray-800 truncate">${escHTML(jug?.nombre || 'Jugador')}</span>
                     </td>
                     <td class="text-center font-semibold text-slate-700 bg-gray-50/30">${s.puntos || 0}</td>
                     <td class="text-center text-gray-600">${s.ataque || 0}</td>
@@ -135,6 +124,8 @@
             }).join('');
         });
 
+
+        function escHTML(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
         // Cierre de sesión controlado para proteger la base de datos del LocalStorage
         function logout() {
     localStorage.removeItem("session_admin");

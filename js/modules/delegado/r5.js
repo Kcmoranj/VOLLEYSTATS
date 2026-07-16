@@ -114,7 +114,7 @@ function guardarR5(e) {
     if (r5) {
         r5.alineacion = alineacion;
     } else {
-        data.r5.push({ id: Date.now(), id_partido: idPartido, id_participacion: participacion.id, alineacion });
+        data.r5.push({ id: window.genId ? window.genId() : Date.now(), id_partido: idPartido, id_participacion: participacion.id, alineacion });
     }
 
     window.AppDB.save(data);

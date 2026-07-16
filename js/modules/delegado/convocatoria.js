@@ -80,7 +80,7 @@ function renderConvocatoria() {
         if (!elegible) {
             badgeEstado = `<span class="badge badge-warning badge-sm text-white">Pendiente de aprobación</span>`;
         } else if (suspension.suspendido) {
-            badgeEstado = `<span class="badge badge-error badge-sm text-white" title="${suspension.motivo}">🟥 Suspendido</span>`;
+            badgeEstado = `<span class="badge badge-error badge-sm text-white" title="${(window.escapeHtml ? window.escapeHtml(suspension.motivo) : (suspension.motivo || ''))}">🟥 Suspendido</span>`;
         }
 
         return `
@@ -110,7 +110,7 @@ function guardarConvocatoria() {
     if (convocatoria) {
         convocatoria.convocados = convocados;
     } else {
-        data.convocatorias.push({ id: Date.now(), id_partido: idPartido, id_participacion: participacion.id, convocados });
+        data.convocatorias.push({ id: window.genId ? window.genId() : Date.now(), id_partido: idPartido, id_participacion: participacion.id, convocados });
     }
 
     window.AppDB.save(data);

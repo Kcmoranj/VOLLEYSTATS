@@ -1,3 +1,8 @@
+/** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
+function escHTML(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 /**
  * liga-admin.js
  * Módulo de liga para la vista admin.
@@ -36,7 +41,7 @@ window.renderLiga = () => {
         const items = enGrupo.map(p => {
             const eq = data.equipos.find(e => e.id === p.id_equipo);
             return `<div class="p-2 bg-blue-50 text-blue-800 rounded font-bold text-xs flex justify-between items-center">
-                ${eq?.nombre || '-'}
+                ${escHTML(eq?.nombre || '-'}
                 <button onclick="quitarDeGrupo(${p.id})" class="text-red-500 font-black ml-2">×</button>
             </div>`;
         }).join('');
@@ -67,7 +72,7 @@ window.abrirModalAsignarGrupo = (grupo) => {
     sel.innerHTML = sinGrupo.length > 0
         ? sinGrupo.map(p => {
             const eq = data.equipos.find(e => e.id === p.id_equipo);
-            return `<option value="${p.id}">${eq?.nombre || p.id}</option>`;
+            return `<option value="${p.id}">${escHTML(eq?.nombre || p.id}</option>`;
           }).join('')
         : '<option disabled>No hay equipos disponibles</option>';
 

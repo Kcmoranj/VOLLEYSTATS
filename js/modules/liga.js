@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Usamos localStorage primero (igual que el resto de módulos del admin)
-    const data = JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData;
+    const data = window.AppDB
+        ? window.AppDB.get()
+        : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
     if (!data) return;
 
     const selectCategoria = document.getElementById('selectCategoriaPosiciones');
@@ -203,6 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function logout() {
-    localStorage.clear();
-    window.location.href = "../index.html";
+    localStorage.removeItem('session_admin');
+    localStorage.removeItem('session_delegado_id');
+    localStorage.removeItem('session_equipo_id');
+    window.location.href = '../index.html';
 }

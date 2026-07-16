@@ -56,7 +56,7 @@ function renderSanciones() {
                 <tr class="hover:bg-gray-50">
                     <td class="font-bold text-gray-800">#${ins?.numero_camiseta ?? '-'} ${jug?.nombre || 'Desconocido'}</td>
                     <td class="text-center text-lg">${emoji}</td>
-                    <td class="text-gray-600">${s.motivo}</td>
+                    <td class="text-gray-600">${(window.escapeHtml ? window.escapeHtml(s.motivo) : (s.motivo || ''))}</td>
                     <td class="text-xs text-gray-400">${partido ? `vs ${rival || '-'} · ${partido.fecha}` : new Date(s.fecha).toLocaleDateString('es-EC')}</td>
                 </tr>`;
             }).join('');

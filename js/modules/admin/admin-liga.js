@@ -29,7 +29,7 @@ const renderCategorias = () => {
     data.categoriasTorneo.forEach(cat => {
         const card = document.createElement('div');
         card.className = "card-admin cursor-pointer hover:shadow-xl transition-all p-8 border-2 border-transparent hover:border-blue-600 rounded-2xl bg-white text-center shadow-sm";
-        card.innerHTML = `<h3 class="font-black text-xl uppercase">${cat.nombre}</h3>`;
+        card.innerHTML = `<h3 class="font-black text-xl uppercase">${(window.escapeHtml ? window.escapeHtml(cat.nombre) : (cat.nombre || ''))}</h3>`;
         
         card.onclick = () => {
             catSeleccionada = cat.id;
@@ -53,7 +53,7 @@ window.prepararAsignacion = (grupo, ramaId) => {
         return p && (!p.grupo || p.grupo === "") && eq.activo !== false;
     });
 
-    disponibles.forEach(eq => select.innerHTML += `<option value="${eq.id}">${eq.nombre}</option>`);
+    disponibles.forEach(eq => select.innerHTML += `<option value="${eq.id}">${(window.escapeHtml ? window.escapeHtml(eq.nombre) : (eq.nombre || ''))}</option>`);
     window.tempAsignacion = { grupo, ramaId };
     document.getElementById('modalAsignar')?.showModal();
 };
@@ -112,7 +112,7 @@ const renderGrupos = () => {
         const ramaSection = document.createElement('section');
         ramaSection.innerHTML = `
             <h2 class="text-2xl font-black text-gray-800 uppercase mb-6 pb-2 border-b-4 border-blue-500">
-                ${rama.nombre}
+                ${(window.escapeHtml ? window.escapeHtml(rama.nombre) : (rama.nombre || ''))}
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"></div>
         `;

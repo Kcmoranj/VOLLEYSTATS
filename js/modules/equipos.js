@@ -1,47 +1,59 @@
+/**
+ * equipos.js — Vista pública de equipos.
+ * El estado "habilitado/inhabilitado" vive en participacion.aprobado,
+ * no en equipo.pago_estado (campo que nunca existió en el schema).
+ * Un equipo se considera habilitado si TODAS sus participaciones están aprobadas.
+ * Usa window.AppDB para heredar sembrarDatosPorDefecto().
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     renderEquipos();
 });
 
+function escHTML(str) {
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function equipoHabilitado(data, idEquipo) {
+    const parts = data.participaciones.filter(p => p.id_equipo === idEquipo);
+    return parts.length > 0 && parts.every(p => p.aprobado);
+}
+
 function renderEquipos() {
-    // FIX: DataManager solo expone getAppData() y save() (ver js/data-manager.js).
-    // DataManager.getAll() no existe: esta llamada tiraba
-    // "DataManager.getAll is not a function" y la página nunca renderizaba nada.
-    const data = DataManager.getAppData();
+    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
     const tbody = document.getElementById('tablaEquipos');
-    
-    tbody.innerHTML = data.equipos.map(e => `
+    if (!tbody) return;
+
+    tbody.innerHTML = data.equipos.map(e => {
+        const habilitado = equipoHabilitado(data, e.id);
+        return `
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="abrirDetalle(${e.id})">
-            <td class="font-bold">${e.nombre}</td>
-            <td>${e.pago_estado ? '✅ Habilitado' : '❌ Inhabilitado'}</td>
+            <td class="font-bold">${escHTML(e.nombre)}</td>
+            <td>${habilitado ? '✅ Habilitado' : '❌ Inhabilitado'}</td>
             <td><button class="btn btn-xs btn-outline">Ver</button></td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 window.abrirDetalle = (id) => {
-    const data = DataManager.getAppData();
+    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
     const e = data.equipos.find(x => x.id === id);
-    
+    if (!e) return;
+
     document.getElementById('nombreEquipo').textContent = e.nombre;
     const btn = document.getElementById('btnPago');
-    btn.className = `btn btn-sm w-full mb-6 text-white ${e.pago_estado ? 'btn-success' : 'btn-error'}`;
-    btn.textContent = e.pago_estado ? 'Habilitado' : 'Inhabilitado';
+    const habilitado = equipoHabilitado(data, id);
+    btn.className = `btn btn-sm w-full mb-6 text-white ${habilitado ? 'btn-success' : 'btn-error'}`;
+    btn.textContent = habilitado ? 'Habilitado' : 'Inhabilitado';
     btn.dataset.id = e.id;
 
-    // FIX: las inscripciones no tienen un campo `id_equipo` (ese campo no existe
-    // en el modelo de datos). Cada inscripción apunta a una `id_participacion`,
-    // y es la participación la que tiene `id_equipo`. El filtro anterior
-    // (`ins.id_equipo === e.id`) siempre daba una lista vacía. Ahora se resuelve
-    // primero qué participaciones pertenecen a este equipo, y luego se filtran
-    // las inscripciones que pertenezcan a esas participaciones.
-    const idsParticipacionesDelEquipo = data.participaciones
-        .filter(p => p.id_equipo === e.id)
-        .map(p => p.id);
-
+    const idsParticipaciones = data.participaciones.filter(p => p.id_equipo === e.id).map(p => p.id);
     const jugadores = data.inscripciones
-        .filter(ins => idsParticipacionesDelEquipo.includes(ins.id_participacion))
-        .map(ins => data.jugadores.find(j => j.id === ins.id_jugador)?.nombre || "Desconocido");
-    
+        .filter(ins => idsParticipaciones.includes(ins.id_participacion))
+        .map(ins => escHTML(data.jugadores.find(j => j.id === ins.id_jugador)?.nombre || 'Desconocido'));
+
     document.getElementById('listaJugadoresEquipo').innerHTML = jugadores
         .map(n => `<li class="p-2 bg-gray-50 rounded text-sm font-medium">${n}</li>`).join('');
 
@@ -50,15 +62,20 @@ window.abrirDetalle = (id) => {
 
 window.togglePago = () => {
     const id = parseInt(document.getElementById('btnPago').dataset.id);
-    let data = DataManager.getAppData();
-    let e = data.equipos.find(x => x.id === id);
-    
-    e.pago_estado = !e.pago_estado;
-    DataManager.save(data);
+    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    // Togglear todas las participaciones del equipo
+    data.participaciones.filter(p => p.id_equipo === id).forEach(p => {
+        p.aprobado = !equipoHabilitado(data, id);
+    });
+    if (window.AppDB) window.AppDB.save(data);
+    else localStorage.setItem('volleyData', JSON.stringify(data));
     renderEquipos();
-    abrirDetalle(id); // Recarga el modal
+    abrirDetalle(id);
 };
+
 function logout() {
-    localStorage.clear();
-    window.location.href = "../index.html";
+    localStorage.removeItem('session_admin');
+    localStorage.removeItem('session_delegado_id');
+    localStorage.removeItem('session_equipo_id');
+    window.location.href = '../index.html';
 }

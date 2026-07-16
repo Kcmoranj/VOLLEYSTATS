@@ -21,6 +21,11 @@
         .input-set:focus { border-bottom-color: #2563EB; }
     </style>
 </head>
+    <script>
+    if (!localStorage.getItem('session_admin')) {
+        window.location.href = '../../index.html';
+    }
+    </script>
 <body class="bg-[#F3F4F6] min-h-screen flex text-gray-800 font-sans">
 
     <!-- Sidebar Navegación -->

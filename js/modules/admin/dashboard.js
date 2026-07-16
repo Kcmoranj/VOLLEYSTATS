@@ -1,34 +1,29 @@
 /**
- * dashboard.js - Lógica para estructura relacional
+ * dashboard.js
+ * Usa window.AppDB para que sembrarDatosPorDefecto() se ejecute y los
+ * contadores reflejen siempre el estado real del torneo.
  */
 
-const getAppData = () => JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData;
-
 document.addEventListener('DOMContentLoaded', () => {
-    const data = getAppData();
+    const data = window.AppDB.get();
     if (!data) return;
 
-    // 1. Widgets
     const partidos = data.partidos || [];
-    document.getElementById('stat-equipos').innerText = data.equipos?.length || 0;
-    document.getElementById('stat-jugados').innerText = partidos.filter(p => p.estado === 'FINALIZADO').length;
-    document.getElementById('stat-pendientes').innerText = partidos.filter(p => p.estado === 'PROGRAMADO').length;
-    document.getElementById('stat-jugadores').innerText = data.jugadores?.length || 0;
+    document.getElementById('stat-equipos').innerText   = data.equipos?.length || 0;
+    document.getElementById('stat-jugados').innerText   = partidos.filter(p => normEstado(p.estado) === 'FINALIZADO').length;
+    document.getElementById('stat-pendientes').innerText = partidos.filter(p => normEstado(p.estado) === 'PROGRAMADO').length;
+    document.getElementById('stat-jugadores').innerText  = data.jugadores?.length || 0;
 
-    // 2. Lógica Próximo Partido
     const proxContainer = document.getElementById('proximo-partido');
     const proximo = partidos
-        .filter(p => p.estado === 'PROGRAMADO')
+        .filter(p => normEstado(p.estado) === 'PROGRAMADO')
         .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))[0];
 
     if (proximo) {
-        // Función auxiliar para obtener nombre de equipo desde participacion
-        const getNombreEquipo = (idParticipacion) => {
-            const part = data.participaciones.find(p => p.id === idParticipacion);
-            const eq = data.equipos.find(e => e.id === part?.id_equipo);
-            return eq ? eq.nombre : "Equipo Desconocido";
+        const getNombre = (idPart) => {
+            const part = data.participaciones.find(p => p.id === idPart);
+            return data.equipos.find(e => e.id === part?.id_equipo)?.nombre || 'Desconocido';
         };
-
         proxContainer.innerHTML = `
             <div class="flex items-center gap-4">
                 <div class="bg-blue-100 p-3 rounded-lg text-blue-700 font-black text-center">
@@ -36,17 +31,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="text-xs">${proximo.fecha.split('-')[1]}</span>
                 </div>
                 <div>
-                    <p class="text-lg font-bold">${getNombreEquipo(proximo.id_local_participacion)} vs ${getNombreEquipo(proximo.id_visitante_participacion)}</p>
-                    <p class="text-sm text-gray-500"> ${proximo.hora} | ${proximo.ubicacion}</p>
+                    <p class="text-lg font-bold">${escHTML(getNombre(proximo.id_local_participacion))} vs ${escHTML(getNombre(proximo.id_visitante_participacion))}</p>
+                    <p class="text-sm text-gray-500">${proximo.hora} | ${escHTML(proximo.ubicacion || '')}</p>
                 </div>
-            </div>
-        `;
+            </div>`;
     } else {
-        proxContainer.innerText = "No hay partidos programados";
+        proxContainer.innerText = 'No hay partidos programados';
     }
 });
 
-window.logout = () => {
-    localStorage.clear();
-    window.location.href = "../../index.html";
-};
+function normEstado(e) { return String(e || '').toUpperCase().trim(); }
+
+/** Escapa caracteres HTML para prevenir XSS al insertar datos en innerHTML */
+function escHTML(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function logout() {
+    localStorage.removeItem('session_admin');
+    localStorage.removeItem('session_delegado_id');
+    localStorage.removeItem('session_equipo_id');
+    window.location.href = '../../index.html';
+}

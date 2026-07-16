@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         cont.innerHTML = `
             <p class="text-lg font-bold">${nombreEquipo(proximo.id_local_participacion)} vs ${nombreEquipo(proximo.id_visitante_participacion)}</p>
-            <p class="text-sm text-gray-500">📅 ${proximo.fecha} · 🕒 ${proximo.hora} · 📍 ${proximo.ubicacion}</p>
+            <p class="text-sm text-gray-500">📅 ${proximo.fecha} · 🕒 ${proximo.hora} · 📍 ${(window.escapeHtml ? window.escapeHtml(proximo.ubicacion) : (proximo.ubicacion || ''))}</p>
         `;
     } else {
         cont.innerHTML = `<p class="text-gray-400 font-semibold">No tienes partidos próximos.</p>`;

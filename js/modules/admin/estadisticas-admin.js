@@ -895,4 +895,4 @@ function confirmarWO() {
     renderizarCabecera(partido, data);
     renderizarMarcador(partido);
     renderizarBotonEstado(partido);
-}
+} 

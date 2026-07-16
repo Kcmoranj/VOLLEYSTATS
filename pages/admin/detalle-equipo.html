@@ -10,6 +10,11 @@
         .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
     </style>
 </head>
+    <script>
+    if (!localStorage.getItem('session_admin')) {
+        window.location.href = '../../index.html';
+    }
+    </script>
 <body class="bg-[#F3F4F6] min-h-screen flex font-sans">
 
       <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">

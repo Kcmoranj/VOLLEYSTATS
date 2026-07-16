@@ -1,21 +1,4 @@
-/**
- * sanciones.js  (js/shared/sanciones.js)
- * Módulo compartido de sanciones.  Expone window.Sanciones.
- *
- * Schema de datos (compatible con v4):
- *   sancionesJugador[]  – tarjeta por jugador, identificada por id_inscripcion
- *     { id, id_inscripcion, id_partido, tipo, motivo, multa, fecha, pagada,
- *       partidos_suspension }
- *   multasEquipo[]      – multa al equipo completo
- *     { id, id_equipo, id_partido, motivo, monto, fecha, pagada }
- *
- * Usado por:
- *   estadisticas-admin.js  – emitir tarjetas y multas en un partido (usa su propio modal)
- *   convocatoria.js        – bloquear jugadores suspendidos
- *   sanciones-admin.html   – reporte y exportación admin
- *   delegado/sanciones.js  – vista de solo lectura para el delegado
- *   jugadores.js           – historial de partidos con tarjetas
- */
+
 
 window.Sanciones = (() => {
 
@@ -38,14 +21,6 @@ window.Sanciones = (() => {
     // TARJETAS (sancionesJugador)
     // ----------------------------------------------------------------
 
-    /**
-     * Busca el id_equipo de una inscripción.
-     */
-    function idEquipoDeInscripcion(data, idInscripcion) {
-        const ins = data.inscripciones.find(i => i.id === idInscripcion);
-        if (!ins) return null;
-        return data.participaciones.find(p => p.id === ins.id_participacion)?.id_equipo || null;
-    }
 
     /**
      * Devuelve verdadero si un jugador (por id_inscripcion) está suspendido
@@ -259,25 +234,36 @@ window.Sanciones = (() => {
         saveData(data);
     }
 
-    function registrarMulta({ id_equipo, id_partido = null, monto, motivo = '', fecha = null }) {
+    function registrarMulta({ id_equipo, id_partido = null, id_participacion = null, monto, motivo = '', fecha = null }) {
         const data = getData();
         asegurarArrays(data);
         const fechaFinal = fecha || (id_partido
             ? (data.partidos.find(p => p.id === id_partido)?.fecha || new Date().toISOString().slice(0, 10))
             : new Date().toISOString().slice(0, 10));
         data.multasEquipo.push({
-            id: Date.now() + Math.floor(Math.random() * 1000),
-            id_equipo, id_partido,
+            id: window.genId ? window.genId() : Date.now(),
+            id_equipo, id_partido, id_participacion,
             monto: parseFloat(monto) || 0,
             motivo: motivo.trim(),
             fecha: fechaFinal,
             pagada: false
         });
 
-        // Inhabilitar todas las participaciones del equipo multado
-        data.participaciones
-            .filter(p => p.id_equipo === id_equipo)
-            .forEach(p => { p.aprobado = false; });
+        // Inhabilitar solo la participación específica (equipo + rama + categoría) multada
+        const idPart = id_participacion || (id_partido
+            ? (() => {
+                const partido = data.partidos.find(p => p.id === id_partido);
+                if (!partido) return null;
+                const partsEq = data.participaciones.filter(p => p.id_equipo === id_equipo).map(p => p.id);
+                return partsEq.includes(partido.id_local_participacion)
+                    ? partido.id_local_participacion
+                    : partido.id_visitante_participacion;
+              })()
+            : null);
+        if (idPart) {
+            const p = data.participaciones.find(x => x.id === idPart);
+            if (p) p.aprobado = false;
+        }
 
         saveData(data);
     }
@@ -286,7 +272,6 @@ window.Sanciones = (() => {
         PARTIDOS_SUSPENSION_ROJA,
         verificarSuspension,
         historialPartidosJugador,
-        reporteEquipo,
         eliminarTarjeta,
         eliminarMulta,
         togglePagadaMulta,

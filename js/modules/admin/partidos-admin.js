@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Cargar Categorías
     if (selCat) {
         selCat.innerHTML = '<option disabled selected>Seleccione Categoría</option>' + 
-            data.categoriasTorneo.map(cat => `<option value="${cat.id}">${cat.nombre}</option>`).join('');
+            data.categoriasTorneo.map(cat => `<option value="${cat.id}">${(window.escapeHtml ? window.escapeHtml(cat.nombre) : (cat.nombre || ''))}</option>`).join('');
         selCat.addEventListener('change', actualizarRamas);
     }
 
@@ -110,7 +110,7 @@ return `
                     <span class="block font-bold text-gray-800">${cat}</span>
                     <span class="text-[10px] text-gray-400 uppercase font-bold">${rama}</span>
                 </td>
-                <td class="py-4 px-3 text-center text-gray-600">${p.ubicacion}</td>
+                <td class="py-4 px-3 text-center text-gray-600">${(window.escapeHtml ? window.escapeHtml(p.ubicacion) : (p.ubicacion || ''))}</td>
                 <td class="py-4 px-3 text-center">
                     <span class="px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase ${estadoEstilos}">
                         ${String(p.estado).replace('_', ' ')}
@@ -170,7 +170,7 @@ function actualizarRamas() {
     }
 
     selRama.innerHTML = '<option disabled selected>Seleccione una rama</option>' +
-        ramasDisponibles.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
+        ramasDisponibles.map(r => `<option value="${r.id}">${(window.escapeHtml ? window.escapeHtml(r.nombre) : (r.nombre || ''))}</option>`).join('');
     selRama.disabled = false;
 }
 

@@ -1,28 +1,4 @@
-/**
- * data-bridge.js
- * Punto único de acceso a los datos para las páginas nuevas (delegado + solicitudes-admin).
- * No reemplaza a los getAppData() locales que ya existen en otros módulos: convive con ellos
- * porque todos leen/escriben la misma llave 'volleyData' en localStorage.
- *
- * FIX IMPORTANTE: antes, si js/mock-data.js no llegaba a cargar (404, ruta mal
- * puesta, etc.), window.VolleyAppData quedaba undefined y esta función hacía
- * JSON.parse(JSON.stringify(undefined)) — eso lanza un error de JS y frena TODO
- * el script de la página antes de dibujar nada. Ahora, si no encuentra ni
- * localStorage ni mock-data.js, usa window.datosMinimosDeEmergencia() — esa
- * función vive en js/mock-data.js, no aquí duplicada — y avisa por consola.
- *
- * FIX #2 (sembrado de datos por defecto): antes, una vez que existía ALGO en
- * localStorage['volleyData'] (por ejemplo, de una prueba anterior), esta
- * función lo usaba TAL CUAL para siempre e ignoraba por completo cualquier
- * cosa nueva que se agregara a mock-data.js (equipos nuevos, el delegado
- * "delegado_lopse", etc.). Por eso un equipo o usuario agregado en mock-data.js
- * "no aparecía": el navegador ya tenía su propia copia vieja guardada y nunca
- * se refrescaba con la semilla nueva. sembrarDatosPorDefecto() combina ambas
- * fuentes: conserva todo lo que el usuario ya creó/editó en localStorage, y
- * además agrega (sin duplicar, comparando por id) cualquier equipo,
- * participación, jugador, inscripción, partido, estadística o usuario
- * delegado que exista en mock-data.js pero todavía no esté en localStorage.
- */
+
 function sembrarDatosPorDefecto(data) {
     if (!window.VolleyAppData) return data;
     const semilla = window.VolleyAppData;
@@ -57,6 +33,17 @@ function sembrarDatosPorDefecto(data) {
     return data;
 }
 window.sembrarDatosPorDefecto = sembrarDatosPorDefecto;
+
+
+/**
+ * genId — genera un ID entero único dentro de la sesión.
+ * Usa Date.now() como base + contador incremental para evitar colisiones
+ * cuando se crean varios objetos en el mismo milisegundo.
+ */
+window.genId = (() => {
+    let _counter = 0;
+    return () => Date.now() * 1000 + (_counter++ % 1000);
+})();
 
 window.AppDB = {
     KEY: 'volleyData',

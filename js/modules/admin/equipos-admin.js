@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', renderPartidos);
 
 function renderPartidos() {
-    const data = DataManager.getAll();
+    const data = window.AppDB.get();
     const contenedor = document.getElementById('listaPartidos');
     
     contenedor.innerHTML = data.partidos.map(p => {
@@ -31,12 +31,12 @@ window.guardarProgramacion = () => {
     const fecha = document.getElementById('inputFecha').value;
     const hora = document.getElementById('inputHora').value;
     
-    let data = DataManager.getAll();
+    let data = window.AppDB.get();
     let p = data.partidos.find(x => x.id == id);
     p.fecha = fecha;
     p.hora = hora;
     
-    DataManager.save(data);
+    window.AppDB.save(data);
     document.getElementById('modalPartido').close();
     renderPartidos();
 };

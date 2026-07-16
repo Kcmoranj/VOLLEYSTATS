@@ -1,14 +1,10 @@
+function escHTML(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. FUSIÓN Y CARGA DE DATOS DESDE LOCALSTORAGE Y MOCK DATA
-    let data = null;
-    const localData = localStorage.getItem('volleyData');
-    
-    data = localData ? JSON.parse(localData) : window.VolleyAppData;
-
-    const jugadoresGuardados = JSON.parse(localStorage.getItem('volley_jugadores'));
-    if (jugadoresGuardados && data) {
-        data.jugadores = jugadoresGuardados;
-    }
+    const data = window.AppDB
+        ? window.AppDB.get()
+        : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
 
     const listaPartidos = document.getElementById('listaPartidos');
     if (!data || !listaPartidos) return;
@@ -39,9 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const estadoActual = p.estado?.toUpperCase() || 'PROGRAMADO';
             let clasesEstado = 'bg-amber-50 text-amber-700 border-amber-200';
             
-            if (estadoActual === 'EN CURSO' || estadoActual === 'JUGANDO') {
+            if (estadoActual === 'EN_PROGRESO') {
                 clasesEstado = 'bg-red-50 text-red-600 border-red-200 animate-pulse font-bold';
-            } else if (estadoActual === 'FINALIZADO' || estadoActual === 'TERMINADO') {
+            } else if (estadoActual === 'FINALIZADO') {
                 clasesEstado = 'bg-slate-100 text-slate-600 border-slate-200';
             }
 
@@ -76,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span>🕒 ${p.hora || '--:--'}</span>
                         </div>
                         <div class="flex items-center gap-1 mt-0.5 text-[11px]">
-                            <span>📍 ${p.ubicacion || 'Sin asignar'}</span>
+                            <span>📍 ${escHTML(p.ubicacion || 'Sin asignar')}</span>
                         </div>
                     </div>
                     
@@ -99,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <!-- Equipo Local -->
                     <div class="col-span-2 flex flex-col items-center text-center transition-opacity ${!esEmpateOPorJugar && !elLocalGano ? 'opacity-40' : 'opacity-100'}">
                         <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-lg shadow-sm mb-1 group-hover:scale-105 transition-transform">🛡️</div>
-                        <span class="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">${eqLocal?.nombre || 'Local'}</span>
+                        <span class="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">${escHTML(eqLocal?.nombre || 'Local')}</span>
                     </div>
 
                     <!-- Marcador -->
@@ -117,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <!-- Equipo Visitante -->
                     <div class="col-span-2 flex flex-col items-center text-center transition-opacity ${!esEmpateOPorJugar && !elVisitGano ? 'opacity-40' : 'opacity-100'}">
                         <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-lg shadow-sm mb-1 group-hover:scale-105 transition-transform">🛡️</div>
-                        <span class="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">${eqVisit?.nombre || 'Visitante'}</span>
+                        <span class="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">${escHTML(eqVisit?.nombre || 'Visitante')}</span>
                     </div>
 
                 </div>

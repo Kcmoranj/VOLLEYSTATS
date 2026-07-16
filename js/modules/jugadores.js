@@ -1,25 +1,8 @@
-/**
- * jugadores.js (vista pública / invitado)
- *
- * FIX (#11 consistencia de datos): antes leía localStorage['volleyData'] a
- * pelo, sin pasar por sembrarDatosPorDefecto(). Si el navegador ya tenía un
- * volleyData guardado de una sesión anterior, un jugador/equipo nuevo
- * agregado solo a mock-data.js nunca aparecía en esta vista pública. Ahora
- * usa window.AppDB.get() (requiere que la página cargue
- * js/shared/data-bridge.js), igual que las páginas de admin/delegado.
- *
- * FIX (#9 doble fuente 'volley_jugadores'): antes esta página fusionaba
- * data.jugadores con lo guardado en la clave suelta 'volley_jugadores'. Como
- * aprobar/rechazar un jugador desde Solicitudes solo actualiza 'volleyData',
- * esa segunda copia podía quedar vieja y mostrar aquí jugadores ya
- * rechazados, o no reflejar aprobaciones recientes. 'volleyData' (vía
- * window.AppDB) es ahora la única fuente de verdad.
- *
- * FIX (#13 logout duplicado): esta página también carga js/modules/auth.js,
- * que define su propio logout(). Tener dos definiciones de la misma función
- * global es confuso y frágil (gana la que se carga después, por casualidad).
- * Se quitó la definición de aquí; la de auth.js es la única.
- */
+/** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
+function escHTML(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 document.addEventListener('DOMContentLoaded', () => {
     const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
 
@@ -54,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div>
-                        <h4 class="font-bold text-gray-800 text-sm leading-tight">${j.nombre}</h4>
+                        <h4 class="font-bold text-gray-800 text-sm leading-tight">${escHTML(j.nombre)}</h4>
                         <span class="badge badge-ghost badge-sm font-bold text-blue-600 mt-1">${catJugador?.nombre || 'Sin categoría'}</span>
                     </div>
                 </div>

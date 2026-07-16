@@ -1,23 +1,8 @@
-/**
- * detalle-equipo.js - Versión Corregida (delegado crea, admin solo aprueba/administra)
- *
- * CAMBIOS respecto a la versión anterior:
- *  1. Se eliminó la creación de nuevas participaciones desde el admin
- *     (window.prepararYAbrirModal / window.confirmarNuevaParticipacion).
- *     Esa función ahora vive en pages/delegado/mi-equipo.js.
- *  2. La elegibilidad de jugadores ya NO se calcula aquí con lógica propia rota
- *     (obtenerNombreCategoria/obtenerNombreTorneo no existían). Ahora se usa
- *     window.Elegibilidad.jugadorEsElegible(), que trae las reglas correctas:
- *     Toddler -> todas | C-/C+ -> Cantera+ | B-/B+ -> Semi Pro+ | A-/A+ -> Pro.
- *  3. Solo se sugieren jugadores con estado 'APROBADO' (los propuestos por un
- *     delegado y aún pendientes no aparecen hasta que el admin los apruebe en
- *     solicitudes-admin.html).
- *  4. FIX (doble fuente de verdad): antes se leía/escribía también
- *     'volley_jugadores' además de 'volleyData'. Como Solicitudes (aprobar/
- *     rechazar jugador) solo actualiza 'volleyData', esa segunda copia podía
- *     quedar vieja y revivir jugadores rechazados o revertir aprobaciones.
- *     Ahora 'volleyData' es la única fuente de verdad para jugadores.
- */
+/** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
+function escHTML(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
 const getAppData = () => {
     const localData = localStorage.getItem('volleyData');
@@ -79,7 +64,7 @@ const initDetalle = () => {
             const j = data.jugadores.find(jug => jug.id === i.id_jugador);
             if (!j) return '';
             const pendiente = j.estado === 'PENDIENTE' ? ' <span class="text-amber-500">(pendiente)</span>' : '';
-            return `<li class="truncate">${j.nombre} (#${i.numero_camiseta})${pendiente}</li>`;
+            return `<li class="truncate">${escHTML(j.nombre)} (#${i.numero_camiseta})${pendiente}</li>`;
         }).join('');
 
         container.innerHTML += `
@@ -118,7 +103,7 @@ function actualizarSelectCapitan(id, data) {
     select.innerHTML = '<option value="">Sin capitán asignado</option>';
     data.inscripciones.filter(i => i.id_participacion === id).forEach(ins => {
         const j = data.jugadores.find(jug => jug.id === ins.id_jugador);
-        if (j) select.innerHTML += `<option value="${j.id}" ${data.participaciones.find(p => p.id === id).id_capitan === j.id ? 'selected' : ''}>${j.nombre}</option>`;
+        if (j) select.innerHTML += `<option value="${j.id}" ${data.participaciones.find(p => p.id === id).id_capitan === j.id ? 'selected' : ''}>${escHTML(j.nombre)}</option>`;
     });
 }
 
@@ -187,8 +172,8 @@ window.manejarBusquedaJugador = (e) => {
     lista.innerHTML = coincidencias.length > 0
         ? coincidencias.map(j => {
             const catNombre = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador)?.nombre || 'N/A';
-            return `<div class="suggestion-item p-2 text-xs font-bold hover:bg-blue-50 cursor-pointer flex justify-between items-center" data-id="${j.id}" data-nombre="${j.nombre}">
-                <span>${j.nombre}</span>
+            return `<div class="suggestion-item p-2 text-xs font-bold hover:bg-blue-50 cursor-pointer flex justify-between items-center" data-id="${j.id}" data-nombre="${escHTML(j.nombre)}">
+                <span>${escHTML(j.nombre)}</span>
                 <span class="badge badge-xs badge-ghost text-[9px]">${catNombre}</span>
             </div>`;
         }).join('')
@@ -247,7 +232,7 @@ window.agregarJugadorConfirmado = () => {
     }
 
     data.inscripciones.push({
-        id: Date.now(),
+        id: window.genId ? window.genId() : Date.now(),
         id_jugador: window.jugadorSeleccionadoParaAgregar,
         id_participacion: idParticipacion,
         numero_camiseta: numeroCamiseta

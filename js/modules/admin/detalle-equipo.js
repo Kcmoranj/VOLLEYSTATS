@@ -1,20 +1,8 @@
-/**
- * detalle-equipo.js - Versión Corregida, Sincronizada y con Jerarquía de Categorías
- *
- * FIX #1 (buscador de jugadores roto): esta versión usaba su propia tabla
- * REGLAS_ELEGIBILIDAD y llamaba a obtenerNombreCategoria()/obtenerNombreTorneo(),
- * dos funciones que NUNCA se definían en este archivo. Resultado: al escribir
- * 2+ letras en "Agregar jugador ya aprobado" la página reventaba con
- * ReferenceError y el buscador no funcionaba. Ahora se usa window.Elegibilidad
- * (js/shared/elegibilidad.js), que es la única fuente de verdad de reglas de
- * elegibilidad y ya la usa correctamente la versión de delegado.
- *
- * FIX #2 (doble fuente de verdad de jugadores): antes se leía/escribía también
- * 'volley_jugadores' además de 'volleyData'. Como Solicitudes (aprobar/rechazar
- * jugador) solo actualiza 'volleyData', esa segunda copia podía quedar vieja y
- * "resucitar" jugadores ya rechazados o revertir aprobaciones. Ahora 'volleyData'
- * es la única fuente de verdad para jugadores.
- */
+/** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
+function escHTML(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
 const getAppData = () => {
     const localData = localStorage.getItem('volleyData');
@@ -59,7 +47,7 @@ const initDetalle = () => {
         const insc = data.inscripciones.filter(i => i.id_participacion === p.id);
         const listaNombres = insc.map(i => {
             const j = data.jugadores.find(jug => jug.id === i.id_jugador);
-            return j ? `<li class="truncate">${j.nombre} (#${i.numero_camiseta})</li>` : '';
+            return j ? `<li class="truncate">${escHTML(j.nombre)} (#${i.numero_camiseta})</li>` : '';
         }).join('');
 
         container.innerHTML += `
@@ -124,7 +112,7 @@ window.confirmarNuevaParticipacion = () => {
     }
 
     const nuevaParticipacion = {
-        id: Date.now(),
+        id: window.genId ? window.genId() : Date.now(),
         id_equipo: idEquipo,
         id_categoria_torneo: catId,
         id_rama: ramaId,
@@ -160,7 +148,7 @@ function actualizarSelectCapitan(id, data) {
     select.innerHTML = '<option value="">Sin capitán asignado</option>';
     data.inscripciones.filter(i => i.id_participacion === id).forEach(ins => {
         const j = data.jugadores.find(jug => jug.id === ins.id_jugador);
-        if (j) select.innerHTML += `<option value="${j.id}" ${data.participaciones.find(p=>p.id===id).id_capitan === j.id ? 'selected' : ''}>${j.nombre}</option>`;
+        if (j) select.innerHTML += `<option value="${j.id}" ${data.participaciones.find(p=>p.id===id).id_capitan === j.id ? 'selected' : ''}>${escHTML(j.nombre)}</option>`;
     });
 }
 
@@ -241,8 +229,8 @@ window.manejarBusquedaJugador = (e) => {
     lista.innerHTML = coincidencias.length > 0 
         ? coincidencias.map(j => {
             const catNombre = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador)?.nombre || 'N/A';
-            return `<div class="suggestion-item p-2 text-xs font-bold hover:bg-blue-50 cursor-pointer flex justify-between items-center" data-id="${j.id}" data-nombre="${j.nombre}">
-                <span>${j.nombre}</span>
+            return `<div class="suggestion-item p-2 text-xs font-bold hover:bg-blue-50 cursor-pointer flex justify-between items-center" data-id="${j.id}" data-nombre="${escHTML(j.nombre)}">
+                <span>${escHTML(j.nombre)}</span>
                 <span class="badge badge-xs badge-ghost text-[9px]">${catNombre}</span>
             </div>`;
           }).join('')
@@ -295,7 +283,7 @@ window.agregarJugadorConfirmado = () => {
     }
 
     data.inscripciones.push({
-        id: Date.now(),
+        id: window.genId ? window.genId() : Date.now(),
         id_jugador: window.jugadorSeleccionadoParaAgregar,
         id_participacion: idParticipacion,
         numero_camiseta: numeroCamiseta

@@ -59,7 +59,12 @@
     <script src="../js/mock-data.js"></script>
     <script src="../js/modules/partidos.js"></script>
     <script>
-        function logout() { localStorage.clear(); window.location.href = "../index.html"; }
+        function logout() {
+    localStorage.removeItem('session_admin');
+    localStorage.removeItem('session_delegado_id');
+    localStorage.removeItem('session_equipo_id');
+    window.location.href = '../index.html';
+}
     </script>
 </body>
 </html>
