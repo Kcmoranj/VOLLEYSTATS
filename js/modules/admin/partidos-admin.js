@@ -1,12 +1,3 @@
-/**
- * partidos-admin.js
- *
- * FIX: el menú de "Editar / Eliminar" se recortaba en los partidos recién
- * creados porque siempre se agregan al FINAL de la tabla, y el contenedor
- * tenía `overflow-hidden` + el menú se abría hacia abajo (se salía del
- * contenedor visible, dejando solo "Editar" visible/clicable).
- * Ahora: las últimas filas abren el menú hacia arriba (`dropdown-top`).
- */
 
 const getAppData = () => JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData;
 

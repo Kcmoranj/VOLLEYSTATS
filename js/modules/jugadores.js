@@ -1,25 +1,3 @@
-/**
- * jugadores.js (vista pública / invitado)
- *
- * FIX (#11 consistencia de datos): antes leía localStorage['volleyData'] a
- * pelo, sin pasar por sembrarDatosPorDefecto(). Si el navegador ya tenía un
- * volleyData guardado de una sesión anterior, un jugador/equipo nuevo
- * agregado solo a mock-data.js nunca aparecía en esta vista pública. Ahora
- * usa window.AppDB.get() (requiere que la página cargue
- * js/shared/data-bridge.js), igual que las páginas de admin/delegado.
- *
- * FIX (#9 doble fuente 'volley_jugadores'): antes esta página fusionaba
- * data.jugadores con lo guardado en la clave suelta 'volley_jugadores'. Como
- * aprobar/rechazar un jugador desde Solicitudes solo actualiza 'volleyData',
- * esa segunda copia podía quedar vieja y mostrar aquí jugadores ya
- * rechazados, o no reflejar aprobaciones recientes. 'volleyData' (vía
- * window.AppDB) es ahora la única fuente de verdad.
- *
- * FIX (#13 logout duplicado): esta página también carga js/modules/auth.js,
- * que define su propio logout(). Tener dos definiciones de la misma función
- * global es confuso y frágil (gana la que se carga después, por casualidad).
- * Se quitó la definición de aquí; la de auth.js es la única.
- */
 document.addEventListener('DOMContentLoaded', () => {
     const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
 
@@ -102,6 +80,74 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
             });
+        }
+
+        // Historial de partidos jugados
+        const elHistorial = document.getElementById('perfil_historial');
+        if (!elHistorial) return;
+
+        const historial = window.Sanciones ? window.Sanciones.historialPartidosJugador(id) : [];
+
+        if (historial.length === 0) {
+            elHistorial.innerHTML = `<p class="text-gray-400 text-center text-sm italic">Sin partidos registrados.</p>`;
+        } else {
+            const totales = historial.reduce((acc, h) => ({
+                puntos: acc.puntos + h.stats.puntos,
+                victorias: acc.victorias + (h.gano ? 1 : 0),
+                amarillas: acc.amarillas + h.tarjetas.filter(t => t.tipo === 'AMARILLA').length,
+                rojas: acc.rojas + h.tarjetas.filter(t => t.tipo === 'ROJA').length
+            }), { puntos: 0, victorias: 0, amarillas: 0, rojas: 0 });
+
+            elHistorial.innerHTML = `
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div class="bg-blue-50 rounded-xl p-3 text-center">
+                        <p class="text-2xl font-black text-blue-600">${historial.length}</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Partidos</p>
+                    </div>
+                    <div class="bg-green-50 rounded-xl p-3 text-center">
+                        <p class="text-2xl font-black text-green-600">${totales.victorias}</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Victorias</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-xl p-3 text-center">
+                        <p class="text-2xl font-black text-purple-600">${totales.puntos}</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Pts Total</p>
+                    </div>
+                </div>
+                ${(totales.amarillas > 0 || totales.rojas > 0) ? `
+                <div class="flex gap-2 mb-4">
+                    ${totales.amarillas > 0 ? `<span class="badge badge-warning text-white font-bold text-xs">🟨 ${totales.amarillas} amarilla${totales.amarillas > 1 ? 's' : ''}</span>` : ''}
+                    ${totales.rojas > 0 ? `<span class="badge badge-error text-white font-bold text-xs">🟥 ${totales.rojas} roja${totales.rojas > 1 ? 's' : ''}</span>` : ''}
+                </div>` : ''}
+                <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                ${historial.map(h => {
+                    const resBadge = h.gano
+                        ? `<span class="badge badge-success badge-xs text-white font-bold">W</span>`
+                        : `<span class="badge badge-error badge-xs text-white font-bold">L</span>`;
+                    const tarjetasBadges = [
+                        ...h.tarjetas.filter(t => t.tipo === 'AMARILLA').map(() => '🟨'),
+                        ...h.tarjetas.filter(t => t.tipo === 'ROJA').map(() => '🟥')
+                    ].join('');
+                    return `
+                    <div class="bg-gray-50 rounded-lg px-3 py-2 text-xs border border-gray-100">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-black text-gray-700">vs ${h.rival}</span>
+                                <span class="text-gray-400 ml-1">(${h.esLocal ? 'Local' : 'Visita'})</span>
+                                ${tarjetasBadges ? `<span class="ml-1">${tarjetasBadges}</span>` : ''}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${resBadge}
+                                <span class="font-black text-gray-500 text-[10px]">${h.resultado}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 mt-1 text-[10px] text-gray-400 font-bold">
+                            <span>${h.partido.fecha}</span>
+                            <span>${h.categoria} · ${h.rama}</span>
+                            <span class="text-blue-600">${h.stats.puntos}pts</span>
+                        </div>
+                    </div>`;
+                }).join('')}
+                </div>`;
         }
     };
 

@@ -1,4 +1,3 @@
-// 1. VARIABLE GLOBAL DE DATOS UNIFICADOS
 let data = null;
 
 // Función interna para inicializar y fusionar datos de manera consistente

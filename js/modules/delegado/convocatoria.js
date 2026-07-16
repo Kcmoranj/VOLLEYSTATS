@@ -66,12 +66,28 @@ function renderConvocatoria() {
     tbody.innerHTML = inscripciones.map(ins => {
         const j = data.jugadores.find(x => x.id === ins.id_jugador);
         const elegible = j && j.estado === 'APROBADO';
+
+        // Verificar suspensión por tarjeta roja
+        let suspension = { suspendido: false, motivo: '' };
+        if (elegible && window.Sanciones) {
+            suspension = window.Sanciones.verificarSuspension(ins.id, idPartido);
+        }
+
         const checked = convocados.has(ins.id) ? 'checked' : '';
+        const bloqueado = !elegible || suspension.suspendido;
+
+        let badgeEstado = '';
+        if (!elegible) {
+            badgeEstado = `<span class="badge badge-warning badge-sm text-white">Pendiente de aprobación</span>`;
+        } else if (suspension.suspendido) {
+            badgeEstado = `<span class="badge badge-error badge-sm text-white" title="${suspension.motivo}">🟥 Suspendido</span>`;
+        }
+
         return `
-        <tr class="${!elegible ? 'opacity-40' : ''}">
-            <td><input type="checkbox" class="checkbox checkbox-sm" data-ins="${ins.id}" ${checked} ${!elegible ? 'disabled' : ''}></td>
+        <tr class="${bloqueado ? 'opacity-40' : ''}">
+            <td><input type="checkbox" class="checkbox checkbox-sm" data-ins="${ins.id}" ${checked} ${bloqueado ? 'disabled' : ''}></td>
             <td class="font-bold">#${ins.numero_camiseta} ${j?.nombre || '-'}</td>
-            <td>${elegible ? '' : '<span class="badge badge-warning badge-sm text-white">Pendiente de aprobación</span>'}</td>
+            <td>${badgeEstado}</td>
         </tr>`;
     }).join('');
 }

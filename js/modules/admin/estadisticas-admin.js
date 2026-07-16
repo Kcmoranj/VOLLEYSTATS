@@ -700,6 +700,9 @@ function confirmarSancionJugador() {
     const tipo = document.getElementById('selectTipoSancion').value; // 'AMARILLA' | 'ROJA'
     const motivo = document.getElementById('inputMotivoSancion').value.trim();
     const multa = parseFloat(document.getElementById('inputMultaSancion').value) || 0;
+    const partidos_suspension = tipo === 'ROJA'
+        ? (parseInt(document.getElementById('inputPartidosSuspension')?.value) || 1)
+        : 0;
 
     if (!motivo) {
         alert('Ingresa el motivo de la tarjeta.');
@@ -717,7 +720,8 @@ function confirmarSancionJugador() {
         motivo,
         multa,
         fecha: new Date().toISOString(),
-        pagada: false
+        pagada: false,
+        partidos_suspension
     });
 
     guardarAppData(data);
@@ -726,7 +730,8 @@ function confirmarSancionJugador() {
         const inscripcion = data.inscripciones.find(i => i.id === idInscripcionSancion);
         const jugador = inscripcion ? data.jugadores.find(j => j.id === inscripcion.id_jugador) : null;
         const emoji = tipo === 'ROJA' ? '🟥' : '🟨';
-        registrarActividad('SANCION_JUGADOR', `${emoji} a ${jugador?.nombre || 'jugador'}: ${motivo}${multa ? ` (multa $${multa.toFixed(2)})` : ''}`);
+        const suspLabel = tipo === 'ROJA' ? ` [${partidos_suspension}P susp.]` : '';
+        registrarActividad('SANCION_JUGADOR', `${emoji} a ${jugador?.nombre || 'jugador'}: ${motivo}${multa ? ` (multa $${multa.toFixed(2)})` : ''}${suspLabel}`);
     }
 
     idInscripcionSancion = null;

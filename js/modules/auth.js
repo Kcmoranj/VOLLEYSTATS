@@ -1,19 +1,3 @@
-/**
- * auth.js
- * Archivo único de autenticación: admin (hardcoded) + delegados de equipo.
- *
- * MODELO: un usuario/contraseña por EQUIPO (no por participación). El registro
- * de un delegado ya NO crea el equipo: solo crea la cuenta (id_equipo: null).
- * Una vez adentro, en el sidebar "Mi Equipo" es donde arma/crea su equipo
- * (nombre + primera categoría/rama). Ahí mismo puede agregar más categorías
- * después. Esto refleja que 1 cuenta = 1 equipo, y crear el equipo pasa a ser
- * una acción posterior al login, no parte del formulario de registro.
- */
-
-// --- Fallback autosuficiente: si js/shared/data-bridge.js no cargó, este
-// archivo igual funciona (usa localStorage directamente, y si tampoco hay
-// mock-data.js, usa window.datosMinimosDeEmergencia() en vez de crashear —
-// esa función vive en js/mock-data.js, no está duplicada aquí). ---
 if (typeof window.migrarModeloDelegados !== 'function') {
     window.migrarModeloDelegados = function (data) {
         if (!data.usuariosDelegados) data.usuariosDelegados = [];

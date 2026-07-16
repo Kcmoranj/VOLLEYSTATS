@@ -1,4 +1,3 @@
-// admin-liga.js - ESTRUCTURA LIMPIA Y CORREGIDA
 
 // 1. Variables Globales
 let catSeleccionada = null;

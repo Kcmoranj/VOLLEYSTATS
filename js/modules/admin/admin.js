@@ -1,8 +1,3 @@
-/**
- * admin.js - Módulo de Administración de VolleyStats
- * Permite gestionar partidos y estados de forma persistente.
- */
-
 // 1. Cargar datos: intenta leer localStorage primero, si no, usa el mock original
 let appData = JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData;
 
