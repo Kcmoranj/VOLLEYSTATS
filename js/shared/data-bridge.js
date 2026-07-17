@@ -72,13 +72,28 @@ window.genId = (() => {
 window.AppDB = {
     KEY: 'volleyData',
 
+    SCHEMA_VERSION: 4,
+
     get() {
         const raw = localStorage.getItem(this.KEY);
         let base;
 
         if (raw) {
-            base = JSON.parse(raw);
-            base = window.sembrarDatosPorDefecto(base);
+            try {
+                const parsed = JSON.parse(raw);
+                // If schema version doesn't match, wipe and reload from mock
+                if ((parsed._schemaVersion || 0) < this.SCHEMA_VERSION) {
+                    localStorage.removeItem(this.KEY);
+                    base = window.VolleyAppData
+                        ? JSON.parse(JSON.stringify(window.VolleyAppData))
+                        : null;
+                } else {
+                    base = parsed;
+                }
+            } catch(e) {
+                base = null;
+            }
+            if (base) base = window.sembrarDatosPorDefecto(base);
         } else if (window.VolleyAppData) {
             base = JSON.parse(JSON.stringify(window.VolleyAppData));
         } else if (typeof window.datosMinimosDeEmergencia === 'function') {
@@ -101,6 +116,7 @@ window.AppDB = {
     },
 
     save(data) {
+        data._schemaVersion = this.SCHEMA_VERSION;
         localStorage.setItem(this.KEY, JSON.stringify(data));
     }
 };

@@ -1,0 +1,21 @@
+# Force correct MIME types
+AddType application/javascript .js
+AddType text/css .css
+AddType text/html .html
+
+# Allow all files to be served (no directory listing)
+Options -Indexes
+
+# Prevent redirect loops
+RewriteEngine On
+
+# Remove cache busting query strings if they cause issues (optional)
+# RewriteCond %{QUERY_STRING} ^v=
+# RewriteRule ^(.*)$ $1? [R=301,L]
+
+# Cache control - don't cache JS/CSS
+<FilesMatch "\.(js|css)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>

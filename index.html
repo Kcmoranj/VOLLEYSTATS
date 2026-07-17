@@ -6,7 +6,7 @@
     <title>VolleyStats - Autenticación</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="css/brand.css">
+    <link rel="stylesheet" href="css/brand.css?v=20250717">
     <script>
       tailwind.config = {
         corePlugins: { preflight: true }
@@ -15,8 +15,8 @@
     <!-- Este archivo es opcional para esta página: si no carga (ruta distinta,
          404, etc.) el login de admin sigue funcionando igual; solo el login de
          delegado necesita que exista para conocer los equipos precargados. -->
-    <script src="js/mock-data.js" onerror="console.warn('⚠️ No se encontró js/mock-data.js. El login de admin funciona igual; el de delegado solo verá cuentas ya guardadas en este navegador.')"></script>
-    <script src="js/shared/data-bridge.js"></script>
+    <script src="js/mock-data.js?v=20250717" onerror="console.warn('⚠️ No se encontró js/mock-data.js. El login de admin funciona igual; el de delegado solo verá cuentas ya guardadas en este navegador.')"></script>
+    <script src="js/shared/data-bridge.js?v=20250717"></script>
 </head>
 <body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex items-center justify-center p-4">
 
@@ -75,7 +75,7 @@
 
     </div>
 
-    <script src="js/modules/auth.js"></script>
+    <script src="js/modules/auth.js?v=20250717"></script>
     <script>
         function mostrarErrorLogin() {
             document.getElementById('alertaError').classList.remove('hidden');

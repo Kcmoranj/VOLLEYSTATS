@@ -10,29 +10,36 @@
     <link rel="stylesheet" href="../css/brand.css">
     <link rel="stylesheet" href="../css/style.css"> 
 </head>
+<body class="bg-[#F3F4F6] flex min-h-screen font-sans">
 
-<body class="bg-[#F3F4F6] text-gray-800 min-h-screen flex flex-col md:flex-row font-sans">
-
-<!-- Sidebar -->
-    <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
-        <div class="flex-1">
-            <span class="p-6 block text-3xl font-black">Volley<span class="text-blue-600">Stats</span></span>
-            <nav class="flex flex-col gap-2 px-4">
-                <p class="text-[10px] font-bold text-gray-400 px-3 uppercase tracking-wider mb-2">
-                Navegación
-            </p>
-                <a href="partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
-                <a href="liga.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
-                <a href="jugadores.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
-               <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📊 Estadísticas</a>
-            </nav>
+    <!-- Mobile topbar -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b flex items-center gap-3 px-4 h-14 shadow-sm">
+        <button onclick="openSidebar()" class="text-gray-700 text-xl font-bold">&#9776;</button>
+        <span class="text-lg font-black">Volley<span class="text-blue-600">Stats</span></span>
+    </div>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen z-40 w-64 bg-white border-r flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+        <div class="flex-1 min-h-0 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="partidos.html" class="flex items-center gap-2 px-4 pb-4 border-b border-gray-100 mb-2">
+                <span class="text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            </a>
+            <a href="partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600" onclick="closeSidebar()">📅 Partidos</a>
+            <a href="liga.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600" onclick="closeSidebar()">🏆 Liga</a>
+            <a href="jugadores.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600" onclick="closeSidebar()">👤 Jugadores</a>
+            <a href="estadisticas.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600" onclick="closeSidebar()">📊 Estadísticas</a>
         </div>
-        <div class="p-4 border-t">
-            <button onclick="window.logout('../index.html')" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left">➡️ Cerrar sesión</button>
+        <div class="shrink-0 px-3 py-4 border-t">
+            <button onclick="window.logout('../index.html')" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold text-sm text-red-600 hover:bg-red-50">
+                <span>➡️</span>Cerrar sesión
+            </button>
         </div>
     </aside>
+    <script>
+    function openSidebar()  { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.add('-translate-x-full');    document.getElementById('sidebarOverlay').classList.add('hidden'); }
+    </script>
 
-    <main class="flex-1 p-4 md:p-10 overflow-y-auto">
+    <main class="flex-1 p-4 md:p-10 overflow-y-auto pt-16 lg:pt-0 ">
 
         <div class="mb-8">
             <h1 class="text-3xl font-black text-gray-900">Categorías · Estadísticas</h1>
@@ -51,4 +58,5 @@
 <script src="../js/modules/auth.js"></script>
     <script src="../js/modules/estadisticas.js"></script>
 </body>
+</html>
 </html>

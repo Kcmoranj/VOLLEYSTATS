@@ -9,27 +9,43 @@
     <link rel="stylesheet" href="../../css/brand.css">
     <style>.card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }</style>
 </head>
-<body class="bg-[#F3F4F6] flex h-screen font-sans">
+<body class="bg-[#F3F4F6] flex min-h-screen font-sans">
 
-        <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
-        <div class="flex-1">
-            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
-            <p class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider -mt-4 mb-4">Portal Delegado</p>
-            <nav class="flex flex-col gap-2 px-4">
-                <a href="dashboard-delegado.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Resumen</a>
-                <a href="mi-equipo.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Mi Equipo</a>
-                <a href="mis-partidos.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Mis Partidos</a>
-                <a href="convocatoria.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📋 Convocatoria</a>
-                <a href="r5.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏐 R5 / Alineación</a>
-                <a href="sanciones.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">🟨 Sanciones</a>
-            </nav>
+    <!-- Mobile topbar -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b flex items-center gap-3 px-4 h-14 shadow-sm">
+        <button onclick="openSidebar()" class="text-gray-700 text-xl font-bold">&#9776;</button>
+        <span class="text-lg font-black">Volley<span class="text-blue-600">Stats</span></span>
+    </div>
+
+    <!-- Overlay (mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar: fixed drawer on mobile, sticky on desktop -->
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen z-40 w-64 bg-white border-r flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+        <div class="flex-1 min-h-0 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="dashboard-delegado.html" class="flex items-center gap-2 px-4 pb-4 border-b border-gray-100 mb-2">
+                <span class="text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            </a>
+            <a href="dashboard-delegado.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📊</span>Resumen</a>
+            <a href="mi-equipo.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🛡️</span>Mi Equipo</a>
+            <a href="mis-partidos.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📅</span>Mis Partidos</a>
+            <a href="convocatoria.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📋</span>Convocatoria</a>
+            <a href="r5.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🏐</span>Alineación R5</a>
+            <a href="sanciones.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm bg-blue-50 text-blue-600" onclick="closeSidebar()"><span>🟨</span>Sanciones</a>
         </div>
-        <div class="p-4 border-t">
-            <button onclick="logoutDelegado()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+        <div class="shrink-0 px-3 py-4 border-t">
+            <button onclick="logoutDelegado()" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold text-sm text-red-600 hover:bg-red-50">
+                <span>➡️</span>Cerrar sesión
+            </button>
         </div>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
+    <script>
+    function openSidebar()  { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.add('-translate-x-full');    document.getElementById('sidebarOverlay').classList.add('hidden'); }
+    </script>
+
+<main class="flex-1 min-w-0 overflow-y-auto px-4 md:px-8 pt-16 lg:pt-8">
         <h1 class="text-2xl font-black text-gray-900 uppercase mb-1">Sanciones y Multas</h1>
         <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-6">Tarjetas por jugador y multas registradas por el administrador</p>
 
@@ -75,4 +91,5 @@
     <script src="../../js/modules/auth.js"></script>
     <script src="../../js/modules/delegado/sanciones.js"></script>
 </body>
+</html>
 </html>

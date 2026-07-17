@@ -4,54 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jugadores | VolleyStats Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../css/brand.css">
     <style>
-        .card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+        .card-admin { background:white; border:1px solid #e5e7eb; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.1); padding:1.5rem; }
+        #inputBuscar:focus { outline:none; box-shadow:0 0 0 2px #2563eb33; }
+        mark { background:#dbeafe; color:#1d4ed8; border-radius:.2rem; padding:0 .1rem; font-weight:inherit; }
     </style>
 </head>
-<body class="bg-[#F3F4F6] flex h-screen font-sans">
+<body class="bg-[#F3F4F6] flex min-h-screen font-sans">
 
-        <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
-        <div class="flex-1">
-            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
-            <nav class="flex flex-col gap-2 px-4">
-                <a href="dashboard.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
-                <a href="partidos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📅 Partidos</a>
-                <a href="jugadores-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">👤 Jugadores</a>
-                <a href="equipos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
-                <a href="liga-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
-                <a href="actividades-recientes.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
-                <a href="sanciones-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
-                <a href="solicitudes-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
-            </nav>
+    <!-- Mobile topbar -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b flex items-center gap-3 px-4 h-14 shadow-sm">
+        <button onclick="openSidebar()" class="text-gray-700 text-xl font-bold">&#9776;</button>
+        <span class="text-lg font-black">Volley<span class="text-blue-600">Stats</span></span>
+    </div>
+
+    <!-- Overlay (mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar: fixed drawer on mobile, sticky on desktop -->
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen z-40 w-64 bg-white border-r flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+        <div class="flex-1 min-h-0 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="dashboard.html" class="flex items-center gap-2 px-4 pb-4 border-b border-gray-100 mb-2">
+                <span class="text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            </a>
+            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📊</span>Dashboard</a>
+            <a href="partidos-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📅</span>Partidos</a>
+            <a href="jugadores-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm bg-blue-50 text-blue-600" onclick="closeSidebar()"><span>👤</span>Jugadores</a>
+            <a href="equipos-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🛡️</span>Equipos</a>
+            <a href="liga-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🏆</span>Liga</a>
+            <a href="actividades-recientes.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📝</span>Actividades</a>
+            <a href="sanciones-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🟨</span>Sanciones</a>
+            <a href="solicitudes-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📥</span>Solicitudes</a>
         </div>
-        <div class="p-4 border-t">
-            <button onclick="window.logout('../../index.html')" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+        <div class="shrink-0 px-3 py-4 border-t">
+            <button onclick="window.logout('../../index.html')" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold text-sm text-red-600 hover:bg-red-50">
+                <span>➡️</span>Cerrar sesión
+            </button>
         </div>
     </aside>
 
-    <main class="flex-1 px-8 pt-8 overflow-y-auto">
-        <!-- Banner de página -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white -mx-8 -mt-8 mb-8">
+    <script>
+    function openSidebar()  { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.add('-translate-x-full');    document.getElementById('sidebarOverlay').classList.add('hidden'); }
+    </script>
+
+<main class="flex-1 min-w-0 overflow-y-auto px-4 md:px-8 pt-16 lg:pt-8">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 md:px-8 py-5 md:py-6 text-white -mx-4 md:-mx-8 -mt-4 md:-mt-8 mb-6 md:mb-8">
             <h1 class="text-2xl font-black">👤 Jugadores</h1>
             <p class="text-blue-200 text-sm mt-1">Directorio completo de jugadores del torneo</p>
         </div>
 
-        <div class="flex justify-between items-center mb-8">
-            <button onclick="abrirModalNuevo()" class="btn btn-primary bg-blue-600 text-white">+ Nuevo Jugador</button>
+        <!-- Barra de búsqueda y filtros -->
+        <div class="card-admin mb-4 flex flex-wrap items-center gap-3">
+
+            <!-- Buscador -->
+            <div class="relative flex-1 min-w-[200px]">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                <input id="inputBuscar" type="text" placeholder="Buscar por nombre…"
+                       oninput="renderJugadores()"
+                       class="input input-bordered input-sm w-full pl-8 text-sm font-semibold">
+            </div>
+
+            <!-- Filtro categoría -->
+            <select id="filtroCat" onchange="renderJugadores()"
+                    class="select select-bordered select-sm font-semibold text-sm min-w-[140px]">
+                <option value="">Todas las categorías</option>
+            </select>
+
+            <!-- Filtro estado -->
+            <select id="filtroEstado" onchange="renderJugadores()"
+                    class="select select-bordered select-sm font-semibold text-sm min-w-[130px]">
+                <option value="">Todos los estados</option>
+                <option value="APROBADO">✅ Aprobado</option>
+                <option value="PENDIENTE">⏳ Pendiente</option>
+            </select>
+
+            <!-- Contador -->
+            <span id="contadorJugadores" class="text-[11px] font-bold text-gray-400 ml-auto whitespace-nowrap"></span>
+
+            <button onclick="abrirModalNuevo()" class="btn btn-sm bg-blue-600 border-none text-white font-bold">+ Nuevo</button>
         </div>
 
         <div class="card-admin">
             <table class="table w-full">
                 <thead>
                     <tr class="text-[10px] uppercase text-gray-400 font-black">
-                        <th>Nombre Completo</th><th>Categoría</th><th>Estado</th><th>Acciones</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th>Equipo</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="tablaJugadores"></tbody>
             </table>
+            <p id="sinResultados" class="text-center text-gray-400 font-semibold py-8 hidden">
+                Sin jugadores que coincidan con la búsqueda.
+            </p>
         </div>
     </main>
 
@@ -63,7 +115,7 @@
                 <select id="selectCatJugador" class="select select-bordered w-full"></select>
             </div>
             <div class="modal-action">
-                <button onclick="guardarJugador()" class="btn btn-primary">Guardar Cambios</button>
+                <button onclick="guardarJugador()" class="btn bg-blue-600 border-none text-white font-bold">Guardar</button>
                 <form method="dialog"><button class="btn btn-ghost">Cancelar</button></form>
             </div>
         </div>
@@ -73,103 +125,131 @@
     <script src="../../js/shared/data-bridge.js"></script>
     <script src="../../js/modules/auth.js"></script>
 <script>
-verificarSesion();
-    // 1. FUSIÓN Y CONTROL DE DATOS (Una sola fuente de verdad)
-    // NOTA: usamos window.AppDB si está disponible para que también se vean
-    // los jugadores 'PENDIENTE' propuestos por delegados (con estado y sin
-    // categoría todavía). Si por algo no cargó data-bridge.js, cae al
-    // comportamiento original sin romperse.
-    const data = window.AppDB.get();
-    let jugadorEditandoId = null;
+document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
+    init();
+});
 
-    // 2. INICIALIZACIÓN DE LA UI
-    const selCat = document.getElementById('selectCatJugador');
-    selCat.innerHTML = ''; // Limpiamos para evitar duplicaciones visuales
-    data.categoriasJugador.forEach(c => {
-        selCat.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+let jugadorEditandoId = null;
+
+function getData() { return window.AppDB.get(); }
+
+function init() {
+    const data = getData();
+
+    // Populate category filter + modal select
+    const cats = data.categoriasJugador || [];
+    const filtroCat   = document.getElementById('filtroCat');
+    const selectModal = document.getElementById('selectCatJugador');
+    cats.forEach(c => {
+        filtroCat.innerHTML   += `<option value="${c.id}">${c.nombre}</option>`;
+        selectModal.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
     });
 
-    // 3. RENDERIZADO DE LA TABLA
-    function renderJugadores() {
-        const tbody = document.getElementById('tablaJugadores');
-        if (!tbody) return;
-
-        tbody.innerHTML = data.jugadores.map(j => {
-            const cat = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador)?.nombre || 'Sin Categoría';
-            const estadoBadge = j.estado === 'PENDIENTE'
-                ? `<span class="badge badge-warning badge-sm text-white font-bold">Pendiente</span>`
-                : `<span class="badge badge-success badge-sm text-white font-bold">Aprobado</span>`;
-            return `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="font-bold text-gray-800">${j.nombre}</td>
-                    <td><span class="badge badge-sm badge-ghost">${cat}</span></td>
-                    <td>${estadoBadge}</td>
-                    <td>
-                        <button onclick="editarJugador(${j.id})" class="btn btn-xs btn-ghost text-blue-500 font-bold hover:bg-blue-50">Editar</button>
-                    </td>
-                </tr>`;
-        }).join('');
-    }
-
-    // 4. CONTROL DE MODALES
-    function abrirModalNuevo() {
-        jugadorEditandoId = null;
-        document.getElementById('tituloModal').innerText = "Registrar Jugador";
-        document.getElementById('inputNombre').value = '';
-        if (selCat.options.length > 0) selCat.selectedIndex = 0; // Resetea el select al primero
-        document.getElementById('modalJugador').showModal();
-    }
-
-    function editarJugador(id) {
-        const jugador = data.jugadores.find(j => j.id === id);
-        if (!jugador) return;
-
-        jugadorEditandoId = id;
-        document.getElementById('tituloModal').innerText = "Editar Jugador";
-        document.getElementById('inputNombre').value = jugador.nombre;
-        if (jugador.id_categoria_jugador != null) selCat.value = jugador.id_categoria_jugador;
-        document.getElementById('modalJugador').showModal();
-    }
-
-    // 5. GUARDAR Y PERSISTIR
-    function guardarJugador() {
-        const inputNombre = document.getElementById('inputNombre');
-        const nombre = inputNombre.value.trim().toUpperCase();
-        const catId = parseInt(selCat.value);
-
-        if (!nombre) {
-            alert('Por favor, ingresa el nombre del jugador.');
-            return;
-        }
-
-        if (jugadorEditandoId) {
-            const index = data.jugadores.findIndex(j => j.id === jugadorEditandoId);
-            if (index !== -1) {
-                data.jugadores[index].nombre = nombre;
-                data.jugadores[index].id_categoria_jugador = catId;
-                data.jugadores[index].estado = 'APROBADO';
-            }
-        } else {
-            data.jugadores.push({
-                id: Date.now(),
-                nombre,
-                id_categoria_jugador: catId,
-                estado: 'APROBADO'
-            });
-        }
-
-        // FIX: ya no escribimos por separado en 'volley_jugadores' (ver nota arriba).
-        // 'volleyData', vía AppDB, es la única fuente de verdad.
-        if (window.AppDB) window.AppDB.save(data);
-
-        renderJugadores();
-        document.getElementById('modalJugador').close();
-    }
-
-    // 6. CERRAR SESIÓN SEGURO
-
-    // Ejecución inicial
     renderJugadores();
+}
+
+function highlight(text, query) {
+    if (!query) return window.escHTML(text);
+    const safe  = window.escHTML(text);
+    const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safe.replace(new RegExp(safeQ, 'gi'), m => `<mark>${m}</mark>`);
+}
+
+function renderJugadores() {
+    const data   = getData();
+    const query  = document.getElementById('inputBuscar').value.trim().toLowerCase();
+    const catF   = document.getElementById('filtroCat').value;
+    const estF   = document.getElementById('filtroEstado').value;
+
+    let jugadores = data.jugadores || [];
+
+    // Filter
+    if (query) jugadores = jugadores.filter(j => j.nombre.toLowerCase().includes(query));
+    if (catF)  jugadores = jugadores.filter(j => String(j.id_categoria_jugador) === String(catF));
+    if (estF)  jugadores = jugadores.filter(j => (j.estado || 'APROBADO').toUpperCase() === estF);
+
+    // Counter
+    const total = data.jugadores.length;
+    document.getElementById('contadorJugadores').textContent =
+        jugadores.length === total ? `${total} jugadores` : `${jugadores.length} de ${total}`;
+
+    const tbody     = document.getElementById('tablaJugadores');
+    const sinRes    = document.getElementById('sinResultados');
+
+    if (!jugadores.length) {
+        tbody.innerHTML = '';
+        sinRes.classList.remove('hidden');
+        return;
+    }
+    sinRes.classList.add('hidden');
+
+    tbody.innerHTML = jugadores.map(j => {
+        const cat   = data.categoriasJugador.find(c => c.id === j.id_categoria_jugador)?.nombre || '—';
+        const estado = (j.estado || 'APROBADO').toUpperCase();
+        const badge  = estado === 'PENDIENTE'
+            ? `<span class="badge badge-warning badge-sm text-white font-bold">Pendiente</span>`
+            : `<span class="badge badge-success badge-sm text-white font-bold">Aprobado</span>`;
+
+        // Find team via inscripciones
+        const ins = data.inscripciones.find(i => i.id_jugador === j.id);
+        const part = ins ? data.participaciones?.find(p => p.id === ins.id_participacion) : null;
+        const equipo = part ? (data.equipos?.find(e => e.id === part.id_equipo)?.nombre || '—') : '—';
+
+        return `<tr class="hover:bg-gray-50 transition-colors">
+            <td class="font-bold text-gray-800">${highlight(j.nombre, query)}</td>
+            <td><span class="badge badge-sm badge-ghost">${window.escHTML(cat)}</span></td>
+            <td>${badge}</td>
+            <td class="text-xs text-gray-500 font-semibold">${window.escHTML(equipo)}</td>
+            <td>
+                <button onclick="editarJugador(${j.id})"
+                        class="btn btn-xs btn-ghost text-blue-500 font-bold hover:bg-blue-50">Editar</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function abrirModalNuevo() {
+    jugadorEditandoId = null;
+    document.getElementById('tituloModal').textContent = 'Registrar Jugador';
+    document.getElementById('inputNombre').value = '';
+    document.getElementById('selectCatJugador').selectedIndex = 0;
+    document.getElementById('modalJugador').showModal();
+}
+
+function editarJugador(id) {
+    const data    = getData();
+    const jugador = data.jugadores.find(j => j.id === id);
+    if (!jugador) return;
+    jugadorEditandoId = id;
+    document.getElementById('tituloModal').textContent = 'Editar Jugador';
+    document.getElementById('inputNombre').value = jugador.nombre;
+    document.getElementById('selectCatJugador').value = jugador.id_categoria_jugador;
+    document.getElementById('modalJugador').showModal();
+}
+
+function guardarJugador() {
+    const nombre = document.getElementById('inputNombre').value.trim().toUpperCase();
+    const catId  = parseInt(document.getElementById('selectCatJugador').value);
+    if (!nombre) { alert('Ingresa el nombre del jugador.'); return; }
+
+    const data = getData();
+    if (jugadorEditandoId) {
+        const idx = data.jugadores.findIndex(j => j.id === jugadorEditandoId);
+        if (idx !== -1) {
+            data.jugadores[idx].nombre = nombre;
+            data.jugadores[idx].id_categoria_jugador = catId;
+            data.jugadores[idx].estado = 'APROBADO';
+        }
+    } else {
+        data.jugadores.push({ id: window.genId(), nombre, id_categoria_jugador: catId, estado: 'APROBADO' });
+    }
+    window.AppDB.save(data);
+    renderJugadores();
+    document.getElementById('modalJugador').close();
+}
 </script>
 </body>
+</html>
+
 </html>

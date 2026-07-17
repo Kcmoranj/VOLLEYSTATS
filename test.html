@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<p id="status">Loading...</p>
+<script src="js/mock-data.js"></script>
+<script src="js/shared/data-bridge.js"></script>
+<script>
+  try {
+    const data = window.AppDB.get();
+    document.getElementById('status').textContent = 
+      'OK: ' + data.equipos.length + ' equipos, ' + data.partidos.length + ' partidos';
+  } catch(e) {
+    document.getElementById('status').textContent = 'ERROR: ' + e.message;
+  }
+</script>
+</body>
+</html>

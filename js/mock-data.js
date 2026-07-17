@@ -50,7 +50,19 @@ window.VolleyAppData = {
         { id: 2, nombre: "MILTON ROLANDO RAMIREZ RIVERA", id_categoria_jugador: 3, estado: "APROBADO" },
         { id: 3, nombre: "KIARA CAROLINA MORAN JAIME", id_categoria_jugador: 1, estado: "APROBADO" },
         { id: 4, nombre: "BRITHANY DENISSE BOLAÑOS GALARZA", id_categoria_jugador: 1, estado: "APROBADO" },
-        { id: 5, nombre: "BYRON ALEXANDER FIGUEROA AGUIAR", id_categoria_jugador: 3, estado: "APROBADO" }
+        { id: 5, nombre: "BYRON ALEXANDER FIGUEROA AGUIAR", id_categoria_jugador: 3, estado: "APROBADO" },
+        { id: 6,  nombre: "ANDRES TORRES MEDINA",    id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 7,  nombre: "CARLOS REYES MORA",        id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 8,  nombre: "DAVID PINTO SUAREZ",       id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 9,  nombre: "EDGAR NUÑEZ LOPEZ",        id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 10, nombre: "FELIPE ORTEGA DIAZ",       id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 11, nombre: "GABRIEL VEGA RIOS",        id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 12, nombre: "HUGO CASTRO LUNA",         id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 13, nombre: "IVAN MORA FELIX",           id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 14, nombre: "JOSE RUIZ PEÑA",           id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 15, nombre: "KEVIN SALAS CANO",         id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 16, nombre: "LUIS VERA MEZA",           id_categoria_jugador: 2, estado: "APROBADO" },
+        { id: 17, nombre: "MARCO ARIAS PICO",         id_categoria_jugador: 2, estado: "APROBADO" }
     ],
 
     // INSCRIPCIONES: Relaciona al jugador con una participación específica
@@ -61,7 +73,19 @@ window.VolleyAppData = {
         { id: 4, id_jugador: 3, id_participacion: 1, numero_camiseta: 52 },
         { id: 5, id_jugador: 3, id_participacion: 2, numero_camiseta: 52 },
         { id: 6, id_jugador: 4, id_participacion: 5, numero_camiseta: 89 },
-        { id: 7, id_jugador: 5, id_participacion: 4, numero_camiseta: 57 }
+        { id: 7, id_jugador: 5, id_participacion: 4, numero_camiseta: 57 },
+        { id: 8,  id_jugador: 6,  id_participacion: 3, numero_camiseta: 1  },
+        { id: 9,  id_jugador: 7,  id_participacion: 3, numero_camiseta: 4  },
+        { id: 10, id_jugador: 8,  id_participacion: 3, numero_camiseta: 7  },
+        { id: 11, id_jugador: 9,  id_participacion: 3, numero_camiseta: 10 },
+        { id: 12, id_jugador: 10, id_participacion: 3, numero_camiseta: 13 },
+        { id: 13, id_jugador: 11, id_participacion: 3, numero_camiseta: 16 },
+        { id: 14, id_jugador: 12, id_participacion: 6, numero_camiseta: 2  },
+        { id: 15, id_jugador: 13, id_participacion: 6, numero_camiseta: 5  },
+        { id: 16, id_jugador: 14, id_participacion: 6, numero_camiseta: 8  },
+        { id: 17, id_jugador: 15, id_participacion: 6, numero_camiseta: 11 },
+        { id: 18, id_jugador: 16, id_participacion: 6, numero_camiseta: 14 },
+        { id: 19, id_jugador: 17, id_participacion: 6, numero_camiseta: 17 }
     ],
 
  partidos: [
@@ -99,12 +123,17 @@ window.VolleyAppData = {
         ubicacion: "Cancha 2", 
         id_local_participacion: 3, 
         id_visitante_participacion: 6, 
-        estado: "PROGRAMADO",
+        estado: "EN_PROGRESO",
         sets: [
-            { local: 21, visitante: 25 }, 
-            { local: 25, visitante: 18 }, 
-            { local: 15, visitante: 10 }
-        ] 
+            { local: 25, visitante: 22 }
+        ],
+        vivo: {
+            setActual: 2,
+            local:     { puntos: 8, rotaciones: 2, sustitucionesAplicadas: [], tiemposMuertosUsados: 1 },
+            visitante: { puntos: 5, rotaciones: 1, sustitucionesAplicadas: [], tiemposMuertosUsados: 0 },
+            saqueActual: "local",
+            historialPuntos: []
+        }
     }
 ],
 estadisticasJugador: [
@@ -129,8 +158,18 @@ estadisticasJugador: [
 
     // Convocatorias (jugadores citados por partido) y R5 (alineación titular).
     // Empiezan vacíos: los llena cada delegado desde su portal.
-    convocatorias: [],
-    r5: [],
+    convocatorias: [
+    { id: 1, id_partido: 3, id_participacion: 3, convocados: [8,9,10,11,12,13] },
+    { id: 2, id_partido: 3, id_participacion: 6, convocados: [14,15,16,17,18,19] }
+    ],
+    r5: [
+    { id: 1, id_partido: 3, id_participacion: 3, numero_set: 1,
+      alineacion: { pos1:8, pos2:9, pos3:10, pos4:11, pos5:12, pos6:13, libero:null },
+      roles: { armador:9, opuesto:8, punta1:11, punta2:12, central1:10, central2:13 } },
+    { id: 2, id_partido: 3, id_participacion: 6, numero_set: 1,
+      alineacion: { pos1:14, pos2:15, pos3:16, pos4:17, pos5:18, pos6:19, libero:null },
+      roles: { armador:15, opuesto:14, punta1:17, punta2:18, central1:16, central2:19 } }
+    ],
 
     // Sanciones: tarjetas amarillas/rojas por jugador (con multa opcional) y
     // multas al equipo completo (no ligadas a un jugador puntual). Las carga

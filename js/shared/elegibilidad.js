@@ -60,5 +60,42 @@ window.Elegibilidad = (function () {
         return REGLAS[nombreCategoriaJugadorStr] || [];
     }
 
-    return { REGLAS, jugadorEsElegible, categoriasPermitidasPara, nombreCategoriaJugador, nombreCategoriaTorneo };
+
+    /**
+     * ¿El jugador ya está inscrito en OTRO equipo que juegue la misma
+     * categoría de torneo Y rama? Si es así, no puede inscribirse en este equipo.
+     * @param {*} excludeParticipacionId  la participación del equipo actual (se excluye del check)
+     */
+    function jugadorYaEnCategoriaRama(data, idJugador, idCategoriaTorneo, idRama, excludeParticipacionId) {
+        // Todas las inscripciones de este jugador en otras participaciones
+        const otrasInscripciones = (data.inscripciones || []).filter(
+            i => i.id_jugador === idJugador && i.id_participacion !== excludeParticipacionId
+        );
+        return otrasInscripciones.some(ins => {
+            const part = (data.participaciones || []).find(p => p.id === ins.id_participacion);
+            return part && part.id_categoria_torneo === idCategoriaTorneo && part.id_rama === idRama;
+        });
+    }
+
+
+    /**
+     * Returns the nombre of the competing equipo if jugador is already
+     * inscribed in another equipo in the same categoria/rama, or null if clean.
+     * Used for the double-check just before saving an inscription.
+     */
+    function equipoConflictoCategoriaRama(data, idJugador, idCategoriaTorneo, idRama, excludeParticipacionId) {
+        const otrasIns = (data.inscripciones || []).filter(
+            i => i.id_jugador === idJugador && i.id_participacion !== excludeParticipacionId
+        );
+        for (const ins of otrasIns) {
+            const part = (data.participaciones || []).find(p => p.id === ins.id_participacion);
+            if (part && part.id_categoria_torneo === idCategoriaTorneo && part.id_rama === idRama) {
+                const equipo = (data.equipos || []).find(e => e.id === part.id_equipo);
+                return equipo?.nombre || 'otro equipo';
+            }
+        }
+        return null;
+    }
+
+    return { REGLAS, jugadorEsElegible, categoriasPermitidasPara, nombreCategoriaJugador, nombreCategoriaTorneo, jugadorYaEnCategoriaRama, equipoConflictoCategoriaRama };
 })();

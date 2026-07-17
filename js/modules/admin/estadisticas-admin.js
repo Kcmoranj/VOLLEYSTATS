@@ -30,8 +30,55 @@ document.addEventListener('DOMContentLoaded', () => {
     if (partidoInit?.vivo && normalizarEstado(partidoInit.estado) === 'EN_PROGRESO') {
         renderizarMarcadorVivo(dataInit, partidoInit);
         renderizarCancharVivo(dataInit, partidoInit);
+        actualizarTabs('EN_PROGRESO');
     }
 });
+
+// ── Tab switcher: En Vivo / Estadísticas ─────────────────────
+window.switchMainTab = function(tab) {
+    const vivo  = document.getElementById('tabPanelVivo');
+    const stats = document.getElementById('tabPanelStats');
+    const btnV  = document.getElementById('tabBtnVivo');
+    const btnS  = document.getElementById('tabBtnStats');
+    const bar   = document.getElementById('mainTabBar');
+
+    if (!vivo || !stats) return;
+
+    const isVivo = tab === 'vivo';
+    vivo.classList.toggle('hidden', !isVivo);
+    stats.classList.toggle('hidden', isVivo);
+
+    const activeClass  = 'flex-1 py-2 px-4 rounded-lg text-xs font-black uppercase transition-all bg-blue-600 text-white shadow-xs';
+    const inactiveClass= 'flex-1 py-2 px-4 rounded-lg text-xs font-black uppercase transition-all text-gray-400 hover:bg-gray-50';
+    if (btnV) btnV.className = isVivo  ? activeClass : inactiveClass;
+    if (btnS) btnS.className = !isVivo ? activeClass : inactiveClass;
+};
+
+/**
+ * Call after state changes to show the right default tab:
+ * - EN_PROGRESO → show "En Vivo" tab, show tab bar
+ * - Other       → show "Estadísticas" tab, hide tab bar (only one panel visible)
+ */
+function actualizarTabs(estadoNorm) {
+    const bar = document.getElementById('mainTabBar');
+    if (estadoNorm === 'EN_PROGRESO') {
+        if (bar) bar.classList.remove('hidden');
+        // seccionViva must be visible for the live panel to show content
+        const sv = document.getElementById('seccionViva');
+        if (sv) sv.classList.remove('hidden');
+        window.switchMainTab('vivo');
+    } else {
+        if (bar) bar.classList.add('hidden');
+        // Hide live panel, show stats panel
+        const tabVivo  = document.getElementById('tabPanelVivo');
+        const tabStats = document.getElementById('tabPanelStats');
+        const sv       = document.getElementById('seccionViva');
+        if (tabVivo)  tabVivo.classList.add('hidden');
+        if (tabStats) tabStats.classList.remove('hidden');
+        if (sv)       sv.classList.add('hidden');
+    }
+}
+
 
 function inicializarPagina() {
     const data = getAppData();
@@ -47,6 +94,7 @@ function inicializarPagina() {
     renderizarMarcador(partido);
     renderizarAside(partido, data);
     renderizarBotonEstado(partido);
+    actualizarTabs(normalizarEstado(partido.estado));
 
     // 2. SEGUNDO: Obtener los nombres de los equipos
     const nombreLocal = getNombreEquipoPorParticipacion(data, partido.id_local_participacion);
@@ -61,6 +109,12 @@ function inicializarPagina() {
 
     // 4. CUARTO: Renderizar la tabla del equipo seleccionado por defecto
     renderizarTablaUnicaDinamica();
+
+    // 5. QUINTO: Si el partido ya está EN_PROGRESO, cargar marcador vivo
+    if (normalizarEstado(partido.estado) === 'EN_PROGRESO') {
+        renderizarMarcadorVivo(data, partido);
+        renderizarCancharVivo(data, partido);
+    }
 }
 
 // --- Helpers de lookup sobre el mock data ---
@@ -528,6 +582,8 @@ function avanzarEstadoPartido() {
 
     renderizarCabecera(partido, data);
     renderizarBotonEstado(partido);
+    renderizarMarcador(partido);
+    actualizarTabs(normalizarEstado(partido.estado));
 }
 
 // Guardamos el índice destino calculado al abrir el modal, para aplicarlo si el usuario confirma
@@ -728,22 +784,7 @@ function guardarEstadisticas() {
     const partido = data.partidos.find(p => p.id === partidoId);
     if (!partido) return;
 
-    // 1. Guardamos los sets editados
-    const nuevosSets = [];
-    for (let i = 1; i <= 3; i++) {
-        const elLocal = document.getElementById(`s${i}Local`);
-        const elVisit = document.getElementById(`s${i}Visit`);
-        if (!elLocal || !elVisit) continue;
-
-        const valLocal = parseInt(elLocal.value) || 0;
-        const valVisit = parseInt(elVisit.value) || 0;
-
-        // Solo guardamos el set si al menos uno de los dos lados tiene puntaje (evita guardar sets "vacíos" 0-0)
-        if (valLocal > 0 || valVisit > 0) {
-            nuevosSets.push({ local: valLocal, visitante: valVisit });
-        }
-    }
-    partido.sets = nuevosSets;
+    // Los sets los maneja el motor en vivo (partido.sets ya está actualizado)
 
     // 2. Guardamos las estadísticas de jugadores
     const inputs = document.querySelectorAll('.input-stat');
@@ -1013,6 +1054,17 @@ let _modalSaquePrimero = null;
  * Cuando el admin pulsa "Iniciar Partido", antes de cambiar el estado
  * pregunta quién saca primero, luego inicializa el modo vivo.
  */
+window.reactivarVivo = function() {
+    const data    = getAppData();
+    const partido = data.partidos.find(p => p.id === partidoId);
+    if (!partido) return;
+    const nL = getNombreEquipoPorParticipacion(data, partido.id_local_participacion);
+    const nV = getNombreEquipoPorParticipacion(data, partido.id_visitante_participacion);
+    document.getElementById('selectSaquePrimero').innerHTML =
+        `<option value="">— Seleccionar —</option><option value="local">${nL}</option><option value="visitante">${nV}</option>`;
+    document.getElementById('modalSaquePrimero').showModal();
+};
+
 function iniciarPartidoConSaque() {
     document.getElementById('modalSaquePrimero').showModal();
 }
@@ -1023,11 +1075,19 @@ window.confirmarSaquePrimero = function() {
 
     document.getElementById('modalSaquePrimero').close();
 
+    // 1. Get fresh data, initialize live tracking, set state, save once
     const data    = getAppData();
     const partido = data.partidos.find(p => p.id === partidoId);
-    window.iniciarVivo(data, partidoId, sel.value);
+    if (!partido) return;
 
-    // Avanzar estado a EN_PROGRESO
+    partido.vivo = {
+        setActual: 1,
+        local:     { puntos: 0, rotaciones: 0, sustitucionesAplicadas: [], tiemposMuertosUsados: 0 },
+        visitante: { puntos: 0, rotaciones: 0, sustitucionesAplicadas: [], tiemposMuertosUsados: 0 },
+        saqueActual: sel.value,
+        historialPuntos: []
+    };
+    partido.sets   = [];
     partido.estado = 'EN_PROGRESO';
     guardarAppData(data);
 
@@ -1037,12 +1097,15 @@ window.confirmarSaquePrimero = function() {
         registrarActividad('PARTIDO_INICIADO', `${nL} vs ${nV} — saca primero: ${sel.value === 'local' ? nL : nV}`);
     }
 
-    const dataFresh = getAppData();
-    const partidoFresh = dataFresh.partidos.find(p => p.id === partidoId);
-    renderizarCabecera(partidoFresh, dataFresh);
-    renderizarBotonEstado(partidoFresh);
-    renderizarMarcadorVivo(dataFresh, partidoFresh);
-    renderizarCancharVivo(dataFresh, partidoFresh);
+    // 2. Read back from storage and render everything
+    const d2 = getAppData();
+    const p2 = d2.partidos.find(p => p.id === partidoId);
+    renderizarCabecera(p2, d2);
+    renderizarBotonEstado(p2);
+    renderizarMarcador(p2);          // hides seccionSetsManual
+    actualizarTabs('EN_PROGRESO');   // shows tab bar, activates vivo tab
+    renderizarMarcadorVivo(d2, p2);  // fills live scoreboard
+    renderizarCancharVivo(d2, p2);   // fills live court
 };
 
 function renderizarMarcadorVivo(data, partido) {
@@ -1050,8 +1113,14 @@ function renderizarMarcadorVivo(data, partido) {
     if (!sec) return;
 
     const vivo = partido.vivo;
-    if (!vivo) { sec.classList.add('hidden'); return; }
+    if (!vivo) {
+        sec.classList.add('hidden');
+        return;
+    }
     sec.classList.remove('hidden');
+    actualizarTabs('EN_PROGRESO');
+    const btnCS = document.getElementById('btnCerrarSet');
+    if (btnCS) btnCS.classList.remove('hidden');
 
     const nL = getNombreEquipoPorParticipacion(data, partido.id_local_participacion);
     const nV = getNombreEquipoPorParticipacion(data, partido.id_visitante_participacion);
@@ -1062,15 +1131,20 @@ function renderizarMarcadorVivo(data, partido) {
     document.getElementById('vivoPuntosLocal').textContent   = vivo.local.puntos;
     document.getElementById('vivoPuntosVisit').textContent   = vivo.visitante.puntos;
     document.getElementById('vivoSetActual').textContent     = `Set ${vivo.setActual}`;
-    document.getElementById('vivoSaqueIndicador').textContent =
-        `🏐 Saca: ${saqueL ? nL : nV}`;
+    document.getElementById('vivoSaqueIndicador').textContent = `🏐 Saca: ${saqueL ? nL : nV}`;
 
-    // Resultados de sets anteriores
+    // Indicadores de saque debajo de cada marcador
+    const localInd = document.getElementById('vivoSaqueLocalIndicador');
+    const visitInd = document.getElementById('vivoSaqueVisitIndicador');
+    if (localInd) localInd.textContent  = saqueL  ? '🏐 al saque' : '';
+    if (visitInd) visitInd.textContent  = !saqueL ? '🏐 al saque' : '';
+
+    // Resultados de sets anteriores (inline en la barra)
     const setsEl = document.getElementById('vivoSetsAnteriores');
     if (setsEl) {
         setsEl.innerHTML = (partido.sets || []).map((s, i) =>
-            `<span class="text-xs font-bold text-gray-500">Set ${i+1}: ${s.local}–${s.visitante}</span>`
-        ).join('<span class="text-gray-300 mx-1">·</span>');
+            `<span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded">Set ${i+1}: ${s.local}–${s.visitante}</span>`
+        ).join(' ');
     }
 
     // TM y sust restantes
@@ -1122,22 +1196,22 @@ function renderizarCancharVivo(data, partido) {
                 ${getNombreEquipoPorParticipacion(data, idPart)}
                 ${isSaque ? '<span class="ml-1 text-amber-500">🏐 saque</span>' : ''}
             </p>
-            <div style="background:#16a34a;border-radius:.5rem;padding:.5rem">
-                <div style="background:#bbf7d0;height:.4rem;border-radius:.25rem;margin-bottom:.3rem;display:flex;align-items:center;justify-content:center">
-                    <span style="font-size:.5rem;font-weight:900;color:#15803d;background:#bbf7d0;padding:0 .3rem;border-radius:.2rem">RED</span>
+            <div style="background:white;border:1.5px solid #e5e7eb;border-radius:.5rem;padding:.5rem">
+                <div style="background:#e5e7eb;height:.4rem;border-radius:.25rem;margin-bottom:.3rem;display:flex;align-items:center;justify-content:center">
+                    <span style="font-size:.5rem;font-weight:900;color:#6b7280;background:#e5e7eb;padding:0 .3rem;border-radius:.2rem">RED</span>
                 </div>
-                <div style="background:#15803d;border:2px solid #bbf7d0;border-radius:.4rem;padding:.4rem;display:grid;grid-template-rows:1fr 1fr;gap:.3rem;aspect-ratio:1.6/1">
+                <div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:.4rem;padding:.4rem;display:grid;grid-template-rows:1fr 1fr;gap:.3rem;aspect-ratio:1.6/1">
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem">
                         ${['pos4','pos3','pos2'].map(p => `
                         <div style="background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.3);border-radius:.3rem;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.2rem;min-height:2.8rem">
-                            <span style="font-size:.5rem;font-weight:900;color:#bbf7d0">${{pos4:'IV',pos3:'III',pos2:'II'}[p]}</span>
+                            <span style="font-size:.5rem;font-weight:900;color:#9ca3af">${{pos4:'IV',pos3:'III',pos2:'II'}[p]}</span>
                             <span style="font-size:.5rem;font-weight:700;color:white;text-align:center;line-height:1.1">${nombre(enCancha[p])}</span>
                         </div>`).join('')}
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem">
                         ${['pos5','pos6','pos1'].map(p => `
                         <div style="background:rgba(255,255,255,${p==='pos1'&&isSaque?'.45':'.2'});border:${p==='pos1'&&isSaque?'2px solid #fcd34d':'1px solid rgba(255,255,255,.3)'};border-radius:.3rem;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.2rem;min-height:2.8rem">
-                            <span style="font-size:.5rem;font-weight:900;color:#bbf7d0">${{pos5:'V',pos6:'VI',pos1:'I'}[p]}</span>
+                            <span style="font-size:.5rem;font-weight:900;color:#9ca3af">${{pos5:'V',pos6:'VI',pos1:'I'}[p]}</span>
                             <span style="font-size:.5rem;font-weight:700;color:white;text-align:center;line-height:1.1">${nombre(enCancha[p])}</span>
                         </div>`).join('')}
                     </div>
@@ -1180,7 +1254,55 @@ window.deshacerUltimoPunto = function() {
     const partidoFresh = dataFresh.partidos.find(p => p.id === partidoId);
     renderizarMarcadorVivo(dataFresh, partidoFresh);
     renderizarCancharVivo(dataFresh, partidoFresh);
+}
+
+window.cerrarSetManual = function() {
+    const data    = getAppData();
+    const partido = data.partidos.find(p => p.id === partidoId);
+    if (!partido?.vivo) return;
+
+    const v   = partido.vivo;
+    const pL  = v.local.puntos;
+    const pV  = v.visitante.puntos;
+
+    if (pL === pV) { alert('No se puede cerrar un set con empate.'); return; }
+    if (!confirm(`¿Cerrar Set ${v.setActual}? Marcador: ${pL}–${pV}`)) return;
+
+    partido.sets.push({ local: pL, visitante: pV });
+
+    let setsL = 0, setsV = 0;
+    partido.sets.forEach(s => { if (s.local > s.visitante) setsL++; else setsV++; });
+
+    if (setsL >= 2 || setsV >= 2) {
+        partido.estado = 'FINALIZADO';
+        guardarAppData(data);
+        const dataF = getAppData();
+        const partF = dataF.partidos.find(p => p.id === partidoId);
+        renderizarCabecera(partF, dataF);
+        renderizarBotonEstado(partF);
+        actualizarTabs(normalizarEstado(partF.estado));
+        alert('🏆 ¡Partido finalizado!');
+    } else if (v.setActual < 3) {
+        v.setActual++;
+        v.local.puntos     = 0;
+        v.visitante.puntos = 0;
+        v.saqueActual      = pL < pV ? 'local' : 'visitante';
+        v.local.rotaciones    = 0;
+        v.visitante.rotaciones = 0;
+        v.local.sustitucionesAplicadas    = [];
+        v.visitante.sustitucionesAplicadas = [];
+        v.local.tiemposMuertosUsados    = 0;
+        v.visitante.tiemposMuertosUsados = 0;
+        guardarAppData(data);
+        const dataF = getAppData();
+        const partF = dataF.partidos.find(p => p.id === partidoId);
+        renderizarMarcadorVivo(dataF, partF);
+        renderizarCancharVivo(dataF, partF);
+        alert(`✅ Set ${partF.vivo.setActual - 1} cerrado. Comienza Set ${partF.vivo.setActual}.`);
+    }
 };
+
+;
 
 // ── Sustituciones en vivo (admin) ─────────────────────────────
 let _sustEquipo = null;

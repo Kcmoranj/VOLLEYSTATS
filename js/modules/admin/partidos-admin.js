@@ -33,9 +33,20 @@ document.addEventListener('DOMContentLoaded', () => {
         selRama.addEventListener('change', actualizarEquipos);
     }
     
+    // Populate filter category dropdown
+    const filtroCat = document.getElementById('filtroCategoria');
+    if (filtroCat) {
+        data.categoriasTorneo.forEach(cat => {
+            filtroCat.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+        });
+    }
+
     // Cargar partidos iniciales
     renderizarListaPartidos();
 });
+
+// Global alias so the HTML can call renderPartidos() from filter inputs
+window.renderPartidos = renderizarListaPartidos;
 
 // Normaliza el estado para comparaciones seguras, sin importar cómo haya quedado guardado
 // (mayúsculas/minúsculas, espacios extra, etc.)
@@ -60,10 +71,10 @@ function renderizarTarjetasResumen(data) {
     const pendientes = partidos.filter(p => normalizarEstado(p.estado) === 'PROGRAMADO').length;
     const finalizados = partidos.filter(p => normalizarEstado(p.estado) === 'FINALIZADO').length;
 
-    totalEl.textContent = total;
-    hoyEl.textContent = partidosHoy;
-    pendientesEl.textContent = pendientes;
-    finalizadosEl.textContent = finalizados;
+    if (totalEl)      totalEl.textContent      = total;
+    if (hoyEl)        hoyEl.textContent        = partidosHoy;
+    if (pendientesEl) pendientesEl.textContent = pendientes;
+    if (finalizadosEl)finalizadosEl.textContent= finalizados;
 }
 
 function renderizarListaPartidos() {
@@ -73,8 +84,49 @@ function renderizarListaPartidos() {
 
     renderizarTarjetasResumen(data);
 
-    const partidos = data.partidos;
+    // Apply filters from window._filtros
+    const f = window._filtros || {};
+    const qBuscar     = f.getBuscar     ? f.getBuscar()     : '';
+    const qEstado     = f.getEstado     ? f.getEstado()     : '';
+    const qFechaDesde = f.getFechaDesde ? f.getFechaDesde() : '';
+    const qFechaHasta = f.getFechaHasta ? f.getFechaHasta() : '';
+    const qCategoria  = f.getCategoria  ? f.getCategoria()  : '';
+
+    let partidos = data.partidos;
+
+    if (qBuscar) {
+        partidos = partidos.filter(p => {
+            const pL = data.participaciones.find(x => x.id === p.id_local_participacion);
+            const pV = data.participaciones.find(x => x.id === p.id_visitante_participacion);
+            const nL = (data.equipos.find(e => e.id === pL?.id_equipo)?.nombre || '').toLowerCase();
+            const nV = (data.equipos.find(e => e.id === pV?.id_equipo)?.nombre || '').toLowerCase();
+            return nL.includes(qBuscar) || nV.includes(qBuscar);
+        });
+    }
+    if (qEstado)     partidos = partidos.filter(p => normalizarEstado(p.estado) === qEstado);
+    if (qFechaDesde) partidos = partidos.filter(p => p.fecha >= qFechaDesde);
+    if (qFechaHasta) partidos = partidos.filter(p => p.fecha <= qFechaHasta);
+    if (qCategoria)  partidos = partidos.filter(p => {
+        const part = data.participaciones.find(x => x.id === p.id_local_participacion);
+        return String(part?.id_categoria_torneo) === String(qCategoria);
+    });
+
+    // Counter
+    const contEl = document.getElementById('contadorPartidos');
+    if (contEl) contEl.textContent = partidos.length === data.partidos.length
+        ? `${data.partidos.length} partidos`
+        : `${partidos.length} de ${data.partidos.length}`;
+
+    // sinPartidosFiltro
+    const sinEl = document.getElementById('sinPartidosFiltro');
+    if (sinEl) sinEl.classList.toggle('hidden', partidos.length > 0);
+
+    // Update stat cards
+    const enVivoEl = document.getElementById('cardEnVivo');
+    if (enVivoEl) enVivoEl.textContent = data.partidos.filter(p => normalizarEstado(p.estado) === 'EN_PROGRESO').length;
+
     const total = partidos.length;
+    if (!total) { contenedor.innerHTML = ''; return; }
 
     contenedor.innerHTML = partidos.map((p, idx) => {
         const partLocal = data.participaciones.find(x => x.id === p.id_local_participacion);

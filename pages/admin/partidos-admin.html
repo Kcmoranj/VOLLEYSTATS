@@ -4,191 +4,244 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partidos | VolleyStats Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../css/brand.css">
+    <style>
+        .card-admin { background:white; border:1px solid #e5e7eb; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.07); padding:1.5rem; }
+        .form-panel { background:white; border:1px solid #e5e7eb; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.07); padding:1.25rem; }
+        .filters-bar { background:white; border:1px solid #e5e7eb; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.07); padding:.75rem 1rem; }
+    </style>
 </head>
-<body class="bg-[#F3F4F6] min-h-screen flex text-gray-800" font-sans>
+<body class="bg-[#F3F4F6] flex min-h-screen font-sans">
 
-    <!-- Sidebar Navegación -->
-        <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
-        <div class="flex-1">
-            <span class="p-6 block text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
-            <nav class="flex flex-col gap-2 px-4">
-                <a href="dashboard.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📊 Dashboard</a>
-                <a href="partidos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold bg-blue-50 text-blue-600">📅 Partidos</a>
-                <a href="jugadores-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">👤 Jugadores</a>
-                <a href="equipos-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🛡️ Equipos</a>
-                <a href="liga-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🏆 Liga</a>
-                <a href="actividades-recientes.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📝 Actividades</a>
-                <a href="sanciones-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">🟨 Sanciones</a>
-                <a href="solicitudes-admin.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold hover:bg-gray-100 text-gray-600">📥 Solicitudes</a>
-            </nav>
+    <!-- Mobile topbar -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b flex items-center gap-3 px-4 h-14 shadow-sm">
+        <button onclick="openSidebar()" class="text-gray-700 text-xl font-bold">&#9776;</button>
+        <span class="text-lg font-black">Volley<span class="text-blue-600">Stats</span></span>
+    </div>
+
+    <!-- Overlay (mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar: fixed drawer on mobile, sticky on desktop -->
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen z-40 w-64 bg-white border-r flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+        <div class="flex-1 min-h-0 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="dashboard.html" class="flex items-center gap-2 px-4 pb-4 border-b border-gray-100 mb-2">
+                <span class="text-2xl font-black">Volley<span class="text-blue-600">Stats</span></span>
+            </a>
+            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📊</span>Dashboard</a>
+            <a href="partidos-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm bg-blue-50 text-blue-600" onclick="closeSidebar()"><span>📅</span>Partidos</a>
+            <a href="jugadores-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>👤</span>Jugadores</a>
+            <a href="equipos-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🛡️</span>Equipos</a>
+            <a href="liga-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🏆</span>Liga</a>
+            <a href="actividades-recientes.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📝</span>Actividades</a>
+            <a href="sanciones-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>🟨</span>Sanciones</a>
+            <a href="solicitudes-admin.html" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-100" onclick="closeSidebar()"><span>📥</span>Solicitudes</a>
         </div>
-        <div class="p-4 border-t">
-            <button onclick="window.logout('../../index.html')" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+        <div class="shrink-0 px-3 py-4 border-t">
+            <button onclick="window.logout('../../index.html')" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold text-sm text-red-600 hover:bg-red-50">
+                <span>➡️</span>Cerrar sesión
+            </button>
         </div>
     </aside>
 
-    <div class="flex-1 flex flex-col min-w-0">
+    <script>
+    function openSidebar()  { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.add('-translate-x-full');    document.getElementById('sidebarOverlay').classList.add('hidden'); }
+    </script>
 
-        <!-- Header -->
-        <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center shrink-0">
-            <div>
-                <h1 class="text-lg font-black text-gray-900">Partidos</h1>
-                <p class="text-xs text-gray-400 font-medium">Gestiona todos los partidos del torneo</p>
+<!-- Main -->
+    <main class="flex-1 min-w-0 overflow-y-auto px-4 md:px-8 pt-16 lg:pt-8">
+
+        <!-- Banner -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 md:px-8 py-5 md:py-6 text-white -mx-4 md:-mx-8 -mt-4 md:-mt-8 mb-6 md:mb-8">
+            <h1 class="text-2xl font-black">📅 Gestión de Partidos</h1>
+            <p class="text-blue-200 text-sm mt-1">Programa, edita y administra los partidos del torneo</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card-admin flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">📅</div>
+                <div><p class="text-2xl font-black text-gray-900" id="cardTotalPartidos">0</p><p class="text-xs font-bold text-gray-400 uppercase">Total</p></div>
             </div>
-            <div class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 px-3 py-2 rounded-xl transition-colors">
-                <div class="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-xs">AD</div>
-                <span class="text-sm font-bold text-gray-700">Administrador</span>
-                <span class="text-gray-400 text-xs">▾</span>
+            <div class="card-admin flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center text-lg shrink-0">🔴</div>
+                <div><p class="text-2xl font-black text-gray-900" id="cardEnVivo">0</p><p class="text-xs font-bold text-gray-400 uppercase">En vivo</p></div>
             </div>
-        </header>
+            <div class="card-admin flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg shrink-0">⏳</div>
+                <div><p class="text-2xl font-black text-gray-900" id="cardPendientes">0</p><p class="text-xs font-bold text-gray-400 uppercase">Pendientes</p></div>
+            </div>
+            <div class="card-admin flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-lg shrink-0">✅</div>
+                <div><p class="text-2xl font-black text-gray-900" id="cardFinalizados">0</p><p class="text-xs font-bold text-gray-400 uppercase">Finalizados</p></div>
+            </div>
+        </div>
 
-        <!-- Contenido Principal -->
-        <main class="flex-1 px-4 lg:px-8 py-8 overflow-y-auto flex gap-6">
+        <!-- Two-column layout: table + form -->
+        <div class="flex flex-col lg:flex-row gap-6 items-start">
 
-            <div class="flex-1 min-w-0">
-                <!-- Grid de Métricas -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl shrink-0">📅</div>
-                        <div>
-                            <span id="cardTotalPartidos" class="block text-2xl font-black text-gray-900 leading-none">0</span>
-                            <span class="block text-xs font-bold text-gray-500 mt-1">Total Partidos</span>
-                            <span class="block text-[10px] text-gray-400">Todos los partidos</span>
-                        </div>
+            <!-- LEFT: filters + table -->
+            <div class="flex-1 min-w-0 space-y-4">
+
+                <!-- Filters -->
+                <div class="filters-bar flex flex-wrap gap-2 items-center">
+                    <div class="relative flex-1 min-w-[160px]">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
+                        <input id="filtroBuscar" type="text" placeholder="Buscar equipo…"
+                               oninput="renderPartidos()"
+                               class="input input-bordered input-sm w-full pl-8 font-semibold text-sm">
                     </div>
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shrink-0">🕐</div>
-                        <div>
-                            <span id="cardHoy" class="block text-2xl font-black text-gray-900 leading-none">0</span>
-                            <span class="block text-xs font-bold text-gray-500 mt-1">Hoy</span>
-                            <span class="block text-[10px] text-gray-400">Partidos para hoy</span>
-                        </div>
+                    <select id="filtroEstado" onchange="renderPartidos()"
+                            class="select select-bordered select-sm font-semibold text-sm min-w-[130px]">
+                        <option value="">Todos los estados</option>
+                        <option value="PROGRAMADO">📅 Programado</option>
+                        <option value="EN_PROGRESO">🔴 En vivo</option>
+                        <option value="FINALIZADO">✅ Finalizado</option>
+                    </select>
+                    <select id="filtroCategoria" onchange="renderPartidos()"
+                            class="select select-bordered select-sm font-semibold text-sm min-w-[140px]">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                    <div class="flex gap-2 items-center">
+                        <input id="filtroFechaDesde" type="date" onchange="renderPartidos()"
+                               title="Desde" class="input input-bordered input-sm font-semibold text-sm w-36">
+                        <span class="text-gray-400 text-xs font-bold">—</span>
+                        <input id="filtroFechaHasta" type="date" onchange="renderPartidos()"
+                               title="Hasta" class="input input-bordered input-sm font-semibold text-sm w-36">
                     </div>
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-xl bg-orange-100 text-orange-500 flex items-center justify-center text-xl shrink-0">⏳</div>
-                        <div>
-                            <span id="cardPendientes" class="block text-2xl font-black text-gray-900 leading-none">0</span>
-                            <span class="block text-xs font-bold text-gray-500 mt-1">Pendientes</span>
-                            <span class="block text-[10px] text-gray-400">Por jugar</span>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-xl shrink-0">✅</div>
-                        <div>
-                            <span id="cardFinalizados" class="block text-2xl font-black text-gray-900 leading-none">0</span>
-                            <span class="block text-xs font-bold text-gray-500 mt-1">Finalizados</span>
-                            <span class="block text-[10px] text-gray-400">Completados</span>
-                        </div>
+                    <div class="flex items-center gap-3 ml-auto">
+                        <span id="contadorPartidos" class="text-[11px] font-bold text-gray-400 whitespace-nowrap"></span>
+                        <button onclick="limpiarFiltros()" class="text-[11px] font-bold text-gray-400 hover:text-red-500 transition-colors">✕ Limpiar</button>
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center mb-6">
+                <!-- Table -->
+                <div class="card-admin p-0 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-[10px] text-gray-400 uppercase bg-gray-50 border-b border-gray-100 font-black tracking-wider">
+                                <tr>
+                                    <th class="py-3 px-4">Fecha</th>
+                                    <th class="py-3 px-3 hidden sm:table-cell">Hora</th>
+                                    <th class="py-3 px-4">Local</th>
+                                    <th class="py-3 px-2 text-center">VS</th>
+                                    <th class="py-3 px-4">Visitante</th>
+                                    <th class="py-3 px-3 hidden md:table-cell">Cat.</th>
+                                    <th class="py-3 px-3 hidden xl:table-cell">Cancha</th>
+                                    <th class="py-3 px-3 text-center">Estado</th>
+                                    <th class="py-3 px-3 text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaPartidos" class="divide-y divide-gray-50 font-medium"></tbody>
+                        </table>
+                    </div>
+                    <p id="sinPartidosFiltro" class="hidden text-center text-gray-400 font-semibold py-10">
+                        Sin partidos con esos filtros.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: form panel -->
+            <div class="w-full lg:w-72 xl:w-80 shrink-0">
+
+                <!-- Mobile toggle button -->
+                <button id="btnToggleForm" onclick="toggleForm()"
+                        class="lg:hidden w-full card-admin py-3 text-left font-black text-sm text-blue-600 flex items-center justify-between">
+                    <span>➕ Programar partido</span>
+                    <span id="toggleArrow" class="text-gray-400">▼</span>
+                </button>
+
+                <div id="formPanel" class="form-panel hidden lg:block space-y-4 mt-0 lg:mt-0">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Programar Partido</p>
+
                     <div>
-                        <h2 class="text-2xl font-black text-gray-900 uppercase">Partidos Agendados</h2>
-                        <p class="text-xs text-gray-500 mt-1 font-medium">Listado general de encuentros del torneo</p>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
+                        <select id="selectCategoria" class="select select-bordered select-sm w-full font-bold text-xs">
+                            <option disabled selected>Seleccione categoría</option>
+                        </select>
                     </div>
-                    <button class="btn btn-sm btn-outline text-blue-600 hover:bg-blue-50 hover:border-blue-600">Ver todos</button>
-                </div>
-
-                <!-- Tabla de Contenido -->
-                <!-- NOTA: sin overflow-hidden a propósito: con overflow-hidden el menú
-                     Editar/Eliminar de las últimas filas quedaba recortado por el borde
-                     del contenedor. Las esquinas siguen redondeadas (rounded-2xl) aunque
-                     ya no se recorte el contenido que se sale (el dropdown). -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
-                    <table class="w-full table-fixed text-sm text-left whitespace-nowrap">
-                        <thead class="text-xs text-gray-400 uppercase bg-gray-50 border-b border-gray-100 font-bold tracking-wider">
-                            <tr>
-                                <th class="py-4 pl-6 pr-3 w-28">Fecha</th>
-                                <th class="py-4 px-3 w-20">Hora</th>
-                                <th class="py-4 px-3">Local</th>
-                                <th class="py-4 px-1 text-center w-10">VS</th>
-                                <th class="py-4 px-3 text-center">Visitante</th>
-                                <th class="py-4 px-3 text-center">Cat / Rama</th> 
-                                <th class="py-4 px-3 text-center w-28">Cancha</th>
-                                <th class="py-4 pl-3 pr-6 text-center w-36">Estado</th> 
-                                <th class="py-4 pl-3 pr-6 text-center">Acción</th> 
-                            </tr>
-                        </thead>
-                        <tbody id="listaPartidos" class="divide-y divide-gray-100 font-medium"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Panel de Programación Lateral -->
-            <aside class="w-96 bg-white border-l border-gray-200 p-8 shadow-sm overflow-y-auto shrink-0 flex flex-col justify-between rounded-2xl">
-                <div>
-                    <h2 class="text-lg font-black uppercase text-gray-900 mb-6">Programar Partido</h2>
-                    
-                    <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Rama</label>
+                        <select id="selectRama" class="select select-bordered select-sm w-full font-bold text-xs" disabled>
+                            <option disabled selected>Seleccione rama</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría / Torneo</label>
-                            <select id="selectCategoria" class="select select-bordered w-full font-bold text-xs">
-                                <option disabled selected>Seleccione una categoría</option>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Local</label>
+                            <select id="selectLocal" class="select select-bordered select-sm w-full font-bold text-xs" disabled>
+                                <option disabled selected>Local</option>
                             </select>
                         </div>
-
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Rama</label>
-                            <select id="selectRama" class="select select-bordered w-full font-bold text-xs" disabled>
-                                <option disabled selected>Seleccione una rama</option>
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Local</label>
-                                <select id="selectLocal" class="select select-bordered w-full font-bold text-xs" disabled>
-                                    <option disabled selected>Seleccione Local</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Visitante</label>
-                                <select id="selectVisitante" class="select select-bordered w-full font-bold text-xs" disabled>
-                                    <option disabled selected>Seleccione Visitante</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Fecha</label>
-                                <input type="date" id="inputFecha" class="input input-bordered w-full font-bold text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hora</label>
-                                <input type="time" id="inputHora" class="input input-bordered w-full font-bold text-xs">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cancha</label>
-                            <select id="inputCancha" class="select select-bordered w-full font-bold text-xs">
-                                <option value="Cancha 1">Cancha 1</option>
-                                <option value="Cancha 2">Cancha 2</option>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Visitante</label>
+                            <select id="selectVisitante" class="select select-bordered select-sm w-full font-bold text-xs" disabled>
+                                <option disabled selected>Visitante</option>
                             </select>
                         </div>
                     </div>
-                </div>
-
-                <div class="pt-6 border-t border-gray-100 mt-6">
-                    <button id="btnGuardar" class="btn btn-primary w-full bg-blue-600 hover:bg-blue-700 border-none text-white uppercase tracking-wider font-bold text-xs">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Fecha</label>
+                            <input type="date" id="inputFecha" class="input input-bordered input-sm w-full font-bold text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hora</label>
+                            <input type="time" id="inputHora" class="input input-bordered input-sm w-full font-bold text-xs">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cancha</label>
+                        <select id="inputCancha" class="select select-bordered select-sm w-full font-bold text-xs">
+                            <option value="Cancha 1">Cancha 1</option>
+                            <option value="Cancha 2">Cancha 2</option>
+                        </select>
+                    </div>
+                    <button id="btnGuardar"
+                            class="btn bg-blue-600 hover:bg-blue-700 border-none text-white w-full font-black text-xs uppercase tracking-wider">
                         Registrar Partido
                     </button>
                 </div>
-            </aside>
+            </div>
 
-        </main>
-    </div>
+        </div>
+    </main>
 
-    <!-- Módulos de Scripts -->
+    <script>
+    function toggleForm() {
+        const panel = document.getElementById('formPanel');
+        const arrow = document.getElementById('toggleArrow');
+        const isHidden = panel.classList.toggle('hidden');
+        arrow.textContent = isHidden ? '▼' : '▲';
+    }
+    function limpiarFiltros() {
+        ['filtroBuscar','filtroFechaDesde','filtroFechaHasta'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
+        ['filtroEstado','filtroCategoria'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.selectedIndex = 0;
+        });
+        renderPartidos();
+    }
+    window._filtros = {
+        getBuscar:     () => document.getElementById('filtroBuscar')?.value.trim().toLowerCase() || '',
+        getEstado:     () => document.getElementById('filtroEstado')?.value || '',
+        getFechaDesde: () => document.getElementById('filtroFechaDesde')?.value || '',
+        getFechaHasta: () => document.getElementById('filtroFechaHasta')?.value || '',
+        getCategoria:  () => document.getElementById('filtroCategoria')?.value || '',
+    };
+    </script>
+
     <script src="../../js/mock-data.js"></script>
     <script src="../../js/shared/data-bridge.js"></script>
     <script src="../../js/modules/auth.js"></script>
     <script src="../../js/modules/admin/registrar-actividad.js"></script>
     <script src="../../js/modules/admin/partidos-admin.js"></script>
 </body>
+</html>
+
 </html>
