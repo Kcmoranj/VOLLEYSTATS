@@ -2,9 +2,7 @@
 let data = null;
 
 const inicializarDatos = () => {
-    data = window.AppDB
-        ? window.AppDB.get()
-        : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    data = window.AppDB.get();
 };
 
 // 2. Funciones Globales (para que el HTML las pueda ejecutar)
@@ -94,10 +92,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderTarjetas();
 });
 
-// 4. Logout Seguro (evita vaciar por completo el almacenamiento local)
-function logout() {
-    localStorage.removeItem("session_admin");
-    localStorage.removeItem("session_delegado_id");
-    localStorage.removeItem("session_equipo_id");
-    window.location.href = "../index.html";
-}
+// logout: window.logout('../index.html') — definido en js/shared/data-bridge.js

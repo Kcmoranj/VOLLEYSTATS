@@ -1,9 +1,7 @@
-function escHTML(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    const data = window.AppDB.get();
     if (!data) return;
 
     // Populate nivel filter

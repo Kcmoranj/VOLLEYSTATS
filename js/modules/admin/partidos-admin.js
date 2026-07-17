@@ -8,13 +8,9 @@
  * Ahora: las últimas filas abren el menú hacia arriba (`dropdown-top`).
  */
 
-const getAppData = () => window.AppDB
-    ? window.AppDB.get()
-    : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
-
-const guardarDatos = (data) => window.AppDB
-    ? window.AppDB.save(data)
-    : guardarDatos(data);
+const getAppData = () => window.AppDB.get();
+const guardarDatos = (data) => window.AppDB.save(data);
+const normalizarEstado = (e) => window.normalizarEstado(e);
 
 // Variable global para saber si estamos editando
 let partidoEditandoId = null;
@@ -42,9 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Normaliza el estado para comparaciones seguras, sin importar cómo haya quedado guardado
 // (mayúsculas/minúsculas, espacios extra, etc.)
-function normalizarEstado(estado) {
-    return String(estado || '').toUpperCase().trim();
-}
 
 function renderizarTarjetasResumen(data) {
     const totalEl = document.getElementById('cardTotalPartidos');

@@ -126,3 +126,38 @@ function migrarModeloDelegados(data) {
     return data;
 }
 window.migrarModeloDelegados = migrarModeloDelegados;
+
+// ─── Utilidades compartidas ──────────────────────────────────────────────────
+
+/**
+ * escHTML — Escapa caracteres HTML para prevenir XSS al insertar datos en innerHTML.
+ * Fuente única: todos los módulos usan window.escHTML en lugar de definir la suya.
+ */
+window.escHTML = function escHTML(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+};
+
+/**
+ * normalizarEstado — Normaliza el estado de un partido a mayúsculas sin espacios extra.
+ * Fuente única: reemplaza las 5 definiciones locales de normalizarEstado/normEstado.
+ */
+window.normalizarEstado = function normalizarEstado(estado) {
+    return String(estado || '').toUpperCase().trim();
+};
+
+/**
+ * logout — Limpia la sesión y redirige al login.
+ * Recibe la ruta relativa a index.html desde la página que la llama.
+ * Por defecto asume que la página está 2 niveles adentro (pages/admin/ o pages/delegado/).
+ */
+window.logout = function logout(rutaIndex) {
+    localStorage.removeItem('session_admin');
+    localStorage.removeItem('session_delegado_id');
+    localStorage.removeItem('session_equipo_id');
+    window.location.href = rutaIndex || '../../index.html';
+};

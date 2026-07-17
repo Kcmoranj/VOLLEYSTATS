@@ -60,4 +60,4 @@ function renderSanciones() {
                     <td class="text-xs text-gray-400">${partido ? `vs ${rival || '-'} · ${partido.fecha}` : new Date(s.fecha).toLocaleDateString('es-EC')}</td>
                 </tr>`;
             }).join('');
-    }
+    }}

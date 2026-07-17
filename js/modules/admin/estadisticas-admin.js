@@ -1,27 +1,18 @@
 /**
  * estadisticas-admin.js - Lógica completa
+ * escHTML, normalizarEstado y logout viven en js/shared/data-bridge.js
  */
 
-const getAppData = () => window.AppDB
-    ? window.AppDB.get()
-    : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
-
-const guardarAppData = (data) => window.AppDB
-    ? window.AppDB.save(data)
-    : localStorage.setItem('volleyData', JSON.stringify(data));
+const getAppData = () => window.AppDB.get();
+const guardarAppData = (data) => window.AppDB.save(data);
+const normalizarEstado = (e) => window.normalizarEstado(e);
 
 // Capturamos ID de la URL
 const params = new URLSearchParams(window.location.search);
 const partidoId = parseInt(params.get('partidoId'));
-let ladoModalActivo = null; //
-const FLUJO_ESTADOS = ["PROGRAMADO", "EN_PROGRESO", "FINALIZADO"]; //
-let equipoSeleccionadoVisualizacion = 'local'; 
-
-// Normaliza el estado para comparaciones seguras, sin importar cómo haya quedado guardado
-// (mayúsculas/minúsculas, espacios extra, etc.)
-function normalizarEstado(estado) {
-    return String(estado || '').toUpperCase().trim();
-}
+let ladoModalActivo = null;
+const FLUJO_ESTADOS = ['PROGRAMADO', 'EN_PROGRESO', 'FINALIZADO'];
+let equipoSeleccionadoVisualizacion = 'local';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!partidoId) {
@@ -566,7 +557,6 @@ function confirmarRetrocesoEstado() {
 // Guardamos qué inscripción se va a eliminar, para aplicarlo si el usuario confirma
 let idInscripcionAEliminar = null;
 
-
 // ─────────────────────────────────────────────────────────────
 // CARGAR R5 DEL DELEGADO
 // Importa automáticamente los jugadores de la alineación enviada
@@ -987,9 +977,4 @@ function confirmarWO() {
     renderizarBotonEstado(partido);
 }
 
-function logout() {
-    localStorage.removeItem('session_admin');
-    localStorage.removeItem('session_delegado_id');
-    localStorage.removeItem('session_equipo_id');
-    window.location.href = '../../index.html';
-}
+// logout: window.logout() — js/shared/data-bridge.js

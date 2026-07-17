@@ -67,9 +67,7 @@
     <script src="../../js/shared/data-bridge.js"></script>
     <script src="../../js/modules/auth.js"></script>
 <script>
-function escHTML(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+const escHTML = window.escHTML;
 
 let _tab = 'proximos';
 

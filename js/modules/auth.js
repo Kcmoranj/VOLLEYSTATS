@@ -23,57 +23,7 @@ if (typeof window.migrarModeloDelegados !== 'function') {
         return data;
     };
 }
-if (!window.AppDB) {
-    // Mismo fix que en data-bridge.js: si mock-data.js no llegó a cargar antes,
-    // window.sembrarDatosPorDefecto() puede no existir todavía; se define aquí
-    // también como respaldo para no depender del orden de carga de los <script>.
-    if (typeof window.sembrarDatosPorDefecto !== 'function') {
-        window.sembrarDatosPorDefecto = function (data) {
-            if (!window.VolleyAppData) return data;
-            const semilla = window.VolleyAppData;
-            const colecciones = ['equipos', 'participaciones', 'jugadores', 'inscripciones', 'partidos', 'estadisticasJugador', 'usuariosDelegados'];
-            colecciones.forEach(col => {
-                if (!Array.isArray(data[col])) data[col] = [];
-                if (!Array.isArray(semilla[col])) return;
-                const idsExistentes = new Set(data[col].map(item => item.id));
-                semilla[col].forEach(item => {
-                    if (!idsExistentes.has(item.id)) data[col].push(item);
-                });
-            });
-            ['categoriasJugador', 'categoriasTorneo', 'ramas'].forEach(col => {
-                if (!Array.isArray(data[col]) || data[col].length === 0) {
-                    data[col] = JSON.parse(JSON.stringify(semilla[col] || []));
-                }
-            });
-            return data;
-        };
-    }
-
-    window.AppDB = {
-        KEY: 'volleyData',
-        get() {
-            const raw = localStorage.getItem(this.KEY);
-            let base;
-            if (raw) {
-                base = JSON.parse(raw);
-                base = window.sembrarDatosPorDefecto(base);
-            } else if (window.VolleyAppData) {
-                base = JSON.parse(JSON.stringify(window.VolleyAppData));
-            } else if (typeof window.datosMinimosDeEmergencia === 'function') {
-                console.error(
-                    '⚠️ VolleyStats: no se encontró window.VolleyAppData (js/mock-data.js no ' +
-                    'cargó). Revisa F12 → pestaña Network/Red. Usando el set mínimo de mock-data.js.'
-                );
-                base = window.datosMinimosDeEmergencia();
-            } else {
-                console.error('⚠️ VolleyStats: ni js/mock-data.js ni window.VolleyAppData están disponibles. Revisa las rutas de <script>.');
-                base = { categoriasJugador: [], categoriasTorneo: [], ramas: [], equipos: [], participaciones: [], jugadores: [], inscripciones: [], partidos: [], estadisticasJugador: [], usuariosDelegados: [], convocatorias: [], r5: [] };
-            }
-            return window.migrarModeloDelegados(base);
-        },
-        save(data) { localStorage.setItem(this.KEY, JSON.stringify(data)); }
-    };
-}
+// window.AppDB is defined by js/shared/data-bridge.js
 
 // ============ ADMIN ============
 
@@ -86,10 +36,7 @@ function login(usuario, password) {
     }
 }
 
-function logout() {
-    localStorage.removeItem("session_admin");
-    window.location.href = "../../index.html";
-}
+// logout admin: window.logout() — definido en js/shared/data-bridge.js
 
 function verificarSesion() {
     if (!localStorage.getItem("session_admin")) {

@@ -1,9 +1,5 @@
 
-/** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
-function escHTML(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
+// escHTML: window.escHTML() — js/shared/data-bridge.js
 /**
  * detalle-equipo.js - Versión Corregida, Sincronizada y con Jerarquía de Categorías
  *
@@ -22,14 +18,8 @@ function escHTML(s) {
  * es la única fuente de verdad para jugadores.
  */
 
-const getAppData = () => {
-    const localData = localStorage.getItem('volleyData');
-    return localData ? JSON.parse(localData) : window.VolleyAppData;
-};
-
-const guardarAppData = (data) => window.AppDB
-    ? window.AppDB.save(data)
-    : localStorage.setItem('volleyData', JSON.stringify(data));
+const getAppData = () => window.AppDB.get();
+const guardarAppData = (data) => window.AppDB.save(data);
 
 document.addEventListener('DOMContentLoaded', () => {
     initDetalle();
@@ -173,8 +163,9 @@ function actualizarSelectCapitan(id, data) {
 function renderizarListaJugadoresModal(partId, data) {
     document.getElementById('listaJugadoresEditar').innerHTML = data.inscripciones.filter(i => i.id_participacion === partId).map(ins => {
         const j = data.jugadores.find(jug => jug.id === ins.id_jugador);
+        const pendiente = j?.estado === 'PENDIENTE' ? '<span class="badge badge-warning badge-xs text-white ml-1">Pendiente</span>' : '';
         return `<div class="flex justify-between items-center bg-gray-50 p-2 rounded text-xs font-bold border">
-                    <span>#${ins.numero_camiseta} - ${j?.nombre || 'Desconocido'}</span>
+                    <span>#${ins.numero_camiseta} - ${j?.nombre || 'Desconocido'} ${pendiente}</span>
                     <button onclick="window.eliminarjugador(${ins.id})" class="text-red-500 font-black px-1 hover:text-red-700">✕</button>
                 </div>`;
     }).join('');
@@ -332,9 +323,4 @@ window.eliminarParticipacion = (idParticipacion) => {
     initDetalle();
 };
 
-function logout() {
-    localStorage.removeItem("session_admin");
-    localStorage.removeItem("session_delegado_id");
-    localStorage.removeItem("session_equipo_id");
-    window.location.href = "../../index.html";
-}
+// logout disponible en window.logout() — definido en js/shared/data-bridge.js

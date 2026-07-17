@@ -1,9 +1,5 @@
 
-/** Escapa HTML para prevenir XSS al insertar datos de usuario en innerHTML */
-function escHTML(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
+// escHTML: window.escHTML() — js/shared/data-bridge.js
 /**
  * detalle-equipo.js - Versión Corregida (delegado crea, admin solo aprueba/administra)
  *
@@ -25,23 +21,8 @@ function escHTML(s) {
  *     Ahora 'volleyData' es la única fuente de verdad para jugadores.
  */
 
-const getAppData = () => {
-    const localData = localStorage.getItem('volleyData');
-    let data;
-    if (localData) {
-        data = JSON.parse(localData);
-    } else if (window.VolleyAppData) {
-        data = window.VolleyAppData;
-    } else {
-        console.error('⚠️ No se encontró window.VolleyAppData (js/mock-data.js no cargó). Usando datos mínimos de emergencia.');
-        data = window.datosMinimosDeEmergencia ? window.datosMinimosDeEmergencia() : { equipos: [], participaciones: [], jugadores: [], inscripciones: [] };
-    }
-    return window.migrarModeloDelegados ? window.migrarModeloDelegados(data) : data;
-};
-
-const guardarAppData = (data) => window.AppDB
-    ? window.AppDB.save(data)
-    : localStorage.setItem('volleyData', JSON.stringify(data));
+const getAppData = () => window.AppDB.get();
+const guardarAppData = (data) => window.AppDB.save(data);
 
 document.addEventListener('DOMContentLoaded', () => {
     initDetalle();
@@ -283,9 +264,4 @@ window.eliminarParticipacion = (idParticipacion) => {
     initDetalle();
 };
 
-function logout() {
-    localStorage.removeItem("session_admin");
-    localStorage.removeItem("session_delegado_id");
-    localStorage.removeItem("session_equipo_id");
-    window.location.href = "../../index.html";
-}
+// logout: window.logout() — js/shared/data-bridge.js

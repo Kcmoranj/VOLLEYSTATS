@@ -138,15 +138,6 @@ estadisticasJugador: [
     sancionesJugador: [],
     multasEquipo: []
 }
-// js/mock-data.js
-window.getData = () => {
-    const saved = localStorage.getItem('volleyData');
-    return saved ? JSON.parse(saved) : window.VolleyAppData;
-};
-
-// Alias para evitar errores en tus otros archivos
-window.getAppData = window.getData;
-
 /**
  * datosMinimosDeEmergencia
  * Única definición del set de datos mínimo (categorías/ramas fijas del torneo,

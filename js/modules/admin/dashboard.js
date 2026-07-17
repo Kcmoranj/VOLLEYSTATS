@@ -40,21 +40,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function normEstado(e) { return String(e || '').toUpperCase().trim(); }
-
-/** Escapa caracteres HTML para prevenir XSS al insertar datos en innerHTML */
-function escHTML(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-function logout() {
-    localStorage.removeItem('session_admin');
-    localStorage.removeItem('session_delegado_id');
-    localStorage.removeItem('session_equipo_id');
-    window.location.href = '../../index.html';
-}
+// escHTML, normalizarEstado y logout viven en js/shared/data-bridge.js
+const normEstado = window.normalizarEstado;

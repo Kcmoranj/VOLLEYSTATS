@@ -52,16 +52,9 @@
 <script src="../js/mock-data.js"></script>
 <script src="../js/shared/data-bridge.js"></script>
 <script>
-function escHTML(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+const escHTML = window.escHTML;
 
-function logout() {
-    localStorage.removeItem('session_admin');
-    localStorage.removeItem('session_delegado_id');
-    localStorage.removeItem('session_equipo_id');
-    window.location.href = '../index.html';
-}
+function logout() { window.logout('../index.html'); }
 
 document.addEventListener('DOMContentLoaded', () => {
     const data = window.AppDB.get();

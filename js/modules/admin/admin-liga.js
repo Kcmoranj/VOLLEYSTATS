@@ -1,20 +1,11 @@
 // admin-liga.js - ESTRUCTURA LIMPIA Y CORREGIDA
 
-// 1. Variables Globales
+// Variables Globales
 let catSeleccionada = null;
 
-// 2. Función de acceso a datos (Prioridad: localStorage)
-const getAppData = () => {
-    try {
-        const local = localStorage.getItem('volleyData');
-        if (local) return JSON.parse(local);
-    } catch (e) { console.error("Error al leer localStorage:", e); }
-    return window.VolleyAppData;
-};
+const getAppData = () => window.AppDB.get();
 
-const guardarDatos = (data) => window.AppDB
-    ? window.AppDB.save(data)
-    : localStorage.setItem('volleyData', JSON.stringify(data));
+const guardarDatos = (data) => window.AppDB.save(data);
 
 // 3. Render Categorías
 const renderCategorias = () => {
@@ -161,9 +152,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Si los datos ya están en el window, renderizamos
     if (window.VolleyAppData) renderCategorias();
 });
-function logout() {
-    localStorage.removeItem("session_admin");
-    localStorage.removeItem("session_delegado_id");
-    localStorage.removeItem("session_equipo_id");
-    window.location.href = "../../index.html";
-}
+// Logout disponible en window.logout() — definido en js/shared/data-bridge.js

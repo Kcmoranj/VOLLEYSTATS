@@ -10,19 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderEquipos();
 });
 
-function escHTML(str) {
-    return String(str)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
 function equipoHabilitado(data, idEquipo) {
     const parts = data.participaciones.filter(p => p.id_equipo === idEquipo);
     return parts.length > 0 && parts.every(p => p.aprobado);
 }
 
 function renderEquipos() {
-    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    const data = window.AppDB.get();
     const tbody = document.getElementById('tablaEquipos');
     if (!tbody) return;
 
@@ -38,7 +32,7 @@ function renderEquipos() {
 }
 
 window.abrirDetalle = (id) => {
-    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    const data = window.AppDB.get();
     const e = data.equipos.find(x => x.id === id);
     if (!e) return;
 
@@ -62,20 +56,14 @@ window.abrirDetalle = (id) => {
 
 window.togglePago = () => {
     const id = parseInt(document.getElementById('btnPago').dataset.id);
-    const data = window.AppDB ? window.AppDB.get() : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    const data = window.AppDB.get();
     // Togglear todas las participaciones del equipo
     data.participaciones.filter(p => p.id_equipo === id).forEach(p => {
         p.aprobado = !equipoHabilitado(data, id);
     });
-    if (window.AppDB) window.AppDB.save(data);
-    else localStorage.setItem('volleyData', JSON.stringify(data));
+    window.AppDB.save(data);
     renderEquipos();
     abrirDetalle(id);
 };
 
-function logout() {
-    localStorage.removeItem('session_admin');
-    localStorage.removeItem('session_delegado_id');
-    localStorage.removeItem('session_equipo_id');
-    window.location.href = '../index.html';
-}
+// logout: window.logout() — js/shared/data-bridge.js

@@ -1,15 +1,11 @@
-function escHTML(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+
 
 let _data      = null;
 let _tabEstado = 'todos';
 let _tabCancha = 'todas';
 
 document.addEventListener('DOMContentLoaded', () => {
-    _data = window.AppDB
-        ? window.AppDB.get()
-        : (JSON.parse(localStorage.getItem('volleyData')) || window.VolleyAppData);
+    _data = window.AppDB.get();
     if (!_data) return;
 
     poblarFiltros();
@@ -34,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ── Helpers ── */
-function normEstado(e) { return String(e || '').toUpperCase().trim(); }
 
 function proximaFechaAgendada() {
     if (!_data) return null;
@@ -257,9 +252,4 @@ function buildCard(p) {
     </div>`;
 }
 
-function logout() {
-    localStorage.removeItem('session_admin');
-    localStorage.removeItem('session_delegado_id');
-    localStorage.removeItem('session_equipo_id');
-    window.location.href = '../index.html';
-}
+// logout: window.logout() — js/shared/data-bridge.js

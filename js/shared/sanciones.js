@@ -163,84 +163,10 @@ window.Sanciones = (() => {
         return resultado;
     }
 
-    // ----------------------------------------------------------------
-    // REPORTE CONSOLIDADO POR EQUIPO (para sanciones-admin)
-    // ----------------------------------------------------------------
-
-    function reporteEquipo(idEquipo) {
-        const data = getData();
-        asegurarArrays(data);
-
-        const equipo = data.equipos.find(e => e.id === idEquipo);
-
-        // Inscripciones del equipo
-        const partEquipo = data.participaciones.filter(p => p.id_equipo === idEquipo).map(p => p.id);
-        const idsIns = data.inscripciones.filter(i => partEquipo.includes(i.id_participacion)).map(i => i.id);
-
-        const tarjetas = data.sancionesJugador
-            .filter(s => idsIns.includes(s.id_inscripcion))
-            .map(s => {
-                const ins = data.inscripciones.find(i => i.id === s.id_inscripcion);
-                const jugador = data.jugadores.find(j => j.id === ins?.id_jugador);
-                const partido = data.partidos.find(p => p.id === s.id_partido);
-                const esLocal = partido ? partEquipo.includes(partido.id_local_participacion) : false;
-                const idRival = partido ? (esLocal ? partido.id_visitante_participacion : partido.id_local_participacion) : null;
-                const partRival = idRival ? data.participaciones.find(p => p.id === idRival) : null;
-                const rival = partRival ? (data.equipos.find(e => e.id === partRival.id_equipo)?.nombre || '-') : '-';
-                const fecha = s.fecha ? String(s.fecha).slice(0, 10) : '-';
-                return {
-                    fecha,
-                    jugador: jugador?.nombre || '-',
-                    tipo: s.tipo,
-                    motivo: s.motivo || '-',
-                    partido: partido ? `vs ${rival} (${fecha})` : '-',
-                    partidos_suspension: s.partidos_suspension || 0,
-                    multa: s.multa || 0,
-                    id: s.id,
-                    id_inscripcion: s.id_inscripcion
-                };
-            })
-            .sort((a, b) => b.fecha.localeCompare(a.fecha));
-
-        const multasEquipo = data.multasEquipo
-            .filter(m => m.id_equipo === idEquipo)
-            .map(m => ({
-                fecha: m.fecha ? String(m.fecha).slice(0, 10) : '-',
-                monto: m.monto || 0,
-                motivo: m.motivo || '-',
-                pagada: m.pagada || false,
-                id: m.id
-            }))
-            .sort((a, b) => b.fecha.localeCompare(a.fecha));
-
-        const totalMultasTarjetas = tarjetas.reduce((acc, t) => acc + (t.multa || 0), 0);
-        const totalMultasEquipo = multasEquipo.reduce((acc, m) => acc + m.monto, 0);
-        const pendientesEquipo = multasEquipo.filter(m => !m.pagada).reduce((acc, m) => acc + m.monto, 0);
-
-        return {
-            equipo: equipo?.nombre || '-',
-            tarjetas,
-            amarillas: tarjetas.filter(t => t.tipo === 'AMARILLA').length,
-            rojas: tarjetas.filter(t => t.tipo === 'ROJA').length,
-            multas: multasEquipo,
-            totalMultasTarjetas,
-            totalMultasEquipo,
-            multasPendientes: pendientesEquipo
-        };
-    }
-
     function eliminarTarjeta(idSancion) {
         const data = getData();
         asegurarArrays(data);
         data.sancionesJugador = data.sancionesJugador.filter(s => s.id !== idSancion);
-        saveData(data);
-    }
-
-    function togglePagadaMulta(idMulta) {
-        const data = getData();
-        asegurarArrays(data);
-        const m = data.multasEquipo.find(m => m.id === idMulta);
-        if (m) m.pagada = !m.pagada;
         saveData(data);
     }
 
@@ -258,7 +184,7 @@ window.Sanciones = (() => {
             ? (data.partidos.find(p => p.id === id_partido)?.fecha || new Date().toISOString().slice(0, 10))
             : new Date().toISOString().slice(0, 10));
         data.multasEquipo.push({
-            id: window.genId ? window.genId() : Date.now() * 1000),
+            id: window.genId ? window.genId() : Date.now() * 1000,
             id_equipo, id_partido, id_participacion,
             monto: parseFloat(monto) || 0,
             motivo: motivo.trim(),
@@ -291,7 +217,6 @@ window.Sanciones = (() => {
         historialPartidosJugador,
         eliminarTarjeta,
         eliminarMulta,
-        togglePagadaMulta,
         registrarMulta
     };
 })();
