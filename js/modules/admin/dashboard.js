@@ -4,7 +4,9 @@
  * contadores reflejen siempre el estado real del torneo.
  */
 
+const escHTML = window.escHTML;
 document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
     const data = window.AppDB.get();
     if (!data) return;
 

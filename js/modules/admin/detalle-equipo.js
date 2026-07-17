@@ -22,6 +22,7 @@ const getAppData = () => window.AppDB.get();
 const guardarAppData = (data) => window.AppDB.save(data);
 
 document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
     initDetalle();
     
     // Eventos del buscador de jugadores

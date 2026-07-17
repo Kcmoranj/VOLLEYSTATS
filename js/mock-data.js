@@ -136,7 +136,10 @@ estadisticasJugador: [
     // multas al equipo completo (no ligadas a un jugador puntual). Las carga
     // el admin desde el detalle del partido; el delegado solo las visualiza.
     sancionesJugador: [],
-    multasEquipo: []
+    multasEquipo: [],
+    sustitucionesPartido: [],
+    tiemposMuertosPartido: [],
+    historialPuntos: []
 }
 /**
  * datosMinimosDeEmergencia
@@ -163,6 +166,7 @@ window.datosMinimosDeEmergencia = function () {
         equipos: [], participaciones: [], jugadores: [], inscripciones: [],
         partidos: [], estadisticasJugador: [],
         usuariosDelegados: [], convocatorias: [], r5: [],
-        sancionesJugador: [], multasEquipo: []
+        sancionesJugador: [], multasEquipo: [],
+        sustitucionesPartido: [], tiemposMuertosPartido: [], historialPuntos: []
     };
 };

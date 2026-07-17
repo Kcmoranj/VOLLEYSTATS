@@ -16,6 +16,7 @@ const normalizarEstado = (e) => window.normalizarEstado(e);
 let partidoEditandoId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
     const data = getAppData();
     const selCat = document.getElementById('selectCategoria');
     const selRama = document.getElementById('selectRama');

@@ -6,6 +6,7 @@
  * Usa window.AppDB para heredar sembrarDatosPorDefecto().
  */
 
+const escHTML = window.escHTML;
 document.addEventListener('DOMContentLoaded', () => {
     renderEquipos();
 });

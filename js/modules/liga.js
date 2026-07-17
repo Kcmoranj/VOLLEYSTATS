@@ -1,3 +1,4 @@
+const normalizarEstado = (e) => window.normalizarEstado(e);
 document.addEventListener('DOMContentLoaded', () => {
     const data = window.AppDB.get();
     if (!data) return;

@@ -149,6 +149,7 @@ const renderGrupos = () => {
 
 // 6. Inicialización
 document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
     // Si los datos ya están en el window, renderizamos
     if (window.VolleyAppData) renderCategorias();
 });

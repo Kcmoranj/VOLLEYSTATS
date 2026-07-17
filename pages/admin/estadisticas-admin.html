@@ -45,7 +45,7 @@
             </nav>
         </div>
         <div class="p-4 border-t">
-            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+            <button onclick="window.logout('../../index.html')" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
         </div>
     </aside>
 
@@ -72,15 +72,15 @@
                 
                 <!-- Columna de las Tablas y Marcador (Ocupa 2 de 3 columnas) -->
                 <div class="lg:col-span-2 space-y-8">
-                    
-                    <!-- Marcador y Sets -->
-                    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-xs">
+
+                    <!-- Marcador cabecera (sets ganados) — siempre visible -->
+                    <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-xs">
                         <div class="flex justify-around items-center px-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black text-xl shadow-md">🛡️</div>
+                                <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-black text-lg">🛡️</div>
                                 <div>
-                                    <h3 id="marcadorNombreLocal" class="font-black text-2xl leading-none text-gray-900">-</h3>
-                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Local</span>
+                                    <h3 id="marcadorNombreLocal" class="font-black text-xl leading-none text-gray-900">-</h3>
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase">Local</span>
                                 </div>
                             </div>
                             <div class="text-3xl font-black text-gray-800 flex items-center gap-3">
@@ -89,35 +89,112 @@
                                 <span id="marcadorSetsVisit" class="text-blue-600">0</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <div>
-                                    <h3 id="marcadorNombreVisit" class="font-black text-2xl leading-none text-gray-900 text-right">-</h3>
-                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block text-right">Visitante</span>
+                                <div class="text-right">
+                                    <h3 id="marcadorNombreVisit" class="font-black text-xl leading-none text-gray-900">-</h3>
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase block">Visitante</span>
                                 </div>
-                                <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-md">🛡️</div>
+                                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-lg">🛡️</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL EN VIVO (solo cuando partido EN_PROGRESO) -->
+                    <div id="seccionViva" class="hidden space-y-4">
+
+                        <!-- Sets anteriores -->
+                        <div class="flex items-center gap-3 flex-wrap" id="vivoSetsAnteriores"></div>
+
+                        <!-- Indicador de set y saque -->
+                        <div class="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-1 bg-red-500 text-white text-xs font-black px-2 py-0.5 rounded-full animate-pulse">🔴 EN VIVO</span>
+                                <span id="vivoSetActual" class="font-black text-gray-800 text-sm"></span>
+                            </div>
+                            <span id="vivoSaqueIndicador" class="text-sm font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-lg"></span>
+                            <button onclick="deshacerUltimoPunto()" class="btn btn-xs btn-outline border-gray-300 text-gray-500 font-bold">↩ Deshacer último punto</button>
+                        </div>
+
+                        <!-- Botones +1 punto — grandes y centrales -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-xl border border-purple-100 p-4 shadow-xs text-center space-y-3">
+                                <p class="text-[10px] font-black text-purple-600 uppercase tracking-wider" id="vivoNombreLocal">Local</p>
+                                <p class="text-6xl font-black text-purple-600" id="vivoPuntosLocal">0</p>
+                                <div class="flex gap-2 justify-center flex-wrap">
+                                    <button onclick="sumarPunto('local')"
+                                            class="btn btn-lg bg-purple-600 hover:bg-purple-700 border-none text-white font-black text-xl px-8">
+                                        +1
+                                    </button>
+                                    <button onclick="registrarTMVivo('local')" title="Tiempo muerto"
+                                            class="btn btn-sm btn-outline border-purple-200 text-purple-600 font-bold text-xs">
+                                        ⏱ TM
+                                    </button>
+                                    <button onclick="abrirModalSustVivo('local')" title="Sustitución"
+                                            class="btn btn-sm btn-outline border-purple-200 text-purple-600 font-bold text-xs">
+                                        🔄 Sust
+                                    </button>
+                                </div>
+                                <div class="flex justify-center gap-3">
+                                    <span id="vivoTmLocal" class="text-[10px] text-gray-400 font-bold"></span>
+                                    <span id="vivoSustLocal" class="text-[10px] text-gray-400 font-bold"></span>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl border border-blue-100 p-4 shadow-xs text-center space-y-3">
+                                <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider" id="vivoNombreVisit">Visitante</p>
+                                <p class="text-6xl font-black text-blue-600" id="vivoPuntosVisit">0</p>
+                                <div class="flex gap-2 justify-center flex-wrap">
+                                    <button onclick="sumarPunto('visitante')"
+                                            class="btn btn-lg bg-blue-600 hover:bg-blue-700 border-none text-white font-black text-xl px-8">
+                                        +1
+                                    </button>
+                                    <button onclick="registrarTMVivo('visitante')" title="Tiempo muerto"
+                                            class="btn btn-sm btn-outline border-blue-200 text-blue-600 font-bold text-xs">
+                                        ⏱ TM
+                                    </button>
+                                    <button onclick="abrirModalSustVivo('visitante')" title="Sustitución"
+                                            class="btn btn-sm btn-outline border-blue-200 text-blue-600 font-bold text-xs">
+                                        🔄 Sust
+                                    </button>
+                                </div>
+                                <div class="flex justify-center gap-3">
+                                    <span id="vivoTmVisit" class="text-[10px] text-gray-400 font-bold"></span>
+                                    <span id="vivoSustVisit" class="text-[10px] text-gray-400 font-bold"></span>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto mt-8">
-                            <div class="border border-gray-100 rounded-xl p-3 text-center shadow-2xs bg-gray-50/50">
+                        <!-- Canchas en vivo (rotaciones calculadas automáticamente) -->
+                        <div id="seccionCanchaViva" class="bg-white rounded-xl border border-gray-100 p-4 shadow-xs hidden">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Posiciones actuales en cancha</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div id="canchaVivaLocal"></div>
+                                <div id="canchaVivaVisit"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inputs manuales de sets (solo cuando NO está EN_PROGRESO) -->
+                    <div id="seccionSetsManual" class="bg-white rounded-xl border border-gray-100 p-6 shadow-xs">
+                        <div class="grid grid-cols-3 gap-4 max-w-lg mx-auto">
+                            <div class="border border-gray-100 rounded-xl p-3 text-center bg-gray-50/50">
                                 <span class="text-[9px] font-black text-gray-400 block mb-1 uppercase tracking-widest">Set 1</span>
                                 <div class="flex justify-center items-center gap-2 font-black text-2xl text-gray-800">
                                     <input id="s1Local" type="number" min="0" class="input-set text-purple-600" value="0"> <span class="text-gray-300">:</span> <input id="s1Visit" type="number" min="0" class="input-set" value="0">
                                 </div>
                             </div>
-                            <div class="border border-gray-100 rounded-xl p-3 text-center shadow-2xs bg-gray-50/50">
+                            <div class="border border-gray-100 rounded-xl p-3 text-center bg-gray-50/50">
                                 <span class="text-[9px] font-black text-gray-400 block mb-1 uppercase tracking-widest">Set 2</span>
                                 <div class="flex justify-center items-center gap-2 font-black text-2xl text-gray-800">
                                     <input id="s2Local" type="number" min="0" class="input-set text-purple-600" value="0"> <span class="text-gray-300">:</span> <input id="s2Visit" type="number" min="0" class="input-set" value="0">
                                 </div>
                             </div>
-                            <div class="border border-purple-200 rounded-xl p-3 text-center shadow-2xs bg-purple-50/20">
+                            <div class="border border-purple-200 rounded-xl p-3 text-center bg-purple-50/20">
                                 <span class="text-[9px] font-black text-purple-600 block mb-1 uppercase tracking-widest">Set 3</span>
                                 <div class="flex justify-center items-center gap-2 font-black text-2xl text-gray-800">
                                     <input id="s3Local" type="number" min="0" class="input-set text-purple-600" value="0"> <span class="text-gray-300">:</span> <input id="s3Visit" type="number" min="0" class="input-set" value="0">
                                 </div>
                             </div>
                         </div>
-                        <p class="text-center text-[10px] text-gray-400 font-semibold mt-3">Los sets se guardan junto con las estadísticas al presionar "Guardar Estadísticas"</p>
+                        <p class="text-center text-[10px] text-gray-400 font-semibold mt-3">Los sets se guardan junto con las estadísticas</p>
                     </div>
 
                     <!-- Selector Segmentado de Equipos -->
@@ -138,7 +215,7 @@
                                 <p id="lblRolTablaActive" class="text-xs text-gray-400 mt-0.5">Plantilla del Partido</p>
                             </div>
                             <div class="flex gap-2 flex-wrap">
-                                <button id="btnCargarR5" onclick="cargarDesdeR5()" class="btn btn-sm bg-green-600 hover:bg-green-700 border-none text-white text-xs font-bold" title="Importar alineación del R5 enviado por el delegado">
+                                <button id="btnCargarR5" onclick="cargarDesdeR5()" class="btn btn-sm bg-blue-600 hover:bg-blue-700 border-none text-white text-xs font-bold" title="Importar alineación del R5 enviado por el delegado">
                                     🏐 Cargar R5
                                 </button>
                                 <button id="btnMultarEquipo" class="btn btn-sm bg-red-50 hover:bg-red-100 border-none text-red-600 text-xs font-bold" title="Inhabilitar este equipo en este partido">
@@ -365,8 +442,49 @@
     <!-- Scripts de Configuración y Módulos -->
     <script src="../../js/mock-data.js"></script>
     <script src="../../js/shared/data-bridge.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/shared/sanciones.js"></script>
     <script src="../../js/modules/admin/registrar-actividad.js"></script>
+    <!-- Modal: ¿Quién saca primero? -->
+    <dialog id="modalSaquePrimero" class="modal">
+        <div class="modal-box rounded-2xl max-w-sm">
+            <h3 class="font-black text-lg mb-4">¿Quién saca primero?</h3>
+            <select id="selectSaquePrimero" class="select select-bordered w-full font-bold mb-4">
+                <option value="">— Seleccionar —</option>
+                <option id="selSaqueLocal" value="local">Local</option>
+                <option id="selSaqueVisit" value="visitante">Visitante</option>
+            </select>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn btn-ghost text-xs font-bold">Cancelar</button></form>
+                <button onclick="confirmarSaquePrimero()" class="btn bg-blue-600 hover:bg-blue-700 border-none text-white font-bold text-xs">▶️ Iniciar partido</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Modal: Sustitución en vivo -->
+    <dialog id="modalSustVivo" class="modal">
+        <div class="modal-box rounded-2xl max-w-sm">
+            <h3 class="font-black text-lg mb-1">Sustitución</h3>
+            <p id="modalSustVivoEquipo" class="text-xs text-gray-400 font-bold mb-1">-</p>
+            <p id="vivoSustRestantes" class="text-xs text-green-600 font-bold mb-4">-</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Sale (está en cancha)</label>
+                    <select id="selectSustSale" class="select select-bordered w-full font-bold text-sm"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Entra (está en banca)</label>
+                    <select id="selectSustEntra" class="select select-bordered w-full font-bold text-sm"></select>
+                </div>
+            </div>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn btn-ghost text-xs font-bold">Cancelar</button></form>
+                <button onclick="confirmarSustVivo()" class="btn bg-blue-600 border-none text-white font-bold text-xs">Registrar sustitución</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="../../js/modules/admin/partido-vivo.js"></script>
     <script src="../../js/modules/admin/estadisticas-admin.js"></script>
 </body>
 </html>

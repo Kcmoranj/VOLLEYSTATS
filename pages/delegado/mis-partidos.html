@@ -85,7 +85,7 @@ window.setTab = function(tab) {
     renderPartidos();
 };
 
-function normEstado(e) { return String(e || '').toUpperCase().trim(); }
+const normEstado = window.normalizarEstado;
 
 function renderPartidos() {
     const data = window.AppDB.get();

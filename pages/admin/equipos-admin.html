@@ -2,17 +2,13 @@
 <html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Equipos | VolleyStats Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../css/brand.css">
     <style>.card-admin { background: white; border: 1px solid #e5e7eb; border-radius: 1rem; padding: 1.5rem; }</style>
 </head>
-    <script>
-    if (!localStorage.getItem('session_admin')) {
-        window.location.href = '../../index.html';
-    }
-    </script>
 <body class="bg-[#F3F4F6] flex h-screen font-sans">
 
         <aside class="flex flex-col h-screen w-64 bg-white border-r sticky top-0">
@@ -30,13 +26,18 @@
             </nav>
         </div>
         <div class="p-4 border-t">
-            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+            <button onclick="window.logout('../../index.html')" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
         </div>
     </aside>
 
-   <main class="flex-1 p-8 overflow-y-auto">
+   <main class="flex-1 px-8 pt-8 overflow-y-auto">
+        <!-- Banner de página -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white -mx-8 -mt-8 mb-8">
+            <h1 class="text-2xl font-black">🛡️ Equipos</h1>
+            <p class="text-blue-200 text-sm mt-1">Revisa, aprueba y gestiona los equipos inscritos</p>
+        </div>
+
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-black uppercase">Gestión de Equipos</h1>
             <a href="solicitudes-admin.html" class="btn btn-primary font-bold shadow-md shadow-blue-200">
                 📥 Ver solicitudes pendientes
             </a>
@@ -51,88 +52,66 @@
 
     <script src="../../js/mock-data.js"></script>
     <script src="../../js/shared/data-bridge.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script>
-        // Fallback defensivo: si por alguna razón js/shared/data-bridge.js no llegó a
-        // cargar (ruta distinta en tu proyecto, 404, etc.), esto evita que la página
-        // se rompa entera y te deje sin ver los equipos. Revisa la consola del
-        // navegador (F12) si ves el aviso de abajo: significa que falta ese archivo.
-        if (typeof window.migrarModeloDelegados !== 'function') {
-            console.warn('⚠️ js/shared/data-bridge.js no se cargó: revisa la ruta del <script>. Usando fallback interno.');
-            window.migrarModeloDelegados = function (data) {
-                if (!data.usuariosDelegados) data.usuariosDelegados = [];
-                if (!data.convocatorias) data.convocatorias = [];
-                if (!data.r5) data.r5 = [];
-                (data.jugadores || []).forEach(j => { if (!j.estado) j.estado = 'APROBADO'; });
-                return data;
-            };
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarSesion();
+            renderEquipos();
+        });
 
-        const initData = () => {
-            const savedData = localStorage.getItem('volleyData');
-            const base = savedData ? JSON.parse(savedData) : window.VolleyAppData;
-            window.VolleyAppData = window.migrarModeloDelegados(base);
-        };
-
-        const saveToStorage = () => {
-            localStorage.setItem('volleyData', JSON.stringify(window.VolleyAppData));
-        };
-
-        const renderEquipos = () => {
-            const data = window.VolleyAppData;
+        function renderEquipos() {
+            const data = window.AppDB.get();
             const container = document.getElementById('listaEquipos');
             if (!container) return;
 
+            if (!data.equipos.length) {
+                container.innerHTML = '<div class="card-admin text-center text-gray-400 font-semibold py-8 col-span-3">No hay equipos registrados todavía.</div>';
+                return;
+            }
+
             container.innerHTML = data.equipos.map(eq => {
-                const participaciones = data.participaciones.filter(p => p.id_equipo === eq.id);
-                const estaAprobado = participaciones.length > 0 && participaciones.every(p => p.aprobado === true);
-                const hayPendientes = participaciones.some(p => !p.aprobado);
+                const parts = data.participaciones.filter(p => p.id_equipo === eq.id);
+                const estaAprobado = parts.length > 0 && parts.every(p => p.aprobado);
+                const hayPendientes = parts.some(p => !p.aprobado);
                 const delegado = (data.usuariosDelegados || []).find(u => u.id_equipo === eq.id);
+                const escHTML = window.escHTML;
 
-                return `
-                    <div class="card-admin block no-underline transition-all hover:shadow-lg hover:border-blue-400 relative group">
-                        <a href="detalle-equipo.html?id=${eq.id}" class="block">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="font-black text-lg text-gray-900 uppercase">${eq.nombre}</span>
-                                <span class="badge ${estaAprobado ? 'badge-success' : (hayPendientes ? 'badge-warning' : 'badge-error')} text-white font-bold text-[10px] uppercase">
-                                    ${estaAprobado ? 'Aprobado' : (hayPendientes ? 'Pendiente' : 'Sin categorías')}
-                                </span>
-                            </div>
-                            <p class="text-xs text-gray-400 font-bold">${participaciones.length} Categorías registradas</p>
-                            <p class="text-[10px] font-bold uppercase tracking-wide mt-2 ${delegado ? 'text-blue-600' : 'text-red-400'}">
-                                ${delegado ? `👤 Delegado: ${delegado.nombreDelegado} (usuario: ${delegado.usuario})` : '⚠️ Sin delegado asignado'}
-                            </p>
-                        </a>
-                        <button onclick="window.eliminarEquipo(${eq.id})"
-                                class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-black p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            ✕
-                        </button>
-                    </div>
-                `;
+                return \`
+                <div class="card-admin hover:shadow-lg hover:border-blue-400 transition-all relative group border border-gray-100">
+                    <a href="detalle-equipo.html?id=\${eq.id}" class="block">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="font-black text-lg text-gray-900 uppercase">\${escHTML(eq.nombre)}</span>
+                            <span class="badge \${estaAprobado ? 'badge-success' : (hayPendientes ? 'badge-warning' : 'badge-error')} text-white font-bold text-[10px]">
+                                \${estaAprobado ? 'Aprobado' : (hayPendientes ? 'Pendiente' : 'Sin categorías')}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 font-bold">\${parts.length} categoría\${parts.length !== 1 ? 's' : ''}</p>
+                        <p class="text-[10px] font-bold uppercase tracking-wide mt-2 \${delegado ? 'text-blue-600' : 'text-red-400'}">
+                            \${delegado ? '👤 ' + escHTML(delegado.nombreDelegado) : '⚠️ Sin delegado'}
+                        </p>
+                    </a>
+                    <button onclick="eliminarEquipo(event, \${eq.id})"
+                            class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-black p-2 opacity-0 group-hover:opacity-100 transition-opacity text-lg leading-none">
+                        ✕
+                    </button>
+                </div>\`;
             }).join('');
-        };
+        }
 
-        window.eliminarEquipo = (idEquipo) => {
-            if (event) { event.preventDefault(); event.stopPropagation(); }
-            if (!confirm("¿Seguro que deseas eliminar este equipo y toda su información asociada?")) return;
-
-            const data = window.VolleyAppData;
-            const idsParticipaciones = data.participaciones.filter(p => p.id_equipo === idEquipo).map(p => p.id);
-
-            data.inscripciones = data.inscripciones.filter(i => !idsParticipaciones.includes(i.id_participacion));
-            data.convocatorias = (data.convocatorias || []).filter(c => !idsParticipaciones.includes(c.id_participacion));
-            data.r5 = (data.r5 || []).filter(r => !idsParticipaciones.includes(r.id_participacion));
-            data.participaciones = data.participaciones.filter(p => p.id_equipo !== idEquipo);
-            data.equipos = data.equipos.filter(e => e.id !== idEquipo);
-            data.usuariosDelegados = (data.usuariosDelegados || []).filter(u => u.id_equipo !== idEquipo);
-
-            saveToStorage();
+        window.eliminarEquipo = (event, idEquipo) => {
+            event.preventDefault(); event.stopPropagation();
+            if (!confirm('¿Seguro que deseas eliminar este equipo y toda su información asociada?')) return;
+            const data = window.AppDB.get();
+            const idsP = data.participaciones.filter(p => p.id_equipo === idEquipo).map(p => p.id);
+            data.inscripciones        = data.inscripciones.filter(i => !idsP.includes(i.id_participacion));
+            data.convocatorias        = (data.convocatorias  || []).filter(c => !idsP.includes(c.id_participacion));
+            data.r5                   = (data.r5             || []).filter(r => !idsP.includes(r.id_participacion));
+            data.participaciones      = data.participaciones.filter(p => p.id_equipo !== idEquipo);
+            data.equipos              = data.equipos.filter(e => e.id !== idEquipo);
+            data.usuariosDelegados    = (data.usuariosDelegados || []).filter(u => u.id_equipo !== idEquipo);
+            window.AppDB.save(data);
             renderEquipos();
         };
-
-        initData();
-        renderEquipos();
-
-        function logout() { window.logout('../../index.html'); }
     </script>
 </body>
 </html>

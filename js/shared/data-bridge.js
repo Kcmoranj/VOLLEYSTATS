@@ -31,7 +31,7 @@ function sembrarDatosPorDefecto(data) {
     const colecciones = [
         'equipos', 'participaciones', 'jugadores', 'inscripciones',
         'partidos', 'estadisticasJugador', 'usuariosDelegados',
-        'sancionesJugador', 'multasEquipo'
+        'sancionesJugador', 'multasEquipo', 'sustitucionesPartido', 'tiemposMuertosPartido', 'historialPuntos'
     ];
 
     colecciones.forEach(col => {
@@ -94,7 +94,7 @@ window.AppDB = {
         } else {
             // Ni siquiera mock-data.js cargó: último recurso mínimo para no crashear.
             console.error('⚠️ VolleyStats: ni js/mock-data.js ni window.VolleyAppData están disponibles. Revisa las rutas de <script>.');
-            base = { categoriasJugador: [], categoriasTorneo: [], ramas: [], equipos: [], participaciones: [], jugadores: [], inscripciones: [], partidos: [], estadisticasJugador: [], usuariosDelegados: [], convocatorias: [], r5: [] };
+            base = { categoriasJugador: [], categoriasTorneo: [], ramas: [], equipos: [], participaciones: [], jugadores: [], inscripciones: [], partidos: [], estadisticasJugador: [], usuariosDelegados: [], convocatorias: [], r5: [], sustitucionesPartido: [], tiemposMuertosPartido: [], historialPuntos: [] };
         }
 
         return window.migrarModeloDelegados(base);
@@ -116,6 +116,19 @@ function migrarModeloDelegados(data) {
     if (!data.r5) data.r5 = [];
     if (!Array.isArray(data.sancionesJugador)) data.sancionesJugador = [];
     if (!Array.isArray(data.multasEquipo)) data.multasEquipo = [];
+    if (!Array.isArray(data.sustitucionesPartido)) data.sustitucionesPartido = [];
+    if (!Array.isArray(data.tiemposMuertosPartido)) data.tiemposMuertosPartido = [];
+
+    // Migrar campo vivo en partidos
+    (data.partidos || []).forEach(p => {
+        if (!p.vivo) p.vivo = null; // null = no iniciado en vivo
+    });
+
+    // Migrar campo roles en r5
+    (data.r5 || []).forEach(r => {
+        if (!r.roles) r.roles = {};
+    });
+    if (!Array.isArray(data.historialPuntos)) data.historialPuntos = [];
 
     // Los jugadores que ya existían en la base se consideran válidos/aprobados.
     // Los que se propongan desde ahora nacen en estado 'PENDIENTE' sin categoría.

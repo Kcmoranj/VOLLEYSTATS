@@ -26,12 +26,17 @@
             </nav>
         </div>
         <div class="p-4 border-t">
-            <button onclick="logout()" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
+            <button onclick="window.logout('../../index.html')" class="text-red-600 font-bold hover:bg-red-50 p-3 rounded-lg w-full text-left" style="color:#dc2626 !important">➡️ Cerrar sesión</button>
         </div>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
-        <h1 class="text-2xl font-black text-gray-900 mb-1 uppercase">Solicitudes</h1>
+    <main class="flex-1 px-8 pt-8 overflow-y-auto">
+        <!-- Banner de página -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white -mx-8 -mt-8 mb-8">
+            <h1 class="text-2xl font-black">📥 Solicitudes Pendientes</h1>
+            <p class="text-blue-200 text-sm mt-1">Aprueba o rechaza jugadores y equipos</p>
+        </div>
+
         <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">
             Los equipos y jugadores ahora los crean los delegados. Aquí solo los apruebas.
         </p>
@@ -50,12 +55,9 @@
 
     <script src="../../js/mock-data.js"></script>
     <script src="../../js/shared/data-bridge.js"></script>
+    <script src="../../js/modules/auth.js"></script>
     <script src="../../js/shared/elegibilidad.js"></script>
     <script src="../../js/modules/admin/registrar-actividad.js"></script>
     <script src="../../js/modules/admin/solicitudes-admin.js"></script>
-
-    <script>
-    function logout() { window.logout('../../index.html'); }
-    </script>
 </body>
 </html>

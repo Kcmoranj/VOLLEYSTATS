@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
     renderizarActividades();
  
     const btnLimpiar = document.getElementById('btnLimpiarActividades');

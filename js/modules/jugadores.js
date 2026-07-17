@@ -1,5 +1,6 @@
 
 
+const escHTML = window.escHTML;
 document.addEventListener('DOMContentLoaded', () => {
     const data = window.AppDB.get();
     if (!data) return;

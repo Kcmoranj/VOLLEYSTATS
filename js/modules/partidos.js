@@ -1,5 +1,8 @@
 
 
+const normEstado = (e) => window.normalizarEstado(e);
+const escHTML    = window.escHTML;
+
 let _data      = null;
 let _tabEstado = 'todos';
 let _tabCancha = 'todas';

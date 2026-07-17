@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
     renderSolicitudesEquipos();
     renderSolicitudesJugadores();
 });
